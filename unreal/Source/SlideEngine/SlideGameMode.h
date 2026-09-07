@@ -7,6 +7,7 @@ class ACameraActor;
 class SWidget;
 class UTextureRenderTarget2D;
 class ASceneCapture2D;
+struct FParkMapPin { FVector Position; FString Code, Name, Status; int32 SlideIndex=-1; bool bHero=false; };
 struct FSlideView { FVector Position; FRotator Rotation; float Duration; };
 struct FSlideMotion { TWeakObjectPtr<AActor> Actor; FVector Origin; FRotator Rotation; FString Kind; float Speed; float Amplitude; };
 struct FSlidePanel { TWeakObjectPtr<AActor> Root; FVector RaisedPosition; float Reveal = 0; };
@@ -20,11 +21,10 @@ public:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 private:
  UPROPERTY() TObjectPtr<ACameraActor> Camera;
- UPROPERTY() TObjectPtr<AActor> MascotActor;
- UPROPERTY() TObjectPtr<ASceneCapture2D> MascotCapture;
- UPROPERTY() TObjectPtr<UTextureRenderTarget2D> MascotTexture;
- FSlateBrush MascotBrush;
  TArray<FSlideView> Views;
+ TArray<FParkMapPin> MapPins;
+ bool bAllHabitats=false;
+ FString ParkSection=TEXT("Park Status");
  TArray<FSlideMotion> Motions;
  TArray<FSlidePanel> Panels;
  TArray<FString> Notes, Titles, HabitatNames;

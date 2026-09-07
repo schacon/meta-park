@@ -10,9 +10,9 @@
       "label": "Brachiosaurus lagoon",
       "species": "brachiosaurus",
       "position": [
-        5500,
-        2200,
-        200
+        5400,
+        2300,
+        700
       ],
       "color": "#459cac"
     },
@@ -21,9 +21,9 @@
       "label": "T. rex paddock",
       "species": "tyrannosaurus",
       "position": [
-        -5500,
-        1800,
-        200
+        -6000,
+        -400,
+        400
       ],
       "color": "#e97936"
     },
@@ -32,66 +32,22 @@
       "label": "Triceratops meadow",
       "species": "triceratops",
       "position": [
-        5400,
-        -3800,
-        200
+        4900,
+        -4300,
+        950
       ],
       "color": "#d4be70"
-    },
-    {
-      "id": "velociraptor",
-      "label": "Raptor enclosure",
-      "species": "velociraptor",
-      "position": [
-        -5500,
-        -3700,
-        200
-      ],
-      "color": "#82a268"
-    },
-    {
-      "id": "dilophosaurus",
-      "label": "Dilophosaurus forest",
-      "species": "dilophosaurus",
-      "position": [
-        5500,
-        7000,
-        220
-      ],
-      "color": "#b6ad5c"
-    },
-    {
-      "id": "gallimimus",
-      "label": "Gallimimus valley",
-      "species": "gallimimus",
-      "position": [
-        -5300,
-        7000,
-        220
-      ],
-      "color": "#e5a450"
     },
     {
       "id": "stegosaurus",
       "label": "Stegosaurus range",
       "species": "stegosaurus",
       "position": [
-        4300,
-        -8400,
-        200
+        -5700,
+        4800,
+        900
       ],
       "color": "#7e9b5e"
-    },
-    {
-      "id": "parasaurolophus",
-      "label": "Parasaurolophus wetlands",
-      "species": "parasaurolophus",
-      "position": [
-        -4000,
-        -8400,
-        200
-      ],
-      "color": "#729fa8"
     }
   ],
   "slides": [
@@ -189,9 +145,9 @@
       ],
       "notes": "Based on the sibling git-meta README. This is an overview of the proposal, not a replacement for its canonical spec.",
       "position": [
-        -5500,
-        1800,
-        1750
+        -6000,
+        -400,
+        3600
       ],
       "habitat": "tyrannosaurus",
       "yaw": -90,
@@ -300,11 +256,11 @@
       ],
       "notes": "",
       "position": [
-        4300,
-        -8400,
-        1750
+        4900,
+        -4300,
+        4150
       ],
-      "habitat": "stegosaurus",
+      "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 5
@@ -359,11 +315,11 @@
       ],
       "notes": "",
       "position": [
-        -5500,
-        -3700,
-        1750
+        -5700,
+        4800,
+        4100
       ],
-      "habitat": "velociraptor",
+      "habitat": "stegosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 5
@@ -389,11 +345,11 @@
       "models": [],
       "notes": "These commands come from the README examples. Refer to git-meta/spec for current CLI semantics.",
       "position": [
-        5500,
-        7000,
-        1770
+        5400,
+        2300,
+        3900
       ],
-      "habitat": "dilophosaurus",
+      "habitat": "brachiosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 5
@@ -448,11 +404,11 @@
       ],
       "notes": "",
       "position": [
-        -5300,
-        7000,
-        1770
+        -6000,
+        -400,
+        3600
       ],
-      "habitat": "gallimimus",
+      "habitat": "tyrannosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 5
@@ -563,9 +519,9 @@
       ],
       "notes": "The README labels spec/README.md canonical. This slide describes the README proposal rather than asserting current implementation conflict semantics.",
       "position": [
-        5400,
-        -3800,
-        1750
+        4900,
+        -4300,
+        4150
       ],
       "habitat": "triceratops",
       "yaw": -90,
@@ -622,11 +578,11 @@
       ],
       "notes": "The size comparison is a benchmark reported by the README author, not a benchmark of this slideshow engine.",
       "position": [
-        -4000,
-        -8400,
-        1750
+        -5700,
+        4800,
+        4100
       ],
-      "habitat": "parasaurolophus",
+      "habitat": "stegosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 5
@@ -681,9 +637,9 @@
       ],
       "notes": "Source: ../git-meta/README.md, read September 7, 2026. Canonical specification: ../git-meta/spec/README.md.",
       "position": [
-        5500,
-        2200,
-        1750
+        5400,
+        2300,
+        3900
       ],
       "habitat": "brachiosaurus",
       "yaw": -90,

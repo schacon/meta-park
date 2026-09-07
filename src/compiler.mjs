@@ -64,7 +64,7 @@ export function makeManifest(tree, layout = {}) {
     const override = layout.slides?.[id] ?? {};
     const habitat = island?.route[i];
     const angle = i * 0.48;
-    const position = vector(override.position,habitat ? [habitat.position[0],habitat.position[1],habitat.position[2]+1550] : [Math.round(4200*Math.sin(angle)),Math.round(4200*(1-Math.cos(angle))),i*380],`${id}.position`);
+    const position = vector(override.position,habitat ? [habitat.position[0],habitat.position[1],habitat.position[2]+3200] : [Math.round(4200*Math.sin(angle)),Math.round(4200*(1-Math.cos(angle))),i*380],`${id}.position`);
     return {id,title,accent,blocks,models,notes,position,habitat:habitat?.id??"",yaw: (()=>{const y=override.yaw??(island ? -90 : i*27.5); if(!Number.isFinite(y))fail('yaw must be finite'); return y;})(), cameraDistance:positive(override.cameraDistance,island ? 2050 : 1550,'cameraDistance'), transition:positive(override.transition,layout.transition??(island ? 5 : 2.2),'transition')};
   });
   for (const id of Object.keys(layout.slides??{})) if (!ids.has(id)) fail(`Layout references unknown slide: ${id}`);

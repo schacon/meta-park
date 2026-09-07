@@ -108,7 +108,16 @@ void ASlideGameMode::BeginPlay() {
   auto* Frame=Block(GetWorld(),Transform.TransformPosition(FVector(-18,0,0)),FVector(.28,14.65,9.25),FColor(57,68,59),Facing);
   FString HabitatLabel;
   FString HabitatID; S->TryGetStringField(TEXT("habitat"),HabitatID);
-  if(bIsland) for(const auto& H:Deck->GetArrayField(TEXT("habitats"))) if(H->AsObject()->GetStringField(TEXT("id"))==HabitatID) HabitatLabel=H->AsObject()->GetStringField(TEXT("label"));
+  if(bIsland) {
+   const auto& Habitats=Deck->GetArrayField(TEXT("habitats"));
+   for(int32 HIndex=0;HIndex<Habitats.Num();HIndex++) {
+    auto H=Habitats[HIndex]->AsObject(); if(H->GetStringField(TEXT("id"))!=HabitatID) continue;
+    HabitatLabel=H->GetStringField(TEXT("label"));
+    FString Name=H->GetStringField(TEXT("species")); Name[0]=FChar::ToUpper(Name[0]);
+    if(Name==TEXT("Tyrannosaurus")) Name=TEXT("T. rex");
+    if(!MapPins.ContainsByPredicate([&](const FParkMapPin& P){return P.Name==Name;}))MapPins.Add({Vec(H,TEXT("position"))+FVector(0,0,600),FString::Printf(TEXT("ENC-%02d"),HIndex+1),Name,TEXT("OK"),I,true});
+   }
+  }
   auto* SlideRoot=GetWorld()->SpawnActor<AActor>();
   auto* RootComponent=NewObject<USceneComponent>(SlideRoot); SlideRoot->SetRootComponent(RootComponent); SlideRoot->AddInstanceComponent(RootComponent); RootComponent->RegisterComponent();
   SlideRoot->SetActorLocationAndRotation(Origin,Facing);
@@ -151,8 +160,9 @@ void ASlideGameMode::BeginPlay() {
   RootComponent->SetVisibility(false,true);
  }
  if(!Views.IsEmpty()) { GoTo(0,true); Overview(); bTourStarted=false; }
+ MapPins.Append({{FVector(0,-5100,650),TEXT("VC"),TEXT("Visitor Centre"),TEXT("OPEN"),-1,true},{FVector(-6400,-5400,350),TEXT("HELI"),TEXT("Helipad"),TEXT("IDLE"),-1,true},{FVector(0,-10500,1250),TEXT("GATE"),TEXT("Main Gate"),TEXT("LOCKED"),-1,true}});
  CreateDesktopHUD();
- UE_LOG(LogTemp,Display,TEXT("SlideEngine ready: %d slides, %d animated models; starting at slide 1"),Views.Num(),Motions.Num());
+ UE_LOG(LogTemp,Display,TEXT("SlideEngine ready: %d slides, %d animated models; starting in park overview"),Views.Num(),Motions.Num());
 }
 void ASlideGameMode::GoTo(int32 Next,bool Instant) {
  if(Views.IsEmpty()) return;
@@ -164,21 +174,21 @@ void ASlideGameMode::GoTo(int32 Next,bool Instant) {
 }
 void ASlideGameMode::Overview() {
  bFlying=false; bOverview=true; SetMouseMode(false);
- if(bIsland) { Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Orthographic); Camera->GetCameraComponent()->SetOrthoWidth(25000); }
+ if(bIsland) { Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Orthographic); Camera->GetCameraComponent()->SetOrthoWidth(23500); }
  FVector Center=FVector::ZeroVector; for(const auto& V:Views) Center+=V.Position; Center/=Views.Num();
  FVector Eye=bIsland?FVector(3000,-28000,23000):Center+FVector(9000,-6000,10000);
- if(bIsland) { Center=FVector(2500,250,0); Eye+=Center; }
+ if(bIsland) { Center=FVector(2850,-750,0); Eye+=Center; }
  Camera->SetActorLocationAndRotation(Eye,(Center-Eye).Rotation());
 }
 void ASlideGameMode::Tick(float Delta) {
  Super::Tick(Delta); if(!Camera || Views.IsEmpty()) return; Elapsed+=Delta;
  if(bTourStarted&&!bTimerPaused) TimerElapsed+=Delta;
- if(MascotActor) MascotActor->SetActorRotation(FRotator(0,Elapsed*32,0));
- for(auto& Panel:Panels) if(Panel.Root.IsValid()) {
+ for(int32 PanelIndex=0;PanelIndex<Panels.Num();PanelIndex++) {
+  auto& Panel=Panels[PanelIndex];if(!Panel.Root.IsValid())continue;
   const float D=FVector::Distance(Camera->GetActorLocation(),Panel.RaisedPosition);
-  const float Target=bOverview?0.f:1-FMath::SmoothStep(2500.f,3900.f,D);
+  const float Target=(bOverview||PanelIndex!=Index)?0.f:1-FMath::SmoothStep(2500.f,3900.f,D);
   Panel.Reveal=FMath::FInterpTo(Panel.Reveal,Target,Delta,4.f);
-  Panel.Root->SetActorLocation(Panel.RaisedPosition-FVector(0,0,(1-Panel.Reveal)*1550));
+  Panel.Root->SetActorLocation(Panel.RaisedPosition-FVector(0,0,(1-Panel.Reveal)*3200));
   Panel.Root->SetActorScale3D(FVector(1,1,FMath::Max(.01f,Panel.Reveal)));
   Panel.Root->GetRootComponent()->SetVisibility(Panel.Reveal>.015f,true);
  }

@@ -13,7 +13,8 @@ npm install
 npm run build             # MDX → unreal/Content/Slides/deck.json
 npm test
 npm run unreal:build      # Compile the native editor module
-npm run unreal:prepare    # Create the entry map (first run only)
+npm run unreal:prepare    # Create the entry map and materials (first run only)
+npm run unreal:import-assets # Import the checked-in Blender FBX kit
 npm run unreal:play       # Open the island overview
 ```
 
@@ -28,17 +29,16 @@ Run `unreal:build` and `unreal:prepare` before the first package. The prepare st
 
 ## Park workstation
 
-The application opens on the island overview with every slide retracted. Click
-**Next slide** (or press Right) to fly to the first habitat. Displays unfold as
+The application opens on the island overview with every slide retracted. Press
+**Right arrow** to fly to the first habitat. Displays unfold as
 the camera approaches and retract as it leaves. **O** returns to the map.
 
-The sidebar shows the current slide and total, live scene counts, deployed
-displays, and a countdown. `durationMinutes` in the layout sets the timer (20 by
-default). It starts when you begin the tour; **P** or **Pause timer** pauses it.
+The sidebar shows park status, live dinosaur/enclosure counts, illustrative visitor
+and staff counts, utility meters, and weather. The upper-right overlay shows the
+current slide, total, and countdown. `durationMinutes` in the layout sets the timer
+(20 by default). It starts when you begin the tour; **P** pauses it.
 The clock keeps running during an overview visit, unless paused.
 
-The Mr. DNA–inspired sidebar mascot is a native 3D helix character, rendered by an
-isolated scene-capture camera into a Slate image and continuously rotated.
 The scene uses faceted trees, a volcano, lagoon and waterfall, white paddock
 fences, entrance gate, visitor buildings, helipad and dock. Each habitat has one
 cartoon dinosaur. The overview uses an orthographic camera to match the supplied
@@ -110,7 +110,7 @@ The `Models` directory is always cooked so assets referenced only by JSON surviv
 ## Island layout and flight route
 
 The Git Meta example now uses a rough Isla Nublar map: ocean, sandy coastline,
-mountain ridge, forest and eight fenced dinosaur habitats. The geography is a
+mountain ridge, forest and four fenced dinosaur habitats. The geography is a
 creative approximation, not a canonical reconstruction of a film map.
 
 Edit `examples/git-meta/layout.json`:
@@ -119,21 +119,34 @@ Edit `examples/git-meta/layout.json`:
 - `seed: 1993` deterministically shuffles the assignment of slides to habitats.
   Change the integer seed and run `npm run build` for another route.
 - `habitats` defines each area's stable `id`, display `label`, `species`,
-  `[x, y, groundHeight]` position and dinosaur color. Supply one per slide.
-- Slide panels sit 1,550 cm above their habitat. `slides` can override individual
+  `[x, y, groundHeight]` position and dinosaur color. Supply up to one per slide; the sample reuses four paddocks across eight slides.
+- Slide panels sit 3,200 cm above their habitat. `slides` can override individual
   positions, yaw, camera distance and transition time just as in a regular layout.
 - `transition: 5` gives the camera time to climb and cross the island. Island
   flights arc upward and look down during the middle of the journey.
 
 The slide narrative remains ordered; the geographic stops are shuffled. The
-current route is T. rex → Stegosaurus → Velociraptor → Dilophosaurus → Gallimimus
-→ Triceratops → Parasaurolophus → Brachiosaurus. North is world +Y. Press **O**
+current route is T. rex → Triceratops → Stegosaurus → Brachiosaurus, repeated. North is world +Y. Press **O**
 to see the island, habitats and shoreline together.
 
-Dinosaur models are deliberately simple native shapes with different silhouettes.
+Dinosaur models, landscape, buildings and foliage are original Blender meshes,
+imported as native Unreal static meshes with authored vertex colors.
 Terrain and models receive sunlight, dynamic shadows and ambient occlusion;
 the slide text stays readable in the original workstation-style windows.
-The same seed also makes forest placement repeatable.
+The Blender scene contains an authored forest with varied broadleaf trees and palms.
+
+## Blender art assets
+
+The editable source is [assets/blender/park.blend](assets/blender/park.blend).
+It contains independent collections for eight dinosaur sculptures, architecture,
+fences, foliage, terrain, and water. The scene currently places four dinosaurs,
+two offshore islands, a boulder with shallow water, and the git-meta park entrance.
+The other four dinosaur models remain available in the asset library.
+
+See [the asset workflow](assets/README.md) for rebuilding with Blender MCP and
+importing into Unreal. The park uses FBX geometry, not a background image.
+Paths are a single non-overlapping mesh fitted to the terrain triangles.
+The four paddocks have level ground at different heights, connected by slopes.
 
 ## Generic layout
 

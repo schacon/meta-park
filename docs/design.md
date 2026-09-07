@@ -1,54 +1,22 @@
-# UNIX filesystem navigator theme
+# Park diorama
 
-Reference: the user's Jurassic Park / SGI filesystem navigator screenshots.
+The user's supplied isometric island mockup is the visual reference. The park is
+original Blender geometry with painted vertex colors, imported into Unreal.
 
-Palette: workstation gray #bcbcbc, paper #e1e1d7, landscape #488b67,
-walkway salmon #b87676, directory blue #799cc9, selected purple #9864bc.
-Typography: fixed-width engine font for window furniture and paths; compact sans
-for readable presentation content. Hard square edges and inset title bars.
+The current composition has four irregular paddocks, each with twelve chunky
+posts, two rails and a visible gate. Ground elevations vary between paddocks;
+paths connect their gates, the visitor centre, helipad and main entrance without
+overlapping. Broadleaf trees have several silhouettes and a wide size range.
 
-Each slide is a workstation window standing on a pale directory platform.
-Salmon paths connect the platforms in presentation order. Blue and purple
-blocks make the surrounding landscape read as a navigable filesystem.
-A bird's-eye command reveals the entire presentation before returning to a slide.
+The volcano sits above a rocky waterfall and recessed lagoon. The shoreline is
+part of the terrain, sloping through a narrow sand band to the water. Two rounded
+offshore islands and a large faceted ocean boulder have shallow turquoise shelves.
+The entrance sign reads “git-meta park”; its ramp connects to a simple T-shaped
+dock and boat.
 
-    [ fsn / slide-engine                         ]
-    [ /git-meta/01-opening                       ]
-    [ title                                     ]
-    [ slide content                             ]
-    [ ← → navigate | O bird's eye | F free flight]
-         directory blocks / pale platform
-                  salmon connector
-
-The physical filesystem landscape carries the reference. Avoid modern dark
-panels, neon accents, rounded cards and decorative dashboard controls.
-
-
-## Island revision
-
-The map is a rough Isla Nublar silhouette with a broad north, tapered south,
-indented east coast, beaches and a western mountain ridge. It uses original
-procedural geometry, not a copied map texture. Reference context:
-[illustrator's Isla Nublar field-guide map](https://filippovanzo.com/2017/12/isla-nublar-map/).
-Paddock placement is illustrative; the reference itself discusses interpretation
-of fan-made geography.
-
-Sunlight, soft-edged dynamic shadows, skylight, ambient occlusion, a thick panel
-frame and matte lit surfaces give the scene depth. Small faceted dinosaurs,
-fences and instanced forest canopies give every slide a physical setting.
-The content route is spatially shuffled with a seed, while the talk stays in order.
-
-
-## Supplied diorama mockup
-
-The latest user image is the current visual target: wide low-poly island,
-flat gray terminal sidebar, dark monospace lettering, green selection and status
-bars, a northern volcano, blue lagoon and waterfall, white fences, sparse faceted
-foliage, gate, visitor buildings, helipad and dock. Scene geometry is created in
-Unreal. The reference image is not used as a background texture.
-
-The required eight enclosures, presentation clock, slide counter, and rotating
-3D Mr. DNA-inspired inset remain. The overview starts with all presentation
-panels retracted, leaving the diorama unobstructed; nearby displays deploy during
-travel. The menu controls navigate the presentation rather than simulating
-unimplemented park-management screens. Counts come from the actual scene.
+A gray terminal sidebar uses heavy monospace text, green utility bars, park counts
+and a weather display. Slide count and the presentation clock occupy an upper-right
+overlay. Square map callouts track world
+landmarks and link the dinosaur areas to presentation stops. The overview begins
+with the slides retracted. The eight-slide sample shares the four paddocks;
+presentation behavior can be refined separately from the art.

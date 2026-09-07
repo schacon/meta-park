@@ -43,14 +43,14 @@ test('island habitat shuffle is deterministic, complete, and preserves the narra
  const layout=JSON.parse(await readFile('examples/git-meta/layout.json','utf8'));
  const a=islandLayout(layout,8), b=islandLayout(layout,8);
  assert.deepEqual(a.route,b.route);
- assert.equal(new Set(a.route.map(h=>h.id)).size,8);
+ assert.equal(new Set(a.route.map(h=>h.id)).size,layout.habitats.length);
  assert.notDeepEqual(a.route,layout.habitats);
  assert.notDeepEqual(a.route,islandLayout({...layout,seed:42},8).route);
  const out=await compileDeck('examples/git-meta/deck.mdx','examples/git-meta/layout.json');
  assert.deepEqual(out.slides.map(s=>s.id),['opening','context','targets','authoring','storage','merging','scale','future']);
  assert.deepEqual(out.slides.map(s=>s.habitat),a.route.map(h=>h.id));
- for(let i=0;i<8;i++) assert.deepEqual(out.slides[i].position,[...a.route[i].position.slice(0,2),a.route[i].position[2]+1550]);
+ for(let i=0;i<8;i++) assert.deepEqual(out.slides[i].position,[...a.route[i].position.slice(0,2),a.route[i].position[2]+3200]);
  assert.throws(()=>islandLayout({...layout,seed:-1},8),/seed/);
- assert.throws(()=>islandLayout({...layout,habitats:layout.habitats.slice(1)},8),/one habitat/);
+ assert.throws(()=>islandLayout({...layout,habitats:[]},8),/one habitat/);
  assert.throws(()=>islandLayout({...layout,habitats:Array(8).fill(layout.habitats[0])},8),/unique/);
 });

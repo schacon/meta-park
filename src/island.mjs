@@ -2,7 +2,7 @@
 export function islandLayout(layout, count) {
   if (layout.scene !== 'isla-nublar') return null;
   if (!Number.isInteger(layout.seed) || layout.seed < 0 || layout.seed > 0xffffffff) throw new Error('Island seed must be an unsigned 32-bit integer');
-  if (!Array.isArray(layout.habitats) || layout.habitats.length !== count) throw new Error('Island layout needs one habitat per slide');
+  if (!Array.isArray(layout.habitats) || layout.habitats.length < 1 || layout.habitats.length > count) throw new Error('Island layout needs between one habitat and one per slide');
   const ids = new Set();
   for (const h of layout.habitats) {
     if (!h.id || typeof h.id !== 'string' || ids.has(h.id)) throw new Error('Habitat IDs must be unique strings');
@@ -15,5 +15,5 @@ export function islandLayout(layout, count) {
   const random = () => { state = (Math.imul(state,1664525)+1013904223)>>>0; return state/4294967296; };
   const route = [...layout.habitats];
   for (let i=route.length-1;i>0;i--) { const j=Math.floor(random()*(i+1)); [route[i],route[j]]=[route[j],route[i]]; }
-  return {scene:'isla-nublar',seed:layout.seed,habitats:layout.habitats,route};
+  return {scene:'isla-nublar',seed:layout.seed,habitats:layout.habitats,route:Array.from({length:count},(_,i)=>route[i%route.length])};
 }

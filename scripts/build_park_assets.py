@@ -6,7 +6,8 @@ import bpy, math, random, json
 from pathlib import Path
 from mathutils import Vector, Matrix
 from mathutils.geometry import delaunay_2d_cdt
-ROOT = Path('/Users/schacon/projects/slide-engine')
+from mathutils.bvhtree import BVHTree
+ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'assets/exports'
 OUT.mkdir(parents=True, exist_ok=True)
 rng = random.Random(1993)
@@ -29,6 +30,9 @@ bsdf = mat.node_tree.nodes.get('Principled BSDF')
 bsdf.inputs['Roughness'].default_value = .82
 vc = mat.node_tree.nodes.new('ShaderNodeVertexColor'); vc.layer_name = 'Color'
 mat.node_tree.links.new(vc.outputs['Color'], bsdf.inputs['Base Color'])
+mat.node_tree.links.new(vc.outputs['Color'], bsdf.inputs['Emission Color'])
+glow=mat.node_tree.nodes.new('ShaderNodeMath');glow.operation='MULTIPLY';glow.inputs[1].default_value=3
+mat.node_tree.links.new(vc.outputs['Alpha'],glow.inputs[0]);mat.node_tree.links.new(glow.outputs[0],bsdf.inputs['Emission Strength'])
 WHITE='#e4e3ce'; IVORY='#ffedb8'; DARK='#273f3e'; WOOD='#876042'; GRAY='#a5a397'; GLASS='#3f7180'
 parts=[]; assets={}; placements=[]
 def rgb(c):
@@ -42,7 +46,7 @@ def mesh(name, verts, faces, color, face_colors=None):
     colors=m.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='CORNER')
     for p in m.polygons:
         c=lin(face_colors[p.index] if face_colors else color)
-        for k in p.loop_indices: colors.data[k].color=c
+        for k in p.loop_indices: colors.data[k].color=c[:3]+(1 if 'flame' in name.lower() else 0,)
     parts.append(o); return o
 
 def box(name,p,s,c,bevel=0):
@@ -91,12 +95,15 @@ def slab(name,poly,z,thickness,c):
     fs=[tuple(range(n)),tuple(reversed(range(n,2*n)))]+[(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
     return mesh(name,vs,fs,c)
 def text(name,value,p,size,c,rot=(math.pi/2,0,math.pi)):
-    curve=bpy.data.curves.new(name,'FONT');curve.body=value;curve.align_x='CENTER';curve.size=size;curve.extrude=.025
+    curve=bpy.data.curves.new(name,'FONT');curve.body=value;
+    font_path=Path('/System/Library/Fonts/Supplemental/Arial Bold.ttf')
+    if font_path.exists():curve.font=bpy.data.fonts.load(str(font_path),check_existing=True)
+    curve.align_x='CENTER';curve.size=size;curve.extrude=.025
     o=bpy.data.objects.new(name,curve);scene.collection.objects.link(o);o.location=p;o.rotation_euler=rot
     bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o;bpy.ops.object.convert(target='MESH')
     o=bpy.context.object; o.data.materials.append(mat)
     colors=o.data.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='CORNER')
-    for d in colors.data:d.color=lin(c)
+    for d in colors.data:d.color=lin(c)[:3]+(0,)
     parts.append(o);return o
 
 def begin():parts.clear()
@@ -204,82 +211,116 @@ def dinosaur(species,c):
 
 for species,c in [('brachiosaurus','#379489'),('tyrannosaurus','#e86731'),('triceratops','#cab26b'),('velociraptor','#66876c'),('dilophosaurus','#8c9d48'),('gallimimus','#d59a4f'),('stegosaurus','#779569'),('parasaurolophus','#538d83')]:dinosaur(species,c)
 
-# Architecture kit: chamfered masonry, inset glazing, lintels and stepped roof masses.
+# Two simple plaster volumes with substantial stepped roofs and a recessed entry.
 begin()
-for x,y,w,d,h in [(-6,0,9,8,5),(4,1,9,10,8),(0,7,7,5,4.5)]:
-    box('foundation',(x,y,.3),(w+.8,d+.8,.6),'#b8b8a3',.15)
-    box('plaster wall',(x,y,h/2+.6),(w,d,h),WHITE,.15)
-    box('roof cornice',(x,y,h+.65),(w+.5,d+.5,.45),'#c7c9bd',.12)
-    box('raised roof',(x,y,h+1.1),(w*.65,d*.65,.75),'#d9d9cc',.15)
-    for wx in (-.28, .28):
-        xx=x+w*wx
-        box('window recess',(xx,y-d/2-.015,h*.55),(1.65,.12,1.85),DARK)
-        box('blue glazing',(xx,y-d/2-.09,h*.55),(1.36,.08,1.52),GLASS)
-        box('window sill',(xx,y-d/2-.19,h*.55-.85),(1.9,.35,.16),'#b6b6a6')
-        box('mullion',(xx,y-d/2-.15,h*.55),(.1,.12,1.55),WHITE)
-    for wy in (-.25,.25):box('side window',(x+w/2+.02,y+wy*d,h*.55),(.1,1.6,1.7),GLASS)
-box('entrance canopy',(3,-4.7,3.8),(4,2,.35),'#b7c1b5',.1)
-box('front doors',(3,-4.05,1.9),(2.4,.16,3),WOOD)
-for x in (1.3,4.7):box('porch pillar',(x,-5.1,1.8),(.27,.27,3.6),WHITE)
-for i in range(3):box('entry step',(3,-5.5-i*.4,.3-i*.09),(4.4,1,.18),'#c9c8b4')
-text('visitor centre sign','VISITOR CENTRE',(3,-4.14,5.6),.57,DARK)
+PLASTER='#deded4'
+# Positive X appears at the left of the isometric park view.
+for x,y,w,d,h in [(6,-1,9,8,5.8),(-4,1,9,10,10)]:
+    box('plain plaster block',(x,y,h/2),(w,d,h),PLASTER)
+    box('solid raised roof',(x,y,h+1.25),(w*.68,d*.67,2.5),'#d6d7ce')
+    if x>0:
+        for wx in (-.25,.25):
+            box('deep teal front window',(x+w*wx,y-d/2-.025,3.1),(1.7,.08,1.8),'#38616a')
+        for wy in (-.25,.25):
+            box('deep teal side window',(x+w/2+.025,y+d*wy,3.1),(.08,1.5,1.8),'#38616a')
+    else:
+        # Tall portal flanked by two chunky piers, with a sheltered wooden door.
+        box('recessed wooden entrance',(x,y-d/2-.035,3),(2.8,.12,6),'#896540')
+        for dx in (-2.7,2.7):
+            box('entrance pier',(x+dx,y-d/2-.7,3.7),(2.15,1.5,7.4),PLASTER)
+            box('small entry window',(x+dx,y-d/2-1.47,4.1),(.85,.08,1.2),'#39676e')
+        box('deep portal lintel',(x,y-d/2-.7,7.8),(7.55,1.5,1),'#d0d3ca')
+        box('door handle',(x-.55,y-d/2-.13,2.8),(.12,.12,.55),'#465953')
+        box('side window',(x-w/2-.025,y,6),(.08,1.8,2.1),'#38616a')
+box('low connecting wing',(1,2,2),(3,5,4),'#c8ccc1')
 finish('SM_VisitorCentre')
 
 begin()
-for s in (-1,1):
-    # Tapered, buttressed gate towers with stone courses.
-    tube('tapered gate pier',[(s*9,0,0),(s*9,0,14),(s*9,0,17)],[3.2,2.2,1.7],'#93978a',4)
-    box('tower foot',(s*9,0,.55),(6.4,6.4,1.1),'#898e81',.18)
-    for z in (4,8,12):box('stone course',(s*9,-2.16,z),(4.4,.14,.14),'#7b8177')
-    box('torch cradle',(s*9,0,17.5),(1.1,1.1,.65),DARK,.15)
-    tube('outer flame',[(s*9,0,17.8),(s*9+.18,0,18.7),(s*9-.12,0,20)],[.48,.37,0],'#ffa529',7)
-    tube('inner flame',[(s*9,-.2,17.9),(s*9,-.2,18.9)],[.25,0],'#ffe18a',6)
-for s in (-1,1):
-    box('wooden gate leaf',(s*3.5,0,5.3),(6.8,1,10.6),'#875a34',.1)
-    for j in range(7):box('individual plank',(s*3.5-2.8+j*.92,-.56,5.3),(.76,.12,10.3),tone('#a77843',.85+.04*(j%3)),.04)
-    for z in (1,9.5):box('gate crossbar',(s*3.5,-.75,z),(6.5,.3,.5),'#6e4c31')
-    beam('diagonal brace',(s*.5,-.9,1.1),(s*6.5,-.9,9.2),.23,'#654a33',4)
-box('arched sign lintel',(0,0,12.8),(14.5,1.6,3.6),'#d5c58f',.4)
-text('park lettering','JURASSIC\nPARK',(0,-.85,13.05),1.38,'#db6329')
-for i in range(4):box('causeway step',(0,-4-i*1.3,.3-i*.14),(15,1.5,.3),'#c5c0a7')
+for side in (-1,1):
+    x=side*9
+    mesh('tapered stone gate tower',
+        [(x-3.25,-2.9,0),(x+3.25,-2.9,0),(x+3.25,2.8,0),(x-3.25,2.8,0),
+         (x-1.55,-1.75,19.3),(x+1.55,-1.75,19.3),(x+1.55,1.75,19.3),(x-1.55,1.75,19.3)],
+        [(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7),(4,5,6,7),(3,2,1,0)],'#93998e')
+    box('tower cap',(x,0,19.35),(3.25,3.65,.4),'#b0b5a7')
+    for z,y in [(19.6,0),(9.3,-2.5)]:
+        box('torch wall bracket',(x,y,z),(1.05,1.35,.85),'#737d72')
+        tube('dark brazier',[(x,y,z+.25),(x,y,z+.7)],[.6,.54],'#626b63',6)
+        tube('orange flame',[(x,y,z+.5),(x-.13,y,z+1.6),(x+.14,y,z+3.1)],[.48,.4,0],'#ff8d20',7)
+        tube('gold flame',[(x,y-.21,z+.6),(x+.08,y-.18,z+1.6),(x-.08,y-.14,z+2.5)],[.32,.27,0],'#ffc94e',6)
+        tube('bright flame heart',[(x,y-.36,z+.62),(x,y-.34,z+1.75)],[.2,0],'#ffe8a0',6)
+for side in (-1,1):
+    x=side*3.45
+    box('solid wooden gate leaf',(x,0,5.8),(6.8,1.15,11.6),'#89603a')
+    for z in (3,8.65):
+        box('recessed door panel',(x,-.6,z),(5.7,.08,4.7),'#765332')
+        mesh('subtle inset wood facets',[(x-2.75,-.67,z-2.25),(x+2.75,-.67,z-2.25),
+             (x+2.75,-.67,z+2.25),(x-2.75,-.67,z+2.25)],
+             [(0,1,2),(0,2,3)],'#88603a',['#88603a','#90663e'])
+    for z in (.35,5.8,11.25):box('thick horizontal door frame',(x,-.82,z),(6.75,.42,.55),'#9b7044')
+    for xx in (x-3.12,x+3.12):box('thick vertical door frame',(xx,-.82,5.8),(.55,.42,11.2),'#987046')
+    beam('upper carved diagonal',(x+side*2.7,-.87,10.75),(x-side*2.7,-.87,6.35),.37,'#9a6d41',4)
+    beam('lower carved diagonal',(x+side*2.7,-.87,.9),(x-side*2.7,-.87,5.25),.37,'#9a6d41',4)
+    box('bronze door handle',(side*.42,-1.04,5.8),(.16,.2,.75),'#655139')
+outline=[(-7.2,12.4),(-7.2,17.3),(-4.4,17.9),(0,19),(4.4,17.9),(7.2,17.3),(7.2,12.4)]
+vs=[(x,-.72,z) for x,z in outline]+[(x,.72,z) for x,z in outline]
+mesh('arched park sign',vs,[tuple(reversed(range(7))),tuple(range(7,14))]+[(i,(i+1)%7,(i+1)%7+7,i+7) for i in range(7)],'#e3dfba')
+text('park lettering','git-meta\npark',(0,-.79,16.1),2.6,'#de6428')
+box('broad entrance ramp',(0,-8,.05),(15,11,.7),'#c5c3af')
+for x in (-7.7,7.7):
+    box('ramp stone block',(x,-11.4,.85),(1.65,3.1,2.6),'#a0a89a')
+    box('ramp stone cap',(x,-11.4,2.21),(1.7,3.15,.18),'#bdbfac')
 finish('SM_Gate')
 
 begin()
-poly=[(8*math.cos(j*math.pi/4),8*math.sin(j*math.pi/4)) for j in range(8)]
-slab('octagonal landing foundation',poly,.55,.65,'#c5c8b9')
-slab('tarmac inset',[(x*.88,y*.88) for x,y in poly],.6,.1,'#777e78')
-for x in (-2.2,2.2):box('H vertical',(x,0,.67),(1.15,6,.1),WHITE)
-box('H bridge',(0,0,.67),(4.8,1.15,.1),WHITE)
-for j in range(8):a=j*math.pi/4;ell('perimeter lamp',(7.5*math.cos(a),7.5*math.sin(a),.72),(.18,.18,.16),'#f4dc8c',6,3)
+poly=[(8.8*math.cos(math.pi/8+j*math.pi/4),8.8*math.sin(math.pi/8+j*math.pi/4)) for j in range(8)]
+slab('thick octagonal concrete plinth',poly,1.45,1.65,'#b8b9ae')
+slab('wide pale concrete rim',poly,1.7,.25,'#d5d4c7')
+slab('recessed charcoal landing surface',[(x*.81,y*.81) for x,y in poly],1.715,.025,'#777e7b')
+for x in (-1.75,1.75):box('H vertical',(x,0,1.75),(.95,5.3,.05),WHITE)
+box('H bridge',(0,0,1.75),(4.4,.95,.05),WHITE)
 finish('SM_Helipad')
 
 begin()
-for y in range(0,27):box('dock plank',(0,-y,.15),(4,.85,.3),tone('#ab8054',.85+.055*(y%4)),.035)
-for x in range(-12,1):box('berth plank',(x,-23,.15),(.85,5,.3),tone('#ab8054',.9+.03*(x%3)),.03)
-for y in (0,-8,-16,-25):
-    for x in (-2.2,2.2):box('mooring piling',(x,y,-.2),(.6,.6,3.7),WOOD,.09);box('piling cap',(x,y,1.72),(.75,.75,.24),'#cfb185',.04)
-# Hull loft along X with upswept bow, contrasting waterline, cabin and windscreen.
-tube('boat hull',[(-12,-28,.5),(-10.5,-28,-.2),(-5,-28,-.2),(-3,-28,.7)],[(.3,.35),(.8,1.8),(.9,1.8),(.12,.4)],WHITE,8)
-box('red gunwale',(-7.5,-28,.65),(7.8,3.65,.32),'#ab5239',.15)
-box('open deck',(-7.5,-28,.9),(7.4,3.3,.25),WHITE,.12)
-box('cabin',(-7,-28,1.75),(3.8,2.8,1.7),'#d3ded7',.3)
-box('cabin glass',(-7,-29.42,1.95),(2.9,.08,.95),GLASS,.08)
-box('cabin roof',(-7,-28,2.7),(4.1,3.1,.25),WHITE,.12)
-beam('radio mast',(-8,-28,2.8),(-8,-28,4.1),.035,DARK)
+# Three broad timbers make the reference's compact T-shaped dock.
+box('shore crosswalk',(-14,0,-.2),(28,4.8,1.5),'#b58e60')
+box('outer pier',(-28,-7,-.2),(3.8,23,1.5),'#ab8257')
+box('short boarding finger',(-11,-6,-.2),(3.6,12,1.5),'#b58e60')
+for x,y in [(0,0),(-28,3.6),(-28,-17.5),(-11,-11)]:
+    box('dock piling',(x,y,-.4),(1.15,1.15,4.5),'#98754f')
+    box('flat piling cap',(x,y,1.88),(1.3,1.3,.22),'#c7a677')
+# A clean graphic hull, dark windshield, white cabin: no plank or railing clutter.
+boat_start=len(parts)
+cx,cy=-11,-16
+hull=[(-5,-2.5),(-4.3,-3.5),(4.3,-3.5),(5,-2.5),(4.1,2.8),(-4.1,2.8)]
+slab('red lower hull',[(cx+x*.88,cy+y*.88) for x,y in hull],.1,.9,'#b64f37')
+slab('white boat hull',[(cx+x,cy+y) for x,y in hull],1.15,1.05,'#ecede0')
+slab('recessed boat deck',[(cx+x*.8,cy+y*.78) for x,y in hull],1.19,.05,'#9aafb1')
+box('white cabin',(cx,cy+.25,2.05),(5.8,3.8,1.9),'#e8eee4')
+box('front windshield',(cx,cy-1.69,2.25),(4.7,.12,1.1),'#366978')
+box('side glass',(cx+2.94,cy+.25,2.25),(.1,2.7,1.1),'#497c85')
+box('cabin roof',(cx,cy+.25,3.12),(6.25,4.1,.32),'#f2f0e2')
+for part in parts[boat_start:]:
+    for vertex in part.data.vertices:
+        vertex.co.x=cx+(vertex.co.x-cx)*1.5;vertex.co.y=cy+(vertex.co.y-cy)*1.5;vertex.co.z*=1.25
 finish('SM_Dock')
 
-# Shared enclosure: square with rounded corners, caps, twin rails and a service gateway.
+# A dozen substantial posts follow a gently irregular paddock boundary.
 begin()
-points=[]
-for cx,cy,start in [(10,10,0),(-10,10,90),(-10,-10,180),(10,-10,270)]:
-    for j in range(7):a=math.radians(start+j*15);points.append((cx+4*math.cos(a),cy+4*math.sin(a),0))
+points=[(-2,-15,0),(-9,-14.5,0),(-14,-10.8,0),(-15,-3,0),(-13,7,0),(-8,13.5,0),
+        (0,15,0),(10,13,0),(14.5,7,0),(14,-3,0),(10,-12,0),(2,-15,0)]
 for i,p in enumerate(points):
-    q=points[(i+1)%len(points)]
-    box('concrete fence post',(p[0],p[1],1.65),(.48,.48,3.3),WHITE,.08)
-    box('post cap',(p[0],p[1],3.34),(.65,.65,.22),'#f0efd9',.08)
-    for z in (1.2,2.65):beam('paddock rail',(p[0],p[1],z),(q[0],q[1],z),.12,'#d6ddc6',4)
-for x in (-1.5,1.5):box('gate pier',(x,-14,1.85),(.9,.9,3.7),'#879388',.09)
-box('service gate',(0,-14,1.5),(2.7,.35,3),'#967247',.08)
+    gatepost=i in (0,len(points)-1)
+    box('gateway pier' if gatepost else 'large white fence post',(p[0],p[1],2.05),
+        (1.65,1.65,4.1) if gatepost else (1.5,1.35,4.1),'#9aa799' if gatepost else WHITE,.1)
+    box('post cap',(p[0],p[1],4.12),(1.72,1.6,.32),'#eeeddb',.08)
+    if i==len(points)-1:continue  # The final span is the actual entrance opening.
+    q=points[i+1]
+    for z in (1.45,3.15):beam('heavy horizontal rail',(p[0],p[1],z),(q[0],q[1],z),.32,'#d7dfca',4)
+box('paddock gate leaf',(0,-15,1.65),(3.3,.35,3.1),'#a58653')
+for x in (-1.45,0,1.45):box('gate upright',(x,-15.25,1.65),(.19,.2,2.95),'#6e755c')
+for z in (.3,3):box('gate frame',(0,-15.25,z),(3.3,.2,.2),'#6e755c')
+beam('gate diagonal',(-1.45,-15.4,.45),(1.45,-15.4,2.9),.12,'#6e755c',4)
 finish('SM_Enclosure')
 
 # Reusable foliage: branching broadleaf tree, sculpted palms and angular boulders.
@@ -289,6 +330,19 @@ for p in [(-1.1,0,3.8),(1.1,.2,4.4),(.1,1,4.5)]:beam('branch',(0,0,2.5),p,.16,WO
 ell('main crown',(0,0,5.2),(2.4,2.1,2.55),'#5c993c',7,4)
 ell('side crown',(-1.3,-.3,4.3),(1.5,1.5,1.6),'#78aa45',7,4)
 finish('SM_Tree')
+for name,broad in [('SM_TreeBroad',True),('SM_TreeCrooked',False)]:
+    begin()
+    tube('leaning trunk',[(0,0,0),(.4,-.15,2.6),(.1,.15,5.8 if broad else 4.8)],[.52,.38,.18],WOOD,6)
+    centers=[((0,0,6.8),(3.1,2.7,3.1)),((2,1,6),(2.4,2.1,2.3)),((-1.8,-.5,5.4),(2.1,2.3,2))] if broad else [((.5,0,5.8),(2.1,2.5,3)),((-1.3,.4,4.1),(1.6,1.8,1.7))]
+    for k,(center,size) in enumerate(centers):
+        beam('crooked branch',(.1,0,2.8),center,.2,WOOD)
+        crown=ell('irregular polygon canopy',center,size,['#639a3a','#78a743','#578c35'][k%3],7,4)
+        local_rng=random.Random(421+k+(20 if broad else 0))
+        for vertex in crown.data.vertices:
+            vertex.co.x+=local_rng.uniform(-.32,.32)
+            vertex.co.y+=local_rng.uniform(-.32,.32)
+            vertex.co.z+=local_rng.uniform(-.22,.22)
+    finish(name)
 begin()
 tube('curved palm trunk',[(0,0,0),(.25,0,2),(.6,.1,4),(.45,.2,6.4)],[.3,.25,.19,.13],'#9b7e49',7)
 for j in range(9):
@@ -297,47 +351,105 @@ for j in range(9):
     mesh('folded palm frond',vs,[(0,1,4),(1,2,4),(2,3,4),(3,0,4)],'#4d994b',[tone('#4d994b',t) for t in (1.15,1,.85,.92)])
 for a in (0,2,4):ell('coconut',(.45+.23*math.cos(a),.2+.23*math.sin(a),6),(.21,.21,.25),WOOD,6,3)
 finish('SM_Palm')
-begin();ell('weathered boulder',(0,0,.75),(1.6,1.3,1.7),'#939389',7,3);finish('SM_Rock')
+begin()
+mesh('angular sea boulder',[(-1.45,-.5,-.35),(-.8,-1.2,-.35),(.6,-1.4,-.35),(1.5,-.5,-.35),
+(1.2,.9,-.35),(-.6,1.2,-.35),(-1.4,.1,.7),(-.65,-.9,1.1),(.8,-.7,1.25),(1.05,.7,.95),(-.4,.9,1.35),(-.25,-.1,1.9)],
+[(0,1,7,6),(1,2,8,7),(2,3,8),(3,4,9,8),(4,5,10,9),(5,0,6,10),(6,7,11,10),(7,8,11),(8,9,11),(9,10,11)],'#978d7b')
+finish('SM_Rock')
 
 # Island: hand-shaped shoreline rings, triangulated meadow, a broad ridge volcano and lagoon.
 layout=json.loads((ROOT/'examples/git-meta/layout.json').read_text())
 habitats=layout['habitats']
-coast=[]
-for j in range(64):
-    a=j*2*math.pi/64;f=1+.055*math.sin(a*5)+.025*math.sin(a*9+.7)
-    coast.append((105*math.cos(a)*f,128*math.sin(a)*f))
+islets=[(119,69,18,22),(-132,10,11,16)]
+def islet_shape(x,y,rx,ry,factor=1):
+    if x>0:
+        return [(x+rx*factor*math.cos(j*math.pi/8)*(1+.055*math.sin(j*2+.7)),
+                 y+ry*.78*factor*math.sin(j*math.pi/8)*(1+.04*math.cos(j*3))) for j in range(16)]
+    return [(x+rx*factor*math.cos(j*math.pi/8)*(1+.08*math.sin(j*2)),y+ry*factor*math.sin(j*math.pi/8)) for j in range(16)]
+def lagoon(j,scale=1):
+    a=j*2*math.pi/32;return (18*math.cos(a)*(1+.08*math.sin(a*5))*scale,9+18*math.sin(a)*(1+.08*math.cos(a*3))*scale)
+def lagoon_ratio(x,y):
+    # Exact radial distance relative to the polygon shoreline (1 = water edge).
+    dx,dy=x,y-9
+    if abs(dx)+abs(dy)<.00001:return 0
+    best=1e9
+    for j in range(32):
+        ax,ay=lagoon(j);bx,by=lagoon((j+1)%32);ay-=9;by-=9
+        ex,ey=bx-ax,by-ay;den=dx*ey-dy*ex
+        if abs(den)<1e-8:continue
+        t=(ax*ey-ay*ex)/den;u=(ax*dy-ay*dx)/den
+        if t>0 and -.0001<=u<=1.0001:best=min(best,t)
+    return 1/best
+# Art-directed, asymmetric coast: broad middle, narrow northern headland,
+# eastern coves and a southern entrance. Preserve long straight edges and sharp corners.
+outline=[(0,124),(23,115),(34,94),(70,68),(86,40),(94,17),
+(91,3),(104,-16),(96,-40),(76,-72),(47,-98),(16,-112),(-5,-116),
+(-31,-106),(-61,-89),(-83,-65),(-96,-36),(-97,-22),(-109,-6),
+(-101,22),(-91,50),(-75,79),(-56,93),(-27,106),(-21,116)]
+coast=list(reversed(outline))
+coast_count=len(coast)
 def ground(x,y):
-    # Flat paddocks stay flush; softly faceted meadow is only 2m high.
-    return 2+.4*math.sin(x*.065)*math.sin(y*.08)
+    z=2
+    for cx,cy,h,r in [(65,-76,6,25),(-79,35,5,24),(26,80,7,22),(9,-24,3.3,18)]:
+        z+=h*math.exp(-((x-cx)**2+(y-cy)**2)/(r*r))
+    weighted=z;total=1
+    for h in habitats:
+        px,py,pz=[v/100 for v in h['position']]
+        d=math.hypot(x-px,y-py)
+        if d<=22:return pz
+        if d<38:
+            weight=((38-d)/(d-22))**2
+            weighted+=pz*weight;total+=weight
+    z=weighted/total
+    for px,py,r in [(0,-51,21),(0,-105,27),(-64,-54,17)]:
+        t=max(0,min(1,(math.hypot(x-px,y-py)-r)/12));z=2+(z-2)*t*t*(3-2*t)
+    return z
 begin()
 for factor,z,c in [(1,-.8,'#efd28b'),(.953,1.15,'#f7df99'),(.9,2,'#b1c65e')]:
-    if factor==1:prev=[(x,y,-1.8) for x,y in coast];fac=1.035
+    if factor==1:prev=[(x*1.018,y*1.018,-1.8) for x,y in coast]
     else:prev=ring
     ring=[(x*factor,y*factor,z) for x,y in coast]
-    vs=prev+ring;fs=[(j,(j+1)%64,(j+1)%64+64,j+64) for j in range(64)]
+    vs=prev+ring;fs=[(j,(j+1)%coast_count,(j+1)%coast_count+coast_count,j+coast_count) for j in range(coast_count)]
     mesh('sculpted beach contour',vs,fs,c)
 coords=[Vector((x*.9,y*.9)) for x,y in coast]
 for y in range(-112,116,9):
     for x in range(-95,99,9):
         xx=x+rng.uniform(-2,2);yy=y+rng.uniform(-2,2)
-        if (xx/90)**2+(yy/113)**2<1:coords.append(Vector((xx,yy)))
-v,e,f,*_=delaunay_2d_cdt(coords,[],[list(range(64))],1,.001)
+        if (xx/90)**2+(yy/108)**2<1:coords.append(Vector((xx,yy)))
+lake_start=len(coords)
+for factor in (1,1.07,1.25):
+    coords.extend(Vector(lagoon(j,factor)) for j in range(32))
+lake_edges=[(lake_start+k*32+j,lake_start+k*32+(j+1)%32) for k in range(3) for j in range(32)]
+for h in habitats:
+    px,py,pz=[v/100 for v in h['position']]
+    first=len(coords)
+    coords.extend(Vector((px+24*math.cos(j*math.pi/8),py+24*math.sin(j*math.pi/8))) for j in range(16))
+    lake_edges.extend((first+j,first+(j+1)%16) for j in range(16))
+v,e,f,*_=delaunay_2d_cdt(coords,lake_edges,[list(range(coast_count))],1,.001)
+boundary={(round(x*.9,4),round(y*.9,4)) for x,y in coast}
 verts=[]
 for x,y in v:
-    z=ground(x,y);lake=((x/17)**2+((y-9)/18)**2)
-    if lake<1.1:z=-1
+    z=ground(x,y);ratio=lagoon_ratio(x,y)
+    if ratio<.9999:z=-.5
+    elif ratio<=1.07:z=.54+(.66)*max(0,(ratio-1)/.07)
+    elif ratio<1.25:z=1.2+(max(1.3,z)-1.2)*(ratio-1.07)/.18
+    if (round(x,4),round(y,4)) in boundary:z=2
     verts.append((x,y,z))
 cs=[]
 for face in f:
     x=sum(v[k].x for k in face)/len(face);y=sum(v[k].y for k in face)/len(face)
-    cs.append(tone('#a6be58',rng.uniform(.93,1.045)))
+    cs.append(tone('#e5d39c' if 1<=lagoon_ratio(x,y)<=1.07 else '#9db756',rng.uniform(.96,1.035)))
 mesh('triangulated meadow',verts,f,'#a6be58',cs)
+terrain_bvh=BVHTree.FromPolygons(verts,f)
+def surface(x,y):
+    hit=terrain_bvh.ray_cast(Vector((x,y,100)),Vector((0,0,-1)))[0]
+    return hit.z if hit else 2
 # A deliberately asymmetrical volcano with alternating radial ridges.
 vs=[];n=13
-for k,(r,z) in enumerate([(49,2),(32,21),(19,44),(11,58)]):
+for k,(r,z) in enumerate([(39,2),(29,19),(17,42),(10,58)]):
     for j in range(n):
         a=2*math.pi*j/n;rr=r*(1+(.13 if j%2 else -.06))
-        vs.append((rr*math.cos(a)-4,70+rr*math.sin(a)*.95,z+(rng.uniform(-2,2) if k<3 else 0)))
+        vs.append((rr*math.cos(a)-2,66+rr*math.sin(a)*.95,z+(rng.uniform(-2,2) if k<3 else 0)))
 fs=[];cs=[]
 for k in range(3):
     for j in range(n):
@@ -348,65 +460,141 @@ for k in range(3):
 fs.append(tuple(3*n+j for j in range(n)));cs.append('#c0a98b')
 mesh('volcano ridges and summit',vs,fs,'#82994b',cs)
 # Rocky waterfall gorge at the volcano's foot, split into irregular pillars.
-for x,y,z,s in [(-8,27,6,(5,4,7)),(-4,30,10,(4,4,9)),(5,29,9,(4,4,9)),(9,26,5,(4,4,6))]:ell('gorge rock',(x,y,z),s,'#96958a',7,3)
+for x,y,z,s in [(-9,28,5,(4.5,5,6)),(-6,29,10,(4,4.5,8)),(-3.8,33,13,(3.8,3.8,7)),(4.8,32,12,(4.5,4,8)),(8,29,7,(4.5,4.5,8)),(10,24,3,(3.7,4,4)),(-7,22,2,(3.5,3,3))]:
+    ell('water-worn gorge rock',(x,y,z),s,tone('#939187',rng.uniform(.92,1.07)),6,3)
+for x,y,z,size in [(-10,31,6,(3.1,4.7,5.4)),(-6,36,12,(3.6,3.2,6.8)),
+(3,36,15,(2.8,3.4,5.3)),(9,34,9,(3.1,5.1,7.6)),(-9,23,1.8,(3.2,2.7,2.8)),
+(8,21,1.6,(2.9,2.2,2.4)),(12,27,3,(2.8,3.7,3.9)),(-12,28,2.3,(2.4,3.1,3.3))]:
+    ell('uneven gorge outcrop',(x,y,z),size,tone('#939187',rng.uniform(.8,1.12)),7,3)
 # Meandering cream paths route around the mountain instead of climbing its faces.
-def road(points,width=1.5):
+road_coords=[];road_faces=[]
+def road(points,width=1.8):
     for a,b in zip(points,points[1:]):
-        d=Vector((b[0]-a[0],b[1]-a[1],0));nrm=Vector((-d.y,d.x,0)).normalized()*width/2
-        aa=Vector((a[0],a[1],ground(*a)+.06));bb=Vector((b[0],b[1],ground(*b)+.06))
-        mesh('park trail',[aa+nrm,aa-nrm,bb-nrm,bb+nrm],[(0,1,2,3)],'#e5dbac')
-road([(0,-111),(0,-90),(5,-72),(0,-55),(21,-34),(24,-7),(27,20),(37,38),(41,68)],2)
-road([(0,-90),(-26,-75),(-32,-51),(-31,-19),(-27,8),(-33,40),(-39,69)],1.8)
-for h in habitats:
-    x,y,z=[p/100 for p in h['position']]; road([(x-math.copysign(14,x),y),(math.copysign(33 if y>30 else 27,x),y)])
-road([(5,-72),(-42,-64),(-71,-63)],2)
+        va,vb=Vector(a),Vector(b);steps=max(1,math.ceil((vb-va).length/2))
+        n=Vector((-(vb-va).y,(vb-va).x)).normalized()*width/2
+        for k in range(steps):
+            aa=va.lerp(vb,k/steps);bb=va.lerp(vb,(k+1)/steps)
+            base=len(road_coords);road_coords.extend([aa+n,aa-n,bb-n,bb+n]);road_faces.append(tuple(range(base,base+4)))
+# A single entrance spine branches to the visitor centre, paddock gates and helipad.
+road([(0,-99),(0,-78),(-6.6,-67),(-6.6,-60)],2.3)
+road([(0,-78),(28,-73),(46,-67),(49,-64)],2)
+road([(28,-73),(25,-61),(25,-25),(31,-7),(54,2)],2)
+road([(0,-78),(-27,-75),(-43,-66),(-64,-63)],2)
+road([(-27,-75),(-29,-43),(-29,-20),(-40,-20),(-60,-25)],2)
+road([(-29,-20),(-30,9),(-32,22),(-43,23),(-57,27)],2)
+# Split paths wherever a terrain triangle changes plane, so rising ground
+# cannot cut through the road surface. The union has no coplanar overlaps.
+terrain_offset=len(road_coords)
+road_coords.extend(Vector((x,y)) for x,y,z in verts)
+terrain_edges=set()
+for face in f:
+    for a,b in zip(face,face[1:]+face[:1]):terrain_edges.add(tuple(sorted((a+terrain_offset,b+terrain_offset))))
+rv,_,rf,_,_,origin_faces=delaunay_2d_cdt(road_coords,list(terrain_edges),road_faces,0,.0001)
+union_faces=[face for face,ids in zip(rf,origin_faces) if ids]
+mesh('connected path network',[(p.x,p.y,surface(p.x,p.y)+.14) for p in rv],union_faces,'#e5dbac')
+# The sandy bank belongs to the terrain itself; there is no raised overlay rim.
 finish('SM_Island')
 begin()
-for factor,z,c in [(1.13,-2.5,'#459fbf'),(1.08,-2,'#55b4cb'),(1.035,-1.5,'#7dd1d5')]:slab('shallow water band',[(x*factor,y*factor) for x,y in coast],z,.2,c)
-poly=[(17*math.cos(j*2*math.pi/25)*(1+.05*math.sin(j*3)),9+18*math.sin(j*2*math.pi/25)) for j in range(25)]
-slab('turquoise lagoon',poly,.6,.1,'#45adca')
-for offset,c in [(0,'#79d2df'),(1,'#a6e5e7')]:
-    mesh('falling water ribbon',[(-2+offset,28,17),(2+offset*.5,28,17),(3-offset*.4,23,.8),(-3+offset,23,.8)],[(0,1,2,3)],c)
-for j in range(8):ell('waterfall foam',(-3+j*.85,22,.8),(.8,1.3,.2),'#b5e7e2',7,3)
+for x,y,rx,ry in islets:
+    outline=islet_shape(x,y,rx,ry)
+    n=len(outline)
+    lower=[(x+(px-x)*1.045,y+(py-y)*1.045,-1.8) for px,py in outline]
+    upper=[(px,py,.7) for px,py in outline]
+    mesh('islet beach bank',lower+upper,[(j,(j+1)%n,(j+1)%n+n,j+n) for j in range(n)],'#e9d192')
+    mesh('unbroken sandy islet',upper,[tuple(range(n))],'#f1dca0')
+    # A broad grass crown sits inside the rounded beach.
+    body_y=y
+    outer=[(x+rx*.76*math.cos(j*math.pi/7),body_y+ry*.57*math.sin(j*math.pi/7),.73) for j in range(14)]
+    inner=[(x+rx*.59*math.cos(j*math.pi/7),body_y+ry*.43*math.sin(j*math.pi/7),2.7) for j in range(14)]
+    mesh('low islet grassy rise',outer+inner,[(j,(j+1)%14,(j+1)%14+14,j+14) for j in range(14)],'#99b35b')
+    mesh('islet grass crown',inner,[tuple(range(14))],'#91aa55')
+    ell('islet rock',(x+rx*.25,body_y+ry*.12,2.9),(rx*.14,ry*.13,1.8),'#a09c87',7,3)
+finish('SM_Islets')
+begin()
+for factor,z,c in [(1.23,-2.8,'#429fc1'),(1.15,-2.76,'#50b3cc'),(1.075,-2.72,'#75d0d9')]:slab('shallow water band',[(x*factor,y*factor) for x,y in coast],z,.015,c)
+poly=[lagoon(j) for j in range(32)]
+slab('turquoise lagoon',poly,.52,.1,'#48adc4')
+for x,y,rx,ry in islets:
+    for factor,z,c in [(1.48,-2.7,'#50b3cc'),(1.23,-2.65,'#75d0d9')]:
+        slab('islet shallow shelf',islet_shape(x,y,rx,ry,factor),z,.02,c)
+# Inlaid shallow-water halo around the offshore boulder.
+for radius,z,c in [(14,-2.64,'#429fbd'),(11,-2.60,'#58b6c9'),(8,-2.56,'#78cbd2')]:
+    slab('boulder shallows',[(96+radius*math.cos(j*2*math.pi/9)*(1+.07*math.sin(j*2)),-101+radius*.85*math.sin(j*2*math.pi/9)) for j in range(9)],z,.02,c)
+# Broad, folded cascade with a bright lip, multiple chutes, and a foamy plunge pool.
+for a,b,c in [(-2.6,-.9,'#86d5e0'),(-.9,1,'#b5e9ec'),(1,2.9,'#68c9dc')]:
+    vs=[(a,32,17),(b,32,17),(b*.85,29,15),(a*.85,29,15),
+        (a*1.1,27,7),(b*1.1,27,7),(b*1.6,23,.9),(a*1.6,23,.9)]
+    mesh('folded waterfall chute',vs,[(0,1,2,3),(3,2,5,4),(4,5,6,7)],c)
+for j in range(12):
+    a=j*2*math.pi/12
+    ell('plunge pool foam',(4*math.cos(a),22+1.7*math.sin(a),.82),(.95,1.2,.22),'#b4e7e4',7,3)
 finish('SM_Water')
 
 # Assemble the review scene from the same independent assets used by Unreal.
-instance('SM_Island');instance('SM_Water')
-instance('SM_VisitorCentre',(0,-56,2));instance('SM_Gate',(0,-110,2));instance('SM_Helipad',(-71,-63,2));instance('SM_Dock',(-12,-128,-1))
+instance('SM_Island');instance('SM_Water');instance('SM_Islets');instance('SM_Rock',(96,-101,-1.5),15,4.2)
+instance('SM_VisitorCentre',(0,-51,2),0,1.65);instance('SM_Gate',(0,-105,2),0,1.8);instance('SM_Helipad',(-64,-54,2),0,1.5);instance('SM_Dock',(-13.5,-125,-1),0,1.15)
 for h in habitats:
-    p=[v/100 for v in h['position']];instance('SM_Enclosure',p)
-    instance('SM_'+h['species'],p,-25,1.75)
-# Sparse groves frame the landmarks; trees never intersect fences or main roads.
+    p=[v/100 for v in h['position']];instance('SM_Enclosure',p,0,1.4)
+    instance('SM_'+h['species'],p,155,2.7)
+# Composed trees frame each focal point. Large crowns are spaced like the reference.
+forest=[(78,50),(85,22),(83,-4),(72,-16),(82,-38),(65,-73),(66,-77),
+(39,-89),(20,-88),(23,-105),(-23,-102),(-37,-93),(-55,-84),(-73,-78),
+(-81,-37),(-88,-14),(-84,31),(-67,44),(-55,68),(-36,84),(34,85),
+(31,40),(26,11),(27,-16),(25,-57),(19,-69),(-27,-37),(-27,-11),(-27,29),
+(65,55),(-44,-76),(62,-85)]
 trees=0
-for i in range(330):
-    x=rng.uniform(-94,94);y=rng.uniform(-114,116)
-    if (x/94)**2+(y/115)**2>.9 or math.hypot(x+4,y-70)<44 or math.hypot(x,y-9)<23:continue
-    if any(math.hypot(x-h['position'][0]/100,y-h['position'][1]/100)<20 for h in habitats):continue
-    if abs(x)<20 and y<0:continue
-    if -84<x<-55 and -78<y<-48:continue
-    if any(abs(x-s)<5 for s in (-31,27,33,41)):continue
-    instance('SM_Palm' if i%5==0 else 'SM_Tree',(x,y,ground(x,y)),rng.uniform(0,360),rng.uniform(.9,1.5));trees+=1
-# Tiny rocky offshore islet.
-instance('SM_Rock',(75,75,-.7),0,5);instance('SM_Tree',(75,75,5),25,1.1)
+for i,(x,y) in enumerate(forest):
+    if any(abs(x-h['position'][0]/100)<25 and abs(y-h['position'][1]/100)<25 for h in habitats):continue
+    if i in (3,8,10,15,20,27):name='SM_Palm';scale=rng.uniform(1.6,2.1)
+    elif i%5==0:name='SM_TreeBroad';scale=rng.uniform(1.8,2.35)
+    elif i%3==0:name='SM_Tree';scale=rng.uniform(.85,1.25)
+    else:name='SM_TreeCrooked';scale=rng.uniform(1.45,2.15)
+    instance(name,(x,y,surface(x,y)),rng.uniform(0,360),scale);trees+=1
+for x,y,rx,ry in islets:
+    instance('SM_Palm' if rx<9 else 'SM_Tree',(x-rx*.2,y-ry*.15,2.5),25,1.7);trees+=1
 # Ocean is a separate scene object (Unreal supplies its infinite ocean).
 begin();box('Ocean',(0,0,-3.8),(2000,2000,1),'#3595bd');parts.clear()
 # Lighting/camera for a real isometric art review.
 def aim(o,target):o.rotation_euler=(Vector(target)-o.location).to_track_quat('-Z','Y').to_euler()
-camd=bpy.data.cameras.new('Isometric review');cam=bpy.data.objects.new('Isometric review',camd);scene.collection.objects.link(cam);cam.location=(25,-280,240);aim(cam,(0,0,0));camd.type='ORTHO';camd.ortho_scale=290;scene.camera=cam
-ld=bpy.data.lights.new('Large softbox sun','AREA');ld.energy=1600000;ld.shape='DISK';ld.size=140
-lo=bpy.data.objects.new('Large softbox sun',ld);scene.collection.objects.link(lo);lo.location=(-100,-130,230);aim(lo,(0,0,0))
-sun=bpy.data.lights.new('Warm key','SUN');sun.energy=2;sun.angle=.1;so=bpy.data.objects.new('Warm key',sun);scene.collection.objects.link(so);so.rotation_euler=(.4,-.5,-.4)
+camd=bpy.data.cameras.new('Isometric review');cam=bpy.data.objects.new('Isometric review',camd);scene.collection.objects.link(cam);cam.location=(12,-280,235);aim(cam,(0,0,0));camd.type='ORTHO';camd.ortho_scale=285;scene.camera=cam
+ld=bpy.data.lights.new('Large softbox sun','AREA');ld.energy=500000;ld.shape='DISK';ld.size=140
+lo=bpy.data.objects.new('Large softbox sun',ld);scene.collection.objects.link(lo);lo.location=(100,-130,230);aim(lo,(0,0,0))
+sun=bpy.data.lights.new('Warm key','SUN');sun.energy=2;sun.angle=.1;so=bpy.data.objects.new('Warm key',sun);scene.collection.objects.link(so);so.rotation_euler=(.4,.5,.4)
+# Match the handedness of the native Unreal camera in side-by-side reviews.
+tree=bpy.data.node_groups.new('Park • Reference preview','CompositorNodeTree')
+tree.interface.new_socket(name='Image',in_out='OUTPUT',socket_type='NodeSocketColor')
+rl=tree.nodes.new('CompositorNodeRLayers');rl.scene=scene
+flip=tree.nodes.new('CompositorNodeFlip');flip.inputs['Flip X'].default_value=True
+out=tree.nodes.new('NodeGroupOutput')
+tree.links.new(rl.outputs['Image'],flip.inputs['Image']);tree.links.new(flip.outputs['Image'],out.inputs['Image'])
+scene.compositing_node_group=tree
 # Export each source collection, preserving edited components in the blend file.
 report=[]
 for name,col in assets.items():
     scene.collection.children.link(col)
-    bpy.ops.object.select_all(action='DESELECT')
-    for o in col.objects:o.select_set(True)
-    bpy.context.view_layer.objects.active=next(iter(col.objects))
-    bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},bake_anim=False,axis_forward='-Y',axis_up='Z',apply_unit_scale=True,mesh_smooth_type='FACE',colors_type='SRGB',use_triangles=True)
+    # Bake one export mesh with explicit handedness conversion. Unreal's FBX
+    # importer flips Y; pre-reflection preserves layout coordinates in centimetres.
+    deps=bpy.context.evaluated_depsgraph_get(); vs=[]; fs=[]; corner_colors=[]
+    for o in col.objects:
+        ev=o.evaluated_get(deps); m=ev.to_mesh()
+        base=len(vs); transform=o.matrix_world
+        for vertex in m.vertices:
+            v=transform @ vertex.co;vs.append((v.x,-v.y,v.z))
+        colors=m.color_attributes.get('Color')
+        for face in m.polygons:
+            loops=list(reversed(face.loop_indices))
+            fs.append(tuple(base+m.loops[k].vertex_index for k in loops))
+            corner_colors.extend([tuple(colors.data[k].color) if colors else (1,1,1,1) for k in loops])
+        ev.to_mesh_clear()
+    export=mesh(name+' • FBX',vs,fs,WHITE)
+    attr=export.data.color_attributes.get('Color')
+    for i,c in enumerate(corner_colors):attr.data[i].color=c
+    bpy.ops.object.select_all(action='DESELECT');export.select_set(True);bpy.context.view_layer.objects.active=export
+    bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},bake_anim=False,axis_forward='-Y',axis_up='Z',apply_unit_scale=True,mesh_smooth_type='FACE',colors_type='LINEAR',use_triangles=True)
+    bpy.data.objects.remove(export,do_unlink=True);parts.clear()
     report.append({'name':name,'objects':len(col.objects),'polygons':sum(len(o.data.polygons) for o in col.objects)})
     scene.collection.children.unlink(col)
-(OUT/'park-assets.json').write_text(json.dumps({'version':1,'units':'metres','treeCount':trees+1,'assets':report,'placements':placements},indent=2)+'\n')
+(OUT/'park-assets.json').write_text(json.dumps({'version':1,'units':'metres','treeCount':trees,'assets':report,'placements':placements},indent=2)+'\n')
 scene.render.filepath=str(ROOT/'assets/blender/park-review.png')
-bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'assets/blender/park.blend'))
-result={'blend':bpy.data.filepath,'assets':report,'trees':trees+1,'placements':len(placements)}
+bpy.data.libraries.write(str(ROOT/'assets/blender/park.blend'),{scene,*assets.values()},fake_user=True)
+result={'blend':bpy.data.filepath,'assets':report,'trees':trees,'placements':len(placements)}

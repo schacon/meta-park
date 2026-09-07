@@ -1,1 +1,20 @@
-{"name":"unreal-mdx-slides","version":"0.1.0","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","test":"node --test","unreal:build":"node scripts/unreal.mjs build","unreal:prepare":"node scripts/unreal.mjs prepare","unreal:play":"node scripts/unreal.mjs play","unreal:package":"node scripts/unreal.mjs package"},"dependencies":{"@mdx-js/esbuild":"^3.1.1","esbuild":"^0.25.0","react":"^19.0.0"}}
+{
+  "name": "unreal-mdx-slides",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test",
+    "unreal:build": "node scripts/unreal.mjs build",
+    "unreal:prepare": "node scripts/unreal.mjs prepare",
+    "unreal:play": "node scripts/unreal.mjs play",
+    "unreal:package": "node scripts/unreal.mjs package",
+    "unreal:import-assets": "node scripts/unreal.mjs import-assets"
+  },
+  "dependencies": {
+    "@mdx-js/esbuild": "^3.1.1",
+    "esbuild": "^0.25.0",
+    "react": "^19.0.0"
+  }
+}

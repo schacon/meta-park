@@ -12,3 +12,7 @@ unreal/.vs/
 
 unreal/Build/*/FileOpenOrder/
 unreal/Build/*/*.PackageVersionCounter
+
+__pycache__/
+*.blend1
+assets/exports/import-report.json
