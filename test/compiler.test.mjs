@@ -8,6 +8,7 @@ const deck=(...slides)=>h('deck',{title:'Test'},...slides);
 test('example compiles eight slides and reusable animated MDX components',async()=>{
  const out=await compileDeck('examples/git-meta/deck.mdx','examples/git-meta/layout.json');
  assert.equal(out.slides.length,8);
+ assert.equal(out.durationSeconds,1200);
  assert.equal(out.slides[0].models.length,3);
  assert.equal(out.slides[0].models[0].animation.kind,'spin');
  assert.match(out.slides[3].blocks.find(b=>b.kind==='pre').text,/git meta set commit:/);
@@ -27,6 +28,8 @@ test('rejects duplicates, stale overrides, invalid geometry and invalid animatio
  assert.throws(()=>makeManifest(deck(slide()),{slides:{typo:{}}}),/unknown slide/);
  assert.throws(()=>makeManifest(deck(slide()),{slides:{one:{position:[0,NaN,0]}}}),/finite/);
  assert.throws(()=>makeManifest(deck(slide()),{transition:0}),/positive/);
+ assert.throws(()=>makeManifest(deck(slide()),{durationMinutes:0}),/positive/);
+ assert.equal(makeManifest(deck(slide()),{durationMinutes:7.5}).durationSeconds,450);
  assert.throws(()=>makeManifest(deck(slide('one',[h('animate',{kind:'unknown'},h('model'))]))),/animation/);
 });
 test('rejects unsupported DOM rather than silently dropping authored content',()=>{

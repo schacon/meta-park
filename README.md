@@ -14,7 +14,7 @@ npm run build             # MDX → unreal/Content/Slides/deck.json
 npm test
 npm run unreal:build      # Compile the native editor module
 npm run unreal:prepare    # Create the entry map (first run only)
-npm run unreal:play       # Start at slide one
+npm run unreal:play       # Open the island overview
 ```
 
 To produce a standalone game:
@@ -24,7 +24,25 @@ npm run build
 npm run unreal:package    # Build, cook and archive into dist/
 ```
 
-Run `unreal:build` and `unreal:prepare` before the first package. The prepare step also creates the native material used by the retro landscape. Packaging targets the host platform. The packaged application loads the embedded deck and starts on slide one. No sibling repository, Node installation or editor is needed to run the packaged game.
+Run `unreal:build` and `unreal:prepare` before the first package. The prepare step also creates the native material used by the retro landscape. Packaging targets the host platform. The packaged application loads the embedded deck and opens on the island overview. No sibling repository, Node installation or editor is needed to run the packaged game.
+
+## Park workstation
+
+The application opens on the island overview with every slide retracted. Click
+**Next slide** (or press Right) to fly to the first habitat. Displays unfold as
+the camera approaches and retract as it leaves. **O** returns to the map.
+
+The sidebar shows the current slide and total, live scene counts, deployed
+displays, and a countdown. `durationMinutes` in the layout sets the timer (20 by
+default). It starts when you begin the tour; **P** or **Pause timer** pauses it.
+The clock keeps running during an overview visit, unless paused.
+
+The Mr. DNA–inspired sidebar mascot is a native 3D helix character, rendered by an
+isolated scene-capture camera into a Slate image and continuously rotated.
+The scene uses faceted trees, a volcano, lagoon and waterfall, white paddock
+fences, entrance gate, visitor buildings, helipad and dock. Each habitat has one
+cartoon dinosaur. The overview uses an orthographic camera to match the supplied
+island-diorama mockup. The interface adds a workstation frame and subtle scanlines.
 
 ## Controls
 
@@ -38,6 +56,7 @@ Run `unreal:build` and `unreal:prepare` before the first package. The prepare st
 | Mouse + W/A/S/D | Look and move in free flight |
 | Q / E, Shift | Descend / ascend, move faster |
 | N | Show current speaker notes for 20 seconds |
+| P | Pause or resume the countdown |
 
 ## Author slides
 

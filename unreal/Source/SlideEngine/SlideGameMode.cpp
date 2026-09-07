@@ -1,10 +1,13 @@
 #include "SlideGameMode.h"
 #include "IslandScene.h"
+#include "ParkCamera.h"
 #include "Engine/SkyLight.h"
 #include "Engine/PostProcessVolume.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Camera/CameraActor.h"
+#include "Components/SceneComponent.h"
+#include "Engine/GameViewportClient.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -56,7 +59,7 @@ void ASlideGameMode::BeginPlay() {
   UE_LOG(LogTemp,Error,TEXT("Missing or invalid Slides/deck.json. Run npm run build."));
   if(GEngine) GEngine->AddOnScreenDebugMessage(-1,120,FColor::Red,TEXT("Missing deck. Run npm run build, then restart.")); return;
  }
- Camera=GetWorld()->SpawnActor<ACameraActor>();
+ Camera=GetWorld()->SpawnActor<AParkCamera>();
  Camera->GetCameraComponent()->SetFieldOfView(65);
  Camera->GetCameraComponent()->bConstrainAspectRatio=false;
  auto* PC=GetWorld()->GetFirstPlayerController();
@@ -64,8 +67,8 @@ void ASlideGameMode::BeginPlay() {
  FInputModeGameOnly InputMode; PC->SetInputMode(InputMode);
  auto* Light=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,1000),FRotator(-45,-30,0));
  auto* Sun=Cast<UDirectionalLightComponent>(Light->GetLightComponent());
- Sun->SetMobility(EComponentMobility::Movable); Sun->SetIntensity(3.5f); Sun->SetLightColor(FLinearColor(1,.91,.75));
- Sun->LightSourceAngle=2.5f; Sun->SetDynamicShadowDistanceMovableLight(50000);
+ Sun->SetMobility(EComponentMobility::Movable); Sun->SetIntensity(2.2f); Sun->SetLightColor(FLinearColor(1,.91,.75));
+ Sun->LightSourceAngle=5.f; Sun->SetDynamicShadowDistanceMovableLight(50000);
  auto* Fill=GetWorld()->SpawnActor<ASkyLight>(); Fill->GetLightComponent()->SetMobility(EComponentMobility::Movable);
  Fill->GetLightComponent()->SetIntensity(.65f); Fill->GetLightComponent()->SetRealTimeCaptureEnabled(true);
  auto* Post=GetWorld()->SpawnActor<APostProcessVolume>(); Post->bUnbound=true;
@@ -73,7 +76,12 @@ void ASlideGameMode::BeginPlay() {
  Post->Settings.bOverride_AmbientOcclusionRadius=true; Post->Settings.AmbientOcclusionRadius=180;
  Post->Settings.bOverride_BloomIntensity=true; Post->Settings.BloomIntensity=.12;
  FString Scene; Deck->TryGetStringField(TEXT("scene"),Scene); bIsland=Scene==TEXT("isla-nublar");
- if(bIsland) IslandScene::Build(GetWorld(),Deck->GetArrayField(TEXT("habitats")),Deck->GetIntegerField(TEXT("seed")));
+ if(bIsland) {
+  RouteSeed=Deck->GetIntegerField(TEXT("seed")); HabitatCount=Deck->GetArrayField(TEXT("habitats")).Num();
+  const auto Stats=IslandScene::Build(GetWorld(),Deck->GetArrayField(TEXT("habitats")),RouteSeed);
+  TreeCount=Stats.Trees; DinoCount=Stats.Dinosaurs;
+ }
+ double Duration; if(Deck->TryGetNumberField(TEXT("durationSeconds"),Duration)) TimerDuration=Duration;
  if(!bIsland) Block(GetWorld(),FVector(0,0,-1100),FVector(2000,2000,1),FColor::FromHex(TEXT("#488b67")));
  // Enclosing unlit sphere gives the flat cyan horizon of the workstation reference.
  auto* Sky=GetWorld()->SpawnActor<AStaticMeshActor>();
@@ -97,14 +105,19 @@ void ASlideGameMode::BeginPlay() {
   FVector Current=Origin-FVector(0,0,570); FVector Direction=Current-Previous;
   Block(GetWorld(),(Previous+Current)*.5,FVector(Direction.Size()/100,2.5,.3),FColor::FromHex(TEXT("#b87676")),Direction.Rotation());
  }
-  if(bIsland) for(float Side:{-730.f,730.f}) Block(GetWorld(),Transform.TransformPosition(FVector(-30,Side,-1000)),FVector(.4,.4,11),FColor(76,83,64),Facing);
-  Block(GetWorld(),Transform.TransformPosition(FVector(-18,0,0)),FVector(.28,14.65,9.25),FColor(57,68,59),Facing);
+  auto* Frame=Block(GetWorld(),Transform.TransformPosition(FVector(-18,0,0)),FVector(.28,14.65,9.25),FColor(57,68,59),Facing);
   FString HabitatLabel;
   FString HabitatID; S->TryGetStringField(TEXT("habitat"),HabitatID);
   if(bIsland) for(const auto& H:Deck->GetArrayField(TEXT("habitats"))) if(H->AsObject()->GetStringField(TEXT("id"))==HabitatID) HabitatLabel=H->AsObject()->GetStringField(TEXT("label"));
+  auto* SlideRoot=GetWorld()->SpawnActor<AActor>();
+  auto* RootComponent=NewObject<USceneComponent>(SlideRoot); SlideRoot->SetRootComponent(RootComponent); SlideRoot->AddInstanceComponent(RootComponent); RootComponent->RegisterComponent();
+  SlideRoot->SetActorLocationAndRotation(Origin,Facing);
+  Panels.Add({SlideRoot,Origin,0});
   auto* Panel=GetWorld()->SpawnActor<AActor>(Origin,Facing);
   auto* Widget=NewObject<UWidgetComponent>(Panel); Panel->SetRootComponent(Widget); Panel->AddInstanceComponent(Widget);
   Widget->SetWidgetSpace(EWidgetSpace::World); Widget->SetDrawSize(FVector2D(1440,900)); Widget->SetTwoSided(true); Widget->SetPivot(FVector2D(.5,.5)); Widget->RegisterComponent(); Widget->SetWorldLocationAndRotation(Origin,Facing);
+  Panel->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
+  Frame->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
   TSharedRef<SVerticalBox> Body=SNew(SVerticalBox);
   Body->AddSlot().AutoHeight().Padding(0,0,0,22)[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("fsn: a 3D presentation navigator                          %02d / %02d"),I+1,Slides.Num()))).Font(FCoreStyle::GetDefaultFontStyle("Mono",18)).ColorAndOpacity(FLinearColor(.002,.002,.002))];
   Body->AddSlot().AutoHeight().Padding(0,0,0,26)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.48,.32,.34)).Padding(10)[SNew(STextBlock).Text(FText::FromString((bIsland ? TEXT("/isla-nublar/")+HabitatID+TEXT(" / ") : TEXT("/git-meta/"))+S->GetStringField(TEXT("id"))+TEXT(".mdx"))).Font(FCoreStyle::GetDefaultFontStyle("Mono",21)).ColorAndOpacity(FLinearColor(.03,.03,.03))]];
@@ -121,7 +134,7 @@ void ASlideGameMode::BeginPlay() {
   const float Distance=S->GetNumberField(TEXT("cameraDistance"));
   const float CameraRise=bIsland ? 450.f : 0.f;
   Views.Add({Transform.TransformPosition(FVector(Distance,0,CameraRise)),FRotator(-FMath::RadiansToDegrees(FMath::Atan2(CameraRise,Distance)),Facing.Yaw+180,0),float(S->GetNumberField(TEXT("transition")))});
-  Notes.Add(S->GetStringField(TEXT("notes")));
+  Notes.Add(S->GetStringField(TEXT("notes"))); Titles.Add(S->GetStringField(TEXT("title"))); HabitatNames.Add(HabitatLabel);
   for(auto& MV:S->GetArrayField(TEXT("models"))) {
    auto M=MV->AsObject(); FVector P=Transform.TransformPosition(Vec(M,TEXT("position"))); FRotator R=(Facing.Quaternion()*Rot(Vec(M,TEXT("rotation"))).Quaternion()).Rotator();
    AActor* Model=nullptr; const FString Asset=M->GetStringField(TEXT("actor"));
@@ -131,44 +144,61 @@ void ASlideGameMode::BeginPlay() {
     if(Mesh) { auto* A=GetWorld()->SpawnActor<AStaticMeshActor>(P,R); A->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable); A->GetStaticMeshComponent()->SetStaticMesh(Mesh); if(M->GetStringField(TEXT("mesh")).StartsWith(TEXT("/Engine/BasicShapes/"))) Tint(A->GetStaticMeshComponent(),FColor::FromHex(TEXT("#9864bc"))); Model=A; }
    }
    if(!Model) { UE_LOG(LogTemp,Error,TEXT("Could not load model on slide %s"),*S->GetStringField(TEXT("id"))); continue; }
-   Model->SetActorScale3D(Vec(M,TEXT("scale")));
+   Model->SetActorScale3D(Vec(M,TEXT("scale"))); Model->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
    const TSharedPtr<FJsonObject>* Animation;
-   if(M->TryGetObjectField(TEXT("animation"),Animation)) Motions.Add({Model,P,R,(*Animation)->GetStringField(TEXT("kind")),float((*Animation)->GetNumberField(TEXT("speed"))),float((*Animation)->GetNumberField(TEXT("amplitude")))});
+   if(M->TryGetObjectField(TEXT("animation"),Animation)) Motions.Add({Model,Model->GetRootComponent()->GetRelativeLocation(),Model->GetRootComponent()->GetRelativeRotation(),(*Animation)->GetStringField(TEXT("kind")),float((*Animation)->GetNumberField(TEXT("speed"))),float((*Animation)->GetNumberField(TEXT("amplitude")))});
   }
+  RootComponent->SetVisibility(false,true);
  }
- if(!Views.IsEmpty()) GoTo(0,true);
+ if(!Views.IsEmpty()) { GoTo(0,true); Overview(); bTourStarted=false; }
+ CreateDesktopHUD();
  UE_LOG(LogTemp,Display,TEXT("SlideEngine ready: %d slides, %d animated models; starting at slide 1"),Views.Num(),Motions.Num());
 }
 void ASlideGameMode::GoTo(int32 Next,bool Instant) {
  if(Views.IsEmpty()) return;
- Index=FMath::Clamp(Next,0,Views.Num()-1); bFlying=false; Travel=Instant?Views[Index].Duration:0;
+ Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Perspective);
+ Index=FMath::Clamp(Next,0,Views.Num()-1); bFlying=false; bOverview=false; bTourStarted=true; SetMouseMode(false); Travel=Instant?Views[Index].Duration:0;
  FromPosition=Camera->GetActorLocation(); FromRotation=Camera->GetActorQuat();
  FlightLift=bIsland&&!Instant ? FMath::Clamp(FVector::Distance(FromPosition,Views[Index].Position)*.45f,3000.f,7200.f) : 0;
  if(Instant) Camera->SetActorLocationAndRotation(Views[Index].Position,Views[Index].Rotation);
 }
 void ASlideGameMode::Overview() {
- bFlying=true;
+ bFlying=false; bOverview=true; SetMouseMode(false);
+ if(bIsland) { Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Orthographic); Camera->GetCameraComponent()->SetOrthoWidth(25000); }
  FVector Center=FVector::ZeroVector; for(const auto& V:Views) Center+=V.Position; Center/=Views.Num();
- const FVector Eye=bIsland?FVector(19000,-33000,43000):Center+FVector(9000,-6000,10000);
- if(bIsland) Center=FVector(0,0,0);
+ FVector Eye=bIsland?FVector(3000,-28000,23000):Center+FVector(9000,-6000,10000);
+ if(bIsland) { Center=FVector(2500,250,0); Eye+=Center; }
  Camera->SetActorLocationAndRotation(Eye,(Center-Eye).Rotation());
 }
 void ASlideGameMode::Tick(float Delta) {
  Super::Tick(Delta); if(!Camera || Views.IsEmpty()) return; Elapsed+=Delta;
+ if(bTourStarted&&!bTimerPaused) TimerElapsed+=Delta;
+ if(MascotActor) MascotActor->SetActorRotation(FRotator(0,Elapsed*32,0));
+ for(auto& Panel:Panels) if(Panel.Root.IsValid()) {
+  const float D=FVector::Distance(Camera->GetActorLocation(),Panel.RaisedPosition);
+  const float Target=bOverview?0.f:1-FMath::SmoothStep(2500.f,3900.f,D);
+  Panel.Reveal=FMath::FInterpTo(Panel.Reveal,Target,Delta,4.f);
+  Panel.Root->SetActorLocation(Panel.RaisedPosition-FVector(0,0,(1-Panel.Reveal)*1550));
+  Panel.Root->SetActorScale3D(FVector(1,1,FMath::Max(.01f,Panel.Reveal)));
+  Panel.Root->GetRootComponent()->SetVisibility(Panel.Reveal>.015f,true);
+ }
  auto* PC=GetWorld()->GetFirstPlayerController();
- if(PC->WasInputKeyJustPressed(EKeys::Right)||PC->WasInputKeyJustPressed(EKeys::SpaceBar)||PC->WasInputKeyJustPressed(EKeys::PageDown)) GoTo(Index+1);
+ if(!FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"))) {
+ if(PC->WasInputKeyJustPressed(EKeys::Right)||PC->WasInputKeyJustPressed(EKeys::SpaceBar)||PC->WasInputKeyJustPressed(EKeys::PageDown)) GoTo(bOverview?Index:Index+1);
  if(PC->WasInputKeyJustPressed(EKeys::Left)||PC->WasInputKeyJustPressed(EKeys::PageUp)) GoTo(Index-1);
  if(PC->WasInputKeyJustPressed(EKeys::Home)) GoTo(0);
  if(PC->WasInputKeyJustPressed(EKeys::O)) {
-  Overview();
+  if(bOverview) GoTo(Index); else Overview();
  }
- if(PC->WasInputKeyJustPressed(EKeys::F)) { bFlying=!bFlying; if(!bFlying) GoTo(Index); }
+ if(PC->WasInputKeyJustPressed(EKeys::P)) bTimerPaused=!bTimerPaused;
+ if(PC->WasInputKeyJustPressed(EKeys::F)) { bFlying=!bFlying; bOverview=false; Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Perspective); SetMouseMode(bFlying); if(!bFlying) GoTo(Index); }
  if(PC->WasInputKeyJustPressed(EKeys::N)&&GEngine) GEngine->AddOnScreenDebugMessage(42,20,FColor::Cyan,Notes[Index].IsEmpty()?TEXT("No speaker notes for this slide."):Notes[Index]);
+ }
  if(bFlying) {
   float X,Y; PC->GetInputMouseDelta(X,Y); auto R=Camera->GetActorRotation(); R.Yaw+=X*.15; R.Pitch=FMath::Clamp(R.Pitch-Y*.15,-85.f,85.f); Camera->SetActorRotation(R);
   FVector Move=Camera->GetActorForwardVector()*float(PC->IsInputKeyDown(EKeys::W)-PC->IsInputKeyDown(EKeys::S))+Camera->GetActorRightVector()*float(PC->IsInputKeyDown(EKeys::D)-PC->IsInputKeyDown(EKeys::A))+FVector::UpVector*float(PC->IsInputKeyDown(EKeys::E)-PC->IsInputKeyDown(EKeys::Q));
   Camera->AddActorWorldOffset(Move.GetClampedToMaxSize(1)*Delta*(PC->IsInputKeyDown(EKeys::LeftShift)?3000:1000));
- } else {
+ } else if(!bOverview) {
   Travel+=Delta; float T=FMath::Clamp(Travel/Views[Index].Duration,0.f,1.f); T=T*T*(3-2*T);
   const FVector Base=FMath::Lerp(FromPosition,Views[Index].Position,T);
   const FVector Position=Base+FVector(0,0,4*T*(1-T)*FlightLift);
@@ -183,23 +213,32 @@ void ASlideGameMode::Tick(float Delta) {
    const bool Raised=Position.Z>Base.Z+2000;
    UE_LOG(LogTemp,Display,TEXT("SlideSmoke: raised flight=%s lift=%.0f"),Raised?TEXT("PASS"):TEXT("FAIL"),Position.Z-Base.Z);
    if(!Raised) FPlatformMisc::RequestExitWithStatus(false,1);
-   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/island-flight.png"),false,false);
+   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/island-flight.png"),true,false);
   }
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest")) && !bTourStarted && Elapsed>2 && !bInitialCaptured) {
+  bInitialCaptured=true; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/park-overview.png"),true,false);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest")) && !bTourStarted && Elapsed>3) {
+  const bool Hidden=Panels.Num()>0 && Panels[0].Reveal<.02f;
+  UE_LOG(LogTemp,Display,TEXT("SlideSmoke: initial panels retracted=%s"),Hidden?TEXT("PASS"):TEXT("FAIL"));
+  if(!Hidden) FPlatformMisc::RequestExitWithStatus(false,1);
+  GoTo(0);
  }
  // Optional deterministic integration run used by scripts/unreal.mjs smoke.
  if(SmokeOverviewStart>=0) {
   if(Elapsed-SmokeOverviewStart>1 && Elapsed-SmokeOverviewStart<2 && !bSmokeCaptured) {
-   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/overview.png"),false,false); bSmokeCaptured=true;
+   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/overview.png"),true,false); bSmokeCaptured=true;
   }
   if(Elapsed-SmokeOverviewStart>3) { UE_LOG(LogTemp,Display,TEXT("SlideSmoke: PASS all slides and overview")); FPlatformMisc::RequestExit(false); }
  }
- else if(FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"))) {
+ else if(bTourStarted && FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"))) {
   const float StopTime=Index==0 ? Views[Index].Duration+3.f : Views[Index].Duration+1.f;
   if(Travel>=StopTime && !bSmokeCaptured) {
-   const bool AtStop=Camera->GetActorLocation().Equals(Views[Index].Position,1.f);
+   const bool AtStop=Camera->GetActorLocation().Equals(Views[Index].Position,1.f) && Panels[Index].Reveal>.95f;
    UE_LOG(LogTemp,Display,TEXT("SlideSmoke: slide=%d camera=%s"),Index+1,AtStop?TEXT("PASS"):TEXT("FAIL"));
    if(!AtStop) { FPlatformMisc::RequestExitWithStatus(false,1); return; }
-   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/FString::Printf(TEXT("Screenshots/slide-%02d.png"),Index+1),false,false);
+   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/FString::Printf(TEXT("Screenshots/slide-%02d.png"),Index+1),true,false);
    bSmokeCaptured=true;
   }
   if(bSmokeCaptured && Travel>=StopTime+1.f) {
@@ -208,7 +247,7 @@ void ASlideGameMode::Tick(float Delta) {
   }
  }
  for(auto& M:Motions) if(M.Actor.IsValid()) {
-  if(M.Kind==TEXT("spin")) M.Actor->SetActorRotation(M.Rotation+FRotator(0,Elapsed*M.Speed,0));
-  else M.Actor->SetActorLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
+  if(M.Kind==TEXT("spin")) M.Actor->SetActorRelativeRotation(M.Rotation+FRotator(0,Elapsed*M.Speed,0));
+  else M.Actor->SetActorRelativeLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
  }
 }

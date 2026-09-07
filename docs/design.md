@@ -37,3 +37,18 @@ Sunlight, soft-edged dynamic shadows, skylight, ambient occlusion, a thick panel
 frame and matte lit surfaces give the scene depth. Small faceted dinosaurs,
 fences and instanced forest canopies give every slide a physical setting.
 The content route is spatially shuffled with a seed, while the talk stays in order.
+
+
+## Supplied diorama mockup
+
+The latest user image is the current visual target: wide low-poly island,
+flat gray terminal sidebar, dark monospace lettering, green selection and status
+bars, a northern volcano, blue lagoon and waterfall, white fences, sparse faceted
+foliage, gate, visitor buildings, helipad and dock. Scene geometry is created in
+Unreal. The reference image is not used as a background texture.
+
+The required eight enclosures, presentation clock, slide counter, and rotating
+3D Mr. DNA-inspired inset remain. The overview starts with all presentation
+panels retracted, leaving the diorama unobstructed; nearby displays deploy during
+travel. The menu controls navigate the presentation rather than simulating
+unimplemented park-management screens. Counts come from the actual scene.

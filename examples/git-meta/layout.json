@@ -9,88 +9,88 @@
       "label": "Brachiosaurus lagoon",
       "species": "brachiosaurus",
       "position": [
-        -2500,
-        -8500,
-        150
+        5500,
+        2200,
+        200
       ],
-      "color": "#648c74"
+      "color": "#459cac"
     },
     {
       "id": "tyrannosaurus",
       "label": "T. rex paddock",
       "species": "tyrannosaurus",
       "position": [
-        2800,
-        5600,
-        250
+        -5500,
+        1800,
+        200
       ],
-      "color": "#af7656"
+      "color": "#e97936"
     },
     {
       "id": "triceratops",
       "label": "Triceratops meadow",
       "species": "triceratops",
       "position": [
-        -3500,
-        2800,
+        5400,
+        -3800,
         200
       ],
-      "color": "#aa9b63"
+      "color": "#d4be70"
     },
     {
       "id": "velociraptor",
       "label": "Raptor enclosure",
       "species": "velociraptor",
       "position": [
-        2200,
-        -4300,
-        150
+        -5500,
+        -3700,
+        200
       ],
-      "color": "#688a99"
+      "color": "#82a268"
     },
     {
       "id": "dilophosaurus",
       "label": "Dilophosaurus forest",
       "species": "dilophosaurus",
       "position": [
-        2400,
-        0,
-        170
+        5500,
+        7000,
+        220
       ],
-      "color": "#9a776a"
+      "color": "#b6ad5c"
     },
     {
       "id": "gallimimus",
       "label": "Gallimimus valley",
       "species": "gallimimus",
       "position": [
-        -1600,
-        9200,
-        300
+        -5300,
+        7000,
+        220
       ],
-      "color": "#b79b60"
+      "color": "#e5a450"
     },
     {
       "id": "stegosaurus",
       "label": "Stegosaurus range",
       "species": "stegosaurus",
       "position": [
-        -4200,
-        -2500,
+        4300,
+        -8400,
         200
       ],
-      "color": "#7d9372"
+      "color": "#7e9b5e"
     },
     {
       "id": "parasaurolophus",
       "label": "Parasaurolophus wetlands",
       "species": "parasaurolophus",
       "position": [
-        1200,
-        -11000,
-        120
+        -4000,
+        -8400,
+        200
       ],
-      "color": "#799ca2"
+      "color": "#729fa8"
     }
   ],
   "slides": {},

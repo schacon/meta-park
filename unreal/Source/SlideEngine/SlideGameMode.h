@@ -1,9 +1,12 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Styling/SlateBrush.h"
 #include "SlideGameMode.generated.h"
 class ACameraActor;
 class SWidget;
+class UTextureRenderTarget2D;
+class ASceneCapture2D;
 struct FSlideView { FVector Position; FRotator Rotation; float Duration; };
 struct FSlideMotion { TWeakObjectPtr<AActor> Actor; FVector Origin; FRotator Rotation; FString Kind; float Speed; float Amplitude; };
 struct FSlidePanel { TWeakObjectPtr<AActor> Root; FVector RaisedPosition; float Reveal = 0; };
@@ -17,6 +20,10 @@ public:
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 private:
  UPROPERTY() TObjectPtr<ACameraActor> Camera;
+ UPROPERTY() TObjectPtr<AActor> MascotActor;
+ UPROPERTY() TObjectPtr<ASceneCapture2D> MascotCapture;
+ UPROPERTY() TObjectPtr<UTextureRenderTarget2D> MascotTexture;
+ FSlateBrush MascotBrush;
  TArray<FSlideView> Views;
  TArray<FSlideMotion> Motions;
  TArray<FSlidePanel> Panels;
@@ -27,7 +34,7 @@ private:
  FVector FromPosition;
  FQuat FromRotation;
  bool bFlying = false, bOverview = false, bTourStarted = false, bTimerPaused = false;
- bool bIsland = false, bFlightTested = false, bSmokeCaptured = false;
+ bool bIsland = false, bFlightTested = false, bSmokeCaptured = false, bInitialCaptured = false;
  float FlightLift = 0, SmokeOverviewStart = -1;
  void Overview();
  void GoTo(int32 Next, bool Instant = false);
