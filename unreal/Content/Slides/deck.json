@@ -1,0 +1,693 @@
+{
+  "version": 1,
+  "title": "Git metadata / Beyond the commit",
+  "scene": "isla-nublar",
+  "seed": 1993,
+  "habitats": [
+    {
+      "id": "brachiosaurus",
+      "label": "Brachiosaurus lagoon",
+      "species": "brachiosaurus",
+      "position": [
+        -2500,
+        -8500,
+        150
+      ],
+      "color": "#648c74"
+    },
+    {
+      "id": "tyrannosaurus",
+      "label": "T. rex paddock",
+      "species": "tyrannosaurus",
+      "position": [
+        2800,
+        5600,
+        250
+      ],
+      "color": "#af7656"
+    },
+    {
+      "id": "triceratops",
+      "label": "Triceratops meadow",
+      "species": "triceratops",
+      "position": [
+        -3500,
+        2800,
+        200
+      ],
+      "color": "#aa9b63"
+    },
+    {
+      "id": "velociraptor",
+      "label": "Raptor enclosure",
+      "species": "velociraptor",
+      "position": [
+        2200,
+        -4300,
+        150
+      ],
+      "color": "#688a99"
+    },
+    {
+      "id": "dilophosaurus",
+      "label": "Dilophosaurus forest",
+      "species": "dilophosaurus",
+      "position": [
+        2400,
+        0,
+        170
+      ],
+      "color": "#9a776a"
+    },
+    {
+      "id": "gallimimus",
+      "label": "Gallimimus valley",
+      "species": "gallimimus",
+      "position": [
+        -1600,
+        9200,
+        300
+      ],
+      "color": "#b79b60"
+    },
+    {
+      "id": "stegosaurus",
+      "label": "Stegosaurus range",
+      "species": "stegosaurus",
+      "position": [
+        -4200,
+        -2500,
+        200
+      ],
+      "color": "#7d9372"
+    },
+    {
+      "id": "parasaurolophus",
+      "label": "Parasaurolophus wetlands",
+      "species": "parasaurolophus",
+      "position": [
+        1200,
+        -11000,
+        120
+      ],
+      "color": "#799ca2"
+    }
+  ],
+  "slides": [
+    {
+      "id": "opening",
+      "title": "Beyond the commit",
+      "accent": "#563d72",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "GIT METADATA / 01"
+        },
+        {
+          "kind": "p",
+          "text": "Code has history. Now give it context."
+        },
+        {
+          "kind": "p",
+          "text": "A proposal and Rust reference implementation for flexible, scalable metadata that travels with Git."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            0,
+            730,
+            -190
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 15,
+            "amplitude": 35
+          }
+        },
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            100,
+            730,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 30,
+            "amplitude": 35
+          }
+        },
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            200,
+            730,
+            190
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 45,
+            "amplitude": 35
+          }
+        }
+      ],
+      "notes": "Based on the sibling git-meta README. This is an overview of the proposal, not a replacement for its canonical spec.",
+      "position": [
+        2800,
+        5600,
+        1800
+      ],
+      "habitat": "tyrannosaurus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "context",
+      "title": "The context we lose",
+      "accent": "#7b303e",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "THE PROBLEM / 02"
+        },
+        {
+          "kind": "li",
+          "text": "Trust: who made and reviewed this change?"
+        },
+        {
+          "kind": "li",
+          "text": "Provenance: which prompts and transcripts produced it?"
+        },
+        {
+          "kind": "li",
+          "text": "Review, testing, licensing and binary-file hints."
+        },
+        {
+          "kind": "p",
+          "text": "Commit trailers and notes leave us with size limits, fixed fields and limited control over metadata properties."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            0,
+            730,
+            -190
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 15,
+            "amplitude": 35
+          }
+        },
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            100,
+            730,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 30,
+            "amplitude": 35
+          }
+        },
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            200,
+            730,
+            190
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 45,
+            "amplitude": 35
+          }
+        }
+      ],
+      "notes": "",
+      "position": [
+        -4200,
+        -2500,
+        1750
+      ],
+      "habitat": "stegosaurus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "targets",
+      "title": "Attach it where it belongs",
+      "accent": "#294e7e",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "THE DATA MODEL / 03"
+        },
+        {
+          "kind": "p",
+          "text": "Target + namespaced key + value."
+        },
+        {
+          "kind": "li",
+          "text": "Targets: commit, change ID, path, branch, project."
+        },
+        {
+          "kind": "li",
+          "text": "Strings for individual values."
+        },
+        {
+          "kind": "li",
+          "text": "Lists for appended entries; sets for unique members."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Sphere.Sphere",
+          "actor": "",
+          "position": [
+            0,
+            760,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            3,
+            3,
+            3
+          ],
+          "animation": null
+        }
+      ],
+      "notes": "",
+      "position": [
+        2200,
+        -4300,
+        1700
+      ],
+      "habitat": "velociraptor",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "authoring",
+      "title": "Small commands. Rich context.",
+      "accent": "#563d72",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "THE CLI / 04"
+        },
+        {
+          "kind": "pre",
+          "text": "git meta set commit:314e7f0fa7 agent:model \"claude-opus-4-6[1m]\"\ngit meta list:push branch:sc-feature-1 review:comments \"love it\"\ngit meta set:add path:src/metrics owners schacon\n"
+        },
+        {
+          "kind": "p",
+          "text": "Keys can be deeply namespaced. Read a namespace to retrieve its subkeys."
+        }
+      ],
+      "models": [],
+      "notes": "These commands come from the README examples. Refer to git-meta/spec for current CLI semantics.",
+      "position": [
+        2400,
+        0,
+        1720
+      ],
+      "habitat": "dilophosaurus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "storage",
+      "title": "Local speed. Git transport.",
+      "accent": "#7b303e",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "STORAGE & EXCHANGE / 05"
+        },
+        {
+          "kind": "p",
+          "text": "Work with tuples in a local SQLite database."
+        },
+        {
+          "kind": "p",
+          "text": "Serialize shared values into a Git tree, then commit to refs/meta/local/main."
+        },
+        {
+          "kind": "p",
+          "text": "Fetch metadata into refs/meta/remotes/main and materialize it into the local store."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Cylinder.Cylinder",
+          "actor": "",
+          "position": [
+            0,
+            760,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2.5,
+            2.5,
+            3.5
+          ],
+          "animation": {
+            "kind": "bob",
+            "speed": 1.5,
+            "amplitude": 25
+          }
+        }
+      ],
+      "notes": "",
+      "position": [
+        -1600,
+        9200,
+        1850
+      ],
+      "habitat": "gallimimus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "merging",
+      "title": "Let the tree do the work",
+      "accent": "#294e7e",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "COLLABORATION / 06"
+        },
+        {
+          "kind": "p",
+          "text": "Separate keys become separate tree entries."
+        },
+        {
+          "kind": "li",
+          "text": "Independent edits merge naturally."
+        },
+        {
+          "kind": "li",
+          "text": "The README proposes local preference for conflicting values."
+        },
+        {
+          "kind": "li",
+          "text": "Append-only list entries can combine across collaborators."
+        },
+        {
+          "kind": "li",
+          "text": "Explicit tombstones express deletion; absence does not."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            0,
+            730,
+            -190
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 15,
+            "amplitude": 35
+          }
+        },
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            100,
+            730,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 30,
+            "amplitude": 35
+          }
+        },
+        {
+          "mesh": "/Engine/BasicShapes/Cube.Cube",
+          "actor": "",
+          "position": [
+            200,
+            730,
+            190
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.1,
+            1.1,
+            1.1
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 45,
+            "amplitude": 35
+          }
+        }
+      ],
+      "notes": "The README labels spec/README.md canonical. This slide describes the README proposal rather than asserting current implementation conflict semantics.",
+      "position": [
+        -3500,
+        2800,
+        1750
+      ],
+      "habitat": "triceratops",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "scale",
+      "title": "Fetch what you need",
+      "accent": "#563d72",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "SCALE / 07"
+        },
+        {
+          "kind": "p",
+          "text": "Large transcripts should not make every clone enormous."
+        },
+        {
+          "kind": "p",
+          "text": "Blobless fetches bring down trees and commits. Pruned checkpoints keep a useful working set; older values can be fetched on demand."
+        },
+        {
+          "kind": "p",
+          "text": "The README reports about 500 MB of compressed transcript data versus less than 2 MB for its blobless example."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Cylinder.Cylinder",
+          "actor": "",
+          "position": [
+            0,
+            760,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2.5,
+            2.5,
+            3.5
+          ],
+          "animation": {
+            "kind": "bob",
+            "speed": 1.5,
+            "amplitude": 25
+          }
+        }
+      ],
+      "notes": "The size comparison is a benchmark reported by the README author, not a benchmark of this slideshow engine.",
+      "position": [
+        1200,
+        -11000,
+        1670
+      ],
+      "habitat": "parasaurolophus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    },
+    {
+      "id": "future",
+      "title": "Context that travels",
+      "accent": "#7b303e",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "WHAT COMES NEXT / 08"
+        },
+        {
+          "kind": "p",
+          "text": "Public, corporate and personal metadata can use separate destinations."
+        },
+        {
+          "kind": "p",
+          "text": "The reference implementation exercises the format. Higher-level tools handle display, automatic capture, rebasing and synchronization."
+        },
+        {
+          "kind": "p",
+          "text": "Designed for integration into GitButler, with broader interest from Jujutsu and Git."
+        }
+      ],
+      "models": [
+        {
+          "mesh": "/Engine/BasicShapes/Cone.Cone",
+          "actor": "",
+          "position": [
+            0,
+            760,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            3,
+            3,
+            3
+          ],
+          "animation": {
+            "kind": "spin",
+            "speed": 18,
+            "amplitude": 35
+          }
+        }
+      ],
+      "notes": "Source: ../git-meta/README.md, read September 7, 2026. Canonical specification: ../git-meta/spec/README.md.",
+      "position": [
+        -2500,
+        -8500,
+        1700
+      ],
+      "habitat": "brachiosaurus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 5
+    }
+  ]
+}

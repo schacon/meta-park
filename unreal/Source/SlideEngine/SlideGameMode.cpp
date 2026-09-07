@@ -1,0 +1,214 @@
+#include "SlideGameMode.h"
+#include "IslandScene.h"
+#include "Engine/SkyLight.h"
+#include "Engine/PostProcessVolume.h"
+#include "Components/SkyLightComponent.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/TextRenderComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Styling/CoreStyle.h"
+#include "InputCoreTypes.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
+#include "UnrealClient.h"
+
+namespace {
+FVector Vec(const TSharedPtr<FJsonObject>& O, const TCHAR* Key) {
+ const auto& A = O->GetArrayField(Key); return FVector(A[0]->AsNumber(), A[1]->AsNumber(), A[2]->AsNumber());
+}
+FRotator Rot(const FVector& V) { return FRotator(V.X,V.Y,V.Z); }
+void Tint(UStaticMeshComponent* Mesh, FColor Color, bool Unlit=false) {
+ if(auto* Material=LoadObject<UMaterialInterface>(nullptr,Unlit?TEXT("/Game/Models/M_Retro.M_Retro"):TEXT("/Game/Models/M_IslandLit.M_IslandLit"))) {
+  auto* Instance=UMaterialInstanceDynamic::Create(Material,Mesh);
+  Instance->SetVectorParameterValue(TEXT("Tint"),FLinearColor::FromSRGBColor(Color));
+  Mesh->SetMaterial(0,Instance);
+ }
+}
+AStaticMeshActor* Block(UWorld* World,FVector P,FVector Scale,FColor Color,FRotator R=FRotator::ZeroRotator) {
+ auto* A=World->SpawnActor<AStaticMeshActor>(P,R);
+ auto* Mesh=A->GetStaticMeshComponent(); Mesh->SetMobility(EComponentMobility::Movable);
+ Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));
+ Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); A->SetActorScale3D(Scale); Tint(Mesh,Color); return A;
+}
+}
+ASlideGameMode::ASlideGameMode() { PrimaryActorTick.bCanEverTick=true; DefaultPawnClass=nullptr; }
+void ASlideGameMode::BeginPlay() {
+ Super::BeginPlay();
+ FString Text; TSharedPtr<FJsonObject> Deck;
+ if (!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Slides/deck.json"))) ||
+     !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Deck) || !Deck.IsValid() || Deck->GetIntegerField(TEXT("version"))!=1) {
+  UE_LOG(LogTemp,Error,TEXT("Missing or invalid Slides/deck.json. Run npm run build."));
+  if(GEngine) GEngine->AddOnScreenDebugMessage(-1,120,FColor::Red,TEXT("Missing deck. Run npm run build, then restart.")); return;
+ }
+ Camera=GetWorld()->SpawnActor<ACameraActor>();
+ Camera->GetCameraComponent()->SetFieldOfView(65);
+ Camera->GetCameraComponent()->bConstrainAspectRatio=false;
+ auto* PC=GetWorld()->GetFirstPlayerController();
+ PC->SetViewTarget(Camera); PC->bShowMouseCursor=false;
+ FInputModeGameOnly InputMode; PC->SetInputMode(InputMode);
+ auto* Light=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,1000),FRotator(-45,-30,0));
+ auto* Sun=Cast<UDirectionalLightComponent>(Light->GetLightComponent());
+ Sun->SetMobility(EComponentMobility::Movable); Sun->SetIntensity(3.5f); Sun->SetLightColor(FLinearColor(1,.91,.75));
+ Sun->LightSourceAngle=2.5f; Sun->SetDynamicShadowDistanceMovableLight(50000);
+ auto* Fill=GetWorld()->SpawnActor<ASkyLight>(); Fill->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+ Fill->GetLightComponent()->SetIntensity(.65f); Fill->GetLightComponent()->SetRealTimeCaptureEnabled(true);
+ auto* Post=GetWorld()->SpawnActor<APostProcessVolume>(); Post->bUnbound=true;
+ Post->Settings.bOverride_AmbientOcclusionIntensity=true; Post->Settings.AmbientOcclusionIntensity=1.f;
+ Post->Settings.bOverride_AmbientOcclusionRadius=true; Post->Settings.AmbientOcclusionRadius=180;
+ Post->Settings.bOverride_BloomIntensity=true; Post->Settings.BloomIntensity=.12;
+ FString Scene; Deck->TryGetStringField(TEXT("scene"),Scene); bIsland=Scene==TEXT("isla-nublar");
+ if(bIsland) IslandScene::Build(GetWorld(),Deck->GetArrayField(TEXT("habitats")),Deck->GetIntegerField(TEXT("seed")));
+ if(!bIsland) Block(GetWorld(),FVector(0,0,-1100),FVector(2000,2000,1),FColor::FromHex(TEXT("#488b67")));
+ // Enclosing unlit sphere gives the flat cyan horizon of the workstation reference.
+ auto* Sky=GetWorld()->SpawnActor<AStaticMeshActor>();
+ Sky->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
+ Sky->GetStaticMeshComponent()->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere")));
+ Sky->GetStaticMeshComponent()->SetCastShadow(false);
+ Sky->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ Sky->SetActorScale3D(FVector(1800)); Tint(Sky->GetStaticMeshComponent(),FColor::FromHex(TEXT("#91b5c3")),true);
+ const auto& Slides=Deck->GetArrayField(TEXT("slides"));
+ for(int32 I=0; I<Slides.Num(); ++I) {
+  auto S=Slides[I]->AsObject(); const FVector Origin=Vec(S,TEXT("position")); const FRotator Facing(0,S->GetNumberField(TEXT("yaw")),0);
+  const FTransform Transform(Facing,Origin);
+  const FLinearColor Accent=FLinearColor::FromSRGBColor(FColor::FromHex(S->GetStringField(TEXT("accent"))));
+ if(!bIsland) Block(GetWorld(),Transform.TransformPosition(FVector(-250,0,-680)),FVector(12,23,.7),FColor::FromHex(TEXT("#e1e1d7")),Facing);
+ if(!bIsland) for(int32 J=0;J<5;++J) {
+  const FVector P=Transform.TransformPosition(FVector(-450, J*380-760,-400));
+  Block(GetWorld(),P,FVector(2.4,2.4,2.4+J*.3),FColor::FromHex(J==2?TEXT("#9864bc"):TEXT("#799cc9")),Facing);
+ }
+ if(!bIsland && I>0) {
+  FVector Previous=Vec(Slides[I-1]->AsObject(),TEXT("position"))-FVector(0,0,570);
+  FVector Current=Origin-FVector(0,0,570); FVector Direction=Current-Previous;
+  Block(GetWorld(),(Previous+Current)*.5,FVector(Direction.Size()/100,2.5,.3),FColor::FromHex(TEXT("#b87676")),Direction.Rotation());
+ }
+  if(bIsland) for(float Side:{-730.f,730.f}) Block(GetWorld(),Transform.TransformPosition(FVector(-30,Side,-1000)),FVector(.4,.4,11),FColor(76,83,64),Facing);
+  Block(GetWorld(),Transform.TransformPosition(FVector(-18,0,0)),FVector(.28,14.65,9.25),FColor(57,68,59),Facing);
+  FString HabitatLabel;
+  FString HabitatID; S->TryGetStringField(TEXT("habitat"),HabitatID);
+  if(bIsland) for(const auto& H:Deck->GetArrayField(TEXT("habitats"))) if(H->AsObject()->GetStringField(TEXT("id"))==HabitatID) HabitatLabel=H->AsObject()->GetStringField(TEXT("label"));
+  auto* Panel=GetWorld()->SpawnActor<AActor>(Origin,Facing);
+  auto* Widget=NewObject<UWidgetComponent>(Panel); Panel->SetRootComponent(Widget); Panel->AddInstanceComponent(Widget);
+  Widget->SetWidgetSpace(EWidgetSpace::World); Widget->SetDrawSize(FVector2D(1440,900)); Widget->SetTwoSided(true); Widget->SetPivot(FVector2D(.5,.5)); Widget->RegisterComponent(); Widget->SetWorldLocationAndRotation(Origin,Facing);
+  TSharedRef<SVerticalBox> Body=SNew(SVerticalBox);
+  Body->AddSlot().AutoHeight().Padding(0,0,0,22)[SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("fsn: a 3D presentation navigator                          %02d / %02d"),I+1,Slides.Num()))).Font(FCoreStyle::GetDefaultFontStyle("Mono",18)).ColorAndOpacity(FLinearColor(.002,.002,.002))];
+  Body->AddSlot().AutoHeight().Padding(0,0,0,26)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.48,.32,.34)).Padding(10)[SNew(STextBlock).Text(FText::FromString((bIsland ? TEXT("/isla-nublar/")+HabitatID+TEXT(" / ") : TEXT("/git-meta/"))+S->GetStringField(TEXT("id"))+TEXT(".mdx"))).Font(FCoreStyle::GetDefaultFontStyle("Mono",21)).ColorAndOpacity(FLinearColor(.03,.03,.03))]];
+  Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(S->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
+  for(auto& Value:S->GetArrayField(TEXT("blocks"))) {
+   auto B=Value->AsObject(); FString Kind=B->GetStringField(TEXT("kind")); FString Content=B->GetStringField(TEXT("text"));
+   if(Kind==TEXT("li")) Content=TEXT("•  ")+Content;
+   const bool Heading=Kind.StartsWith(TEXT("h")); const bool Code=Kind==TEXT("pre");
+   Body->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Content)).Font(FCoreStyle::GetDefaultFontStyle(Heading?"Bold":Code?"Mono":"Regular",Code?20:Heading?19:27)).ColorAndOpacity(Heading?Accent:FLinearColor(.004,.004,.004)).AutoWrapText(true)];
+  }
+  Body->AddSlot().FillHeight(1);
+  Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString(TEXT("← → next / back    O bird's eye    F free flight    Home reset    N notes"))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
+  Widget->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.035,.035,.035)).Padding(5)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.50,.50,.50,1)).Padding(48)[Body]]);
+  const float Distance=S->GetNumberField(TEXT("cameraDistance"));
+  const float CameraRise=bIsland ? 450.f : 0.f;
+  Views.Add({Transform.TransformPosition(FVector(Distance,0,CameraRise)),FRotator(-FMath::RadiansToDegrees(FMath::Atan2(CameraRise,Distance)),Facing.Yaw+180,0),float(S->GetNumberField(TEXT("transition")))});
+  Notes.Add(S->GetStringField(TEXT("notes")));
+  for(auto& MV:S->GetArrayField(TEXT("models"))) {
+   auto M=MV->AsObject(); FVector P=Transform.TransformPosition(Vec(M,TEXT("position"))); FRotator R=(Facing.Quaternion()*Rot(Vec(M,TEXT("rotation"))).Quaternion()).Rotator();
+   AActor* Model=nullptr; const FString Asset=M->GetStringField(TEXT("actor"));
+   if(!Asset.IsEmpty()) { if(auto* Class=LoadClass<AActor>(nullptr,*Asset)) Model=GetWorld()->SpawnActor<AActor>(Class,P,R); }
+   else {
+    auto* Mesh=LoadObject<UStaticMesh>(nullptr,*M->GetStringField(TEXT("mesh")));
+    if(Mesh) { auto* A=GetWorld()->SpawnActor<AStaticMeshActor>(P,R); A->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable); A->GetStaticMeshComponent()->SetStaticMesh(Mesh); if(M->GetStringField(TEXT("mesh")).StartsWith(TEXT("/Engine/BasicShapes/"))) Tint(A->GetStaticMeshComponent(),FColor::FromHex(TEXT("#9864bc"))); Model=A; }
+   }
+   if(!Model) { UE_LOG(LogTemp,Error,TEXT("Could not load model on slide %s"),*S->GetStringField(TEXT("id"))); continue; }
+   Model->SetActorScale3D(Vec(M,TEXT("scale")));
+   const TSharedPtr<FJsonObject>* Animation;
+   if(M->TryGetObjectField(TEXT("animation"),Animation)) Motions.Add({Model,P,R,(*Animation)->GetStringField(TEXT("kind")),float((*Animation)->GetNumberField(TEXT("speed"))),float((*Animation)->GetNumberField(TEXT("amplitude")))});
+  }
+ }
+ if(!Views.IsEmpty()) GoTo(0,true);
+ UE_LOG(LogTemp,Display,TEXT("SlideEngine ready: %d slides, %d animated models; starting at slide 1"),Views.Num(),Motions.Num());
+}
+void ASlideGameMode::GoTo(int32 Next,bool Instant) {
+ if(Views.IsEmpty()) return;
+ Index=FMath::Clamp(Next,0,Views.Num()-1); bFlying=false; Travel=Instant?Views[Index].Duration:0;
+ FromPosition=Camera->GetActorLocation(); FromRotation=Camera->GetActorQuat();
+ FlightLift=bIsland&&!Instant ? FMath::Clamp(FVector::Distance(FromPosition,Views[Index].Position)*.45f,3000.f,7200.f) : 0;
+ if(Instant) Camera->SetActorLocationAndRotation(Views[Index].Position,Views[Index].Rotation);
+}
+void ASlideGameMode::Overview() {
+ bFlying=true;
+ FVector Center=FVector::ZeroVector; for(const auto& V:Views) Center+=V.Position; Center/=Views.Num();
+ const FVector Eye=bIsland?FVector(19000,-33000,43000):Center+FVector(9000,-6000,10000);
+ if(bIsland) Center=FVector(0,0,0);
+ Camera->SetActorLocationAndRotation(Eye,(Center-Eye).Rotation());
+}
+void ASlideGameMode::Tick(float Delta) {
+ Super::Tick(Delta); if(!Camera || Views.IsEmpty()) return; Elapsed+=Delta;
+ auto* PC=GetWorld()->GetFirstPlayerController();
+ if(PC->WasInputKeyJustPressed(EKeys::Right)||PC->WasInputKeyJustPressed(EKeys::SpaceBar)||PC->WasInputKeyJustPressed(EKeys::PageDown)) GoTo(Index+1);
+ if(PC->WasInputKeyJustPressed(EKeys::Left)||PC->WasInputKeyJustPressed(EKeys::PageUp)) GoTo(Index-1);
+ if(PC->WasInputKeyJustPressed(EKeys::Home)) GoTo(0);
+ if(PC->WasInputKeyJustPressed(EKeys::O)) {
+  Overview();
+ }
+ if(PC->WasInputKeyJustPressed(EKeys::F)) { bFlying=!bFlying; if(!bFlying) GoTo(Index); }
+ if(PC->WasInputKeyJustPressed(EKeys::N)&&GEngine) GEngine->AddOnScreenDebugMessage(42,20,FColor::Cyan,Notes[Index].IsEmpty()?TEXT("No speaker notes for this slide."):Notes[Index]);
+ if(bFlying) {
+  float X,Y; PC->GetInputMouseDelta(X,Y); auto R=Camera->GetActorRotation(); R.Yaw+=X*.15; R.Pitch=FMath::Clamp(R.Pitch-Y*.15,-85.f,85.f); Camera->SetActorRotation(R);
+  FVector Move=Camera->GetActorForwardVector()*float(PC->IsInputKeyDown(EKeys::W)-PC->IsInputKeyDown(EKeys::S))+Camera->GetActorRightVector()*float(PC->IsInputKeyDown(EKeys::D)-PC->IsInputKeyDown(EKeys::A))+FVector::UpVector*float(PC->IsInputKeyDown(EKeys::E)-PC->IsInputKeyDown(EKeys::Q));
+  Camera->AddActorWorldOffset(Move.GetClampedToMaxSize(1)*Delta*(PC->IsInputKeyDown(EKeys::LeftShift)?3000:1000));
+ } else {
+  Travel+=Delta; float T=FMath::Clamp(Travel/Views[Index].Duration,0.f,1.f); T=T*T*(3-2*T);
+  const FVector Base=FMath::Lerp(FromPosition,Views[Index].Position,T);
+  const FVector Position=Base+FVector(0,0,4*T*(1-T)*FlightLift);
+  FQuat Rotation=FQuat::Slerp(FromRotation,Views[Index].Rotation.Quaternion(),T);
+  if(bIsland && FlightLift>0 && T>0 && T<1) {
+   const FVector Look=FMath::Lerp(FromPosition,Views[Index].Position,FMath::Min(T+.16f,1.f))-FVector(0,0,1000);
+   Rotation=FQuat::Slerp(Rotation,(Look-Position).Rotation().Quaternion(),FMath::Square(FMath::Sin(PI*T))*.92f);
+  }
+  Camera->SetActorLocationAndRotation(Position,Rotation);
+  if(bIsland && Index==1 && T>=.5f && !bFlightTested && FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"))) {
+   bFlightTested=true;
+   const bool Raised=Position.Z>Base.Z+2000;
+   UE_LOG(LogTemp,Display,TEXT("SlideSmoke: raised flight=%s lift=%.0f"),Raised?TEXT("PASS"):TEXT("FAIL"),Position.Z-Base.Z);
+   if(!Raised) FPlatformMisc::RequestExitWithStatus(false,1);
+   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/island-flight.png"),false,false);
+  }
+ }
+ // Optional deterministic integration run used by scripts/unreal.mjs smoke.
+ if(SmokeOverviewStart>=0) {
+  if(Elapsed-SmokeOverviewStart>1 && Elapsed-SmokeOverviewStart<2 && !bSmokeCaptured) {
+   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/overview.png"),false,false); bSmokeCaptured=true;
+  }
+  if(Elapsed-SmokeOverviewStart>3) { UE_LOG(LogTemp,Display,TEXT("SlideSmoke: PASS all slides and overview")); FPlatformMisc::RequestExit(false); }
+ }
+ else if(FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"))) {
+  const float StopTime=Index==0 ? Views[Index].Duration+3.f : Views[Index].Duration+1.f;
+  if(Travel>=StopTime && !bSmokeCaptured) {
+   const bool AtStop=Camera->GetActorLocation().Equals(Views[Index].Position,1.f);
+   UE_LOG(LogTemp,Display,TEXT("SlideSmoke: slide=%d camera=%s"),Index+1,AtStop?TEXT("PASS"):TEXT("FAIL"));
+   if(!AtStop) { FPlatformMisc::RequestExitWithStatus(false,1); return; }
+   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/FString::Printf(TEXT("Screenshots/slide-%02d.png"),Index+1),false,false);
+   bSmokeCaptured=true;
+  }
+  if(bSmokeCaptured && Travel>=StopTime+1.f) {
+   if(Index==Views.Num()-1) { Overview(); SmokeOverviewStart=Elapsed; bSmokeCaptured=false; }
+   else { GoTo(Index+1); bSmokeCaptured=false; }
+  }
+ }
+ for(auto& M:Motions) if(M.Actor.IsValid()) {
+  if(M.Kind==TEXT("spin")) M.Actor->SetActorRotation(M.Rotation+FRotator(0,Elapsed*M.Speed,0));
+  else M.Actor->SetActorLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
+ }
+}

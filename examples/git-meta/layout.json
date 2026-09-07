@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "scene": "isla-nublar",
+  "seed": 1993,
+  "transition": 5,
+  "habitats": [
+    {
+      "id": "brachiosaurus",
+      "label": "Brachiosaurus lagoon",
+      "species": "brachiosaurus",
+      "position": [
+        -2500,
+        -8500,
+        150
+      ],
+      "color": "#648c74"
+    },
+    {
+      "id": "tyrannosaurus",
+      "label": "T. rex paddock",
+      "species": "tyrannosaurus",
+      "position": [
+        2800,
+        5600,
+        250
+      ],
+      "color": "#af7656"
+    },
+    {
+      "id": "triceratops",
+      "label": "Triceratops meadow",
+      "species": "triceratops",
+      "position": [
+        -3500,
+        2800,
+        200
+      ],
+      "color": "#aa9b63"
+    },
+    {
+      "id": "velociraptor",
+      "label": "Raptor enclosure",
+      "species": "velociraptor",
+      "position": [
+        2200,
+        -4300,
+        150
+      ],
+      "color": "#688a99"
+    },
+    {
+      "id": "dilophosaurus",
+      "label": "Dilophosaurus forest",
+      "species": "dilophosaurus",
+      "position": [
+        2400,
+        0,
+        170
+      ],
+      "color": "#9a776a"
+    },
+    {
+      "id": "gallimimus",
+      "label": "Gallimimus valley",
+      "species": "gallimimus",
+      "position": [
+        -1600,
+        9200,
+        300
+      ],
+      "color": "#b79b60"
+    },
+    {
+      "id": "stegosaurus",
+      "label": "Stegosaurus range",
+      "species": "stegosaurus",
+      "position": [
+        -4200,
+        -2500,
+        200
+      ],
+      "color": "#7d9372"
+    },
+    {
+      "id": "parasaurolophus",
+      "label": "Parasaurolophus wetlands",
+      "species": "parasaurolophus",
+      "position": [
+        1200,
+        -11000,
+        120
+      ],
+      "color": "#799ca2"
+    }
+  ],
+  "slides": {},
+  "durationMinutes": 20
+}

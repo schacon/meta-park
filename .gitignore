@@ -1,0 +1,14 @@
+node_modules/
+dist/
+unreal/Binaries/
+unreal/Intermediate/
+unreal/Saved/
+unreal/DerivedDataCache/
+unreal/.vs/
+*.xcodeproj/
+*.xcworkspace/
+.DS_Store
+.slide-build-*/
+
+unreal/Build/*/FileOpenOrder/
+unreal/Build/*/*.PackageVersionCounter
