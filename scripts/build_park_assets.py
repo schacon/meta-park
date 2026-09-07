@@ -440,6 +440,7 @@ for face in f:
     x=sum(v[k].x for k in face)/len(face);y=sum(v[k].y for k in face)/len(face)
     cs.append(tone('#e5d39c' if 1<=lagoon_ratio(x,y)<=1.07 else '#9db756',rng.uniform(.96,1.035)))
 mesh('triangulated meadow',verts,f,'#a6be58',cs)
+(OUT/'park-ground.json').write_text(json.dumps({'vertices':verts,'triangles':f}))
 terrain_bvh=BVHTree.FromPolygons(verts,f)
 def surface(x,y):
     hit=terrain_bvh.ray_cast(Vector((x,y,100)),Vector((0,0,-1)))[0]

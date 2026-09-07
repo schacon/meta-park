@@ -2,7 +2,7 @@
 
 Write MDX. Build an Unreal game. Fly through your presentation over a shaded, low-poly Isla Nublar inspired by Jurassic Park’s UNIX interface.
 
-A native Unreal Engine 5.8 slideshow engine with an eight-slide example adapted from the sibling [git-meta README](../git-meta/README.md). MDX is evaluated at build time; Unreal renders the resulting text and actors without a browser or JavaScript runtime.
+A native Unreal Engine 5.8 slideshow engine with an seven-slide example adapted from the sibling [git-meta README](../git-meta/README.md). MDX is evaluated at build time; Unreal renders the resulting text and actors without a browser or JavaScript runtime.
 
 ## Run
 
@@ -29,34 +29,44 @@ Run `unreal:build` and `unreal:prepare` before the first package. The prepare st
 
 ## Park workstation
 
-The application opens on the island overview with every slide retracted. Press
-**Right arrow** to fly to the first habitat. Displays unfold as
-the camera approaches and retract as it leaves. **O** returns to the map.
+The application opens on the island overview with seven numbered map cards.
+Press **1–7** (including the numeric keypad), or click a card, to zoom into its
+location. After arriving, a blank card expands, shows a brief Unix-style
+loading prompt, then reveals the full MDX slide. **Esc** returns to the overview.
+**Left/Right** choose the previous/next slide, wrapping around the seven cards.
+Choosing another slide first returns to the overview, then zooms into the new area.
+Other cards disappear immediately during a zoom and pop back in during the final
+12% of the return to overview.
+Each area has a fixed, elevated camera angle and its own 0.8-second swooping
+flight, ending in front of an angled physical sign. A narrow-field perspective overview transitions
+continuously into the close view without switching projection modes. Content stays hidden during
+travel and retraction. The arrival pause is 0.12 seconds, card expansion takes
+0.24 seconds, and the loading prompt lasts 0.32 seconds.
 
 The sidebar shows park status, live dinosaur/enclosure counts, illustrative visitor
-and staff counts, utility meters, and weather. The upper-right overlay shows the
-current slide, total, and countdown. `durationMinutes` in the layout sets the timer
-(20 by default). It starts when you begin the tour; **P** pauses it.
-The clock keeps running during an overview visit, unless paused.
+and staff counts, utility meters, and the slide/countdown display. The footer reads
+“GIT FINDS A WAY.” `durationMinutes` sets the timer (20 by default). It starts when
+you first select a slide; **P** pauses it. The clock keeps running on the overview.
 
 The scene uses faceted trees, a volcano, lagoon and waterfall, white paddock
 fences, entrance gate, visitor buildings, helipad and dock. Each habitat has one
-cartoon dinosaur. The overview uses an orthographic camera to match the supplied
-island-diorama mockup. The interface adds a workstation frame and subtle scanlines.
+cartoon dinosaur. The overview uses a distant, narrow-field perspective camera to match the
+supplied island-diorama mockup. The interface adds a workstation frame and subtle scanlines.
 
 ## Controls
 
 | Key | Action |
 | --- | --- |
-| Right / Space / Page Down | Fly to the next slide |
-| Left / Page Up | Fly to the previous slide |
-| Home | Return to slide one |
-| O | Bird's-eye view of the whole presentation |
-| F | Toggle free flight; toggling off returns to the current slide |
-| Mouse + W/A/S/D | Look and move in free flight |
-| Q / E, Shift | Descend / ascend, move faster |
+| 1–7 / numeric keypad | Open the corresponding map card |
+| Click a map card | Open that area's slide |
+| Right / Space / Page Down | Next slide, through the overview |
+| Left / Page Up | Previous slide, through the overview |
+| Esc / O | Return to the overview; cancel any queued destination |
+| Home | Open slide one |
 | N | Show current speaker notes for 20 seconds |
 | P | Pause or resume the countdown |
+
+Free-flight controls remain available in the generic gallery layout.
 
 ## Author slides
 
@@ -116,18 +126,31 @@ creative approximation, not a canonical reconstruction of a film map.
 Edit `examples/git-meta/layout.json`:
 
 - `scene: "isla-nublar"` selects the island environment.
-- `seed: 1993` deterministically shuffles the assignment of slides to habitats.
-  Change the integer seed and run `npm run build` for another route.
-- `habitats` defines each area's stable `id`, display `label`, `species`,
-  `[x, y, groundHeight]` position and dinosaur color. Supply up to one per slide; the sample reuses four paddocks across eight slides.
-- Slide panels sit 3,200 cm above their habitat. `slides` can override individual
-  positions, yaw, camera distance and transition time just as in a regular layout.
-- `transition: 5` gives the camera time to climb and cross the island. Island
-  flights arc upward and look down during the middle of the journey.
+- `habitats` defines the four dinosaur areas and their terrain elevations.
+- `cards` maps each slide ID to a unique map code, label, status, and world position.
+  Every slide must have exactly one card when this list is supplied.
+- Each card’s `view` stores its fixed `eye`, subject `look`, ground `anchor`, `signYaw`,
+  `signHeight`, and two world-space Bézier control points in `path`. The seven
+  authored approaches curve in from different sides with a subtle camera bank.
+  Coordinates and heights are in centimeters; yaw is in degrees. The dinosaur
+  views follow each fence gateway; facility views face the visitor entrance,
+  main gate, or helipad from its approach path.
+- `transition: 0.8` sets the zoom-in duration; returning takes 75% of that time,
+  followed by a brief overview pause before the next zoom.
+- The seed still controls a deterministic habitat route for layouts without cards.
 
-The slide narrative remains ordered; the geographic stops are shuffled. The
-current route is T. rex → Triceratops → Stegosaurus → Brachiosaurus, repeated. North is world +Y. Press **O**
-to see the island, habitats and shoreline together.
+| Key | Area | Slide |
+| --- | --- | --- |
+| 1 | Brachiosaurus | Beyond the commit |
+| 2 | T. rex | The context we lose |
+| 3 | Triceratops | Attach it where it belongs |
+| 4 | Stegosaurus | Small commands. Rich context. |
+| 5 | Visitor Centre | Local speed. Git transport. |
+| 6 | Helipad | Let the tree do the work |
+| 7 | Main Gate | Fetch what you need |
+
+North is world +Y. The overview uses a distant perspective camera; each authored stop faces a physical
+sign rising from a marked plinth.
 
 Dinosaur models, landscape, buildings and foliage are original Blender meshes,
 imported as native Unreal static meshes with authored vertex colors.
@@ -171,12 +194,12 @@ For decks without the island scene, a layout can contain partial overrides:
 
 Positions use Unreal centimeters: X forward, Y right, Z up. Panel-local +X faces the camera, +Y places models beside the panel. Rotation arrays are `[pitch, yaw, roll]` in degrees. Layout keys are stable slide IDs; overrides never change deck order. Unknown IDs, duplicate IDs, invalid vectors and nonpositive timing or camera distances fail compilation.
 
-Panels are 1,440 × 900 units. Keep content concise; the first version does not paginate overflow automatically. Generic camera paths interpolate directly between stops. Island paths add altitude for terrain clearance; free flight and arbitrary custom layouts do not perform collision avoidance. Free flight makes the full spatial layout available to explore.
+Panels are 1,440 × 900 units. Keep content concise; the first version does not paginate overflow automatically. Generic camera paths interpolate directly between stops. Island paths use two authored Bézier control points for their swoop; free flight and arbitrary custom layouts do not perform collision avoidance. Free flight makes the full spatial layout available to explore.
 
 ## Project structure
 
 - `src/`: MDX scene components and compiler/validation.
-- `examples/git-meta/`: eight-slide talk, reusable components and layout.
+- `examples/git-meta/`: seven-slide talk, reusable components and layout.
 - `unreal/Source/SlideEngine/`: native panels, actors, animations and camera controls.
 - `unreal/Content/Slides/deck.json`: compiled presentation, staged into the game.
 - `scripts/`: MDX build, Unreal build, map creation and packaging.

@@ -8,6 +8,8 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScaleBox.h"
+#include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
@@ -17,6 +19,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "Misc/DateTime.h"
 
 void ASlideGameMode::SetMouseMode(bool Fly) {
  auto* PC=GetWorld()->GetFirstPlayerController(); if(!PC) return;
@@ -67,34 +70,42 @@ void ASlideGameMode::CreateDesktopHUD() {
  };
  Meter(TEXT("Power"),87);Meter(TEXT("Water"),92);Meter(TEXT("Security"),94);
  Rule();
- Side->AddSlot().AutoHeight().Padding(0,0,0,9)[Text(TEXT("Weather"),20)];
- static FSlateRoundedBoxBrush SunHalo(FLinearColor(.98,.73,.18),32.f);
- static FSlateRoundedBoxBrush SunDisc(FLinearColor(1,.43,.005),24.f);
- Side->AddSlot().AutoHeight()[SNew(SHorizontalBox)
-  +SHorizontalBox::Slot().AutoWidth().Padding(12,0,0,0)[SNew(SBox).WidthOverride(64).HeightOverride(64)
-   [SNew(SBorder).BorderImage(&SunHalo).Padding(8)[SNew(SBorder).BorderImage(&SunDisc)]]]
-  +SHorizontalBox::Slot().FillWidth(1).HAlign(HAlign_Right).VAlign(VAlign_Center)[Text(TEXT("Sunny\n26°C"),20)]];
+ Side->AddSlot().AutoHeight().Padding(0,12)[SNew(STextBlock).Text_Lambda([this]{const int S=FMath::Max(0,FMath::CeilToInt(TimerDuration-TimerElapsed));return FText::FromString(FString::Printf(TEXT("SLIDE %02d / %02d\n%02d:%02d REMAINING"),bOverview?0:Index+1,Views.Num(),S/60,S%60));}).Font(Font(17)).ColorAndOpacity(Ink)];
  Rule();
  Side->AddSlot().FillHeight(1).MinHeight(12);
- Side->AddSlot().AutoHeight().Padding(0,6,0,12)[Text(TEXT("L I F E\nF I N D S\nA  W A Y  _"),22)];
+ Side->AddSlot().AutoHeight().Padding(0,6,0,12)[Text(TEXT("G I T\nF I N D S\nA  W A Y  _"),22)];
  auto Scanlines=SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible);
  for(int I=0;I<140;I++) Scanlines->AddSlot().FillHeight(1).VAlign(VAlign_Bottom)[SNew(SBox).HeightOverride(1)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(FLinearColor(0,0,0,.008f))]];
  DesktopHUD=SNew(SOverlay)
  +SOverlay::Slot()[SNew(SParkCallouts).Controller(GetWorld()->GetFirstPlayerController())
- .Visibility_Lambda([this]{return bOverview?EVisibility::Visible:EVisibility::Collapsed;})
- .Pins([this]{TArray<FParkMapPin> Result;for(const auto& P:MapPins){const bool Visible=ParkSection==TEXT("Research")?P.Code==TEXT("VC"):ParkSection==TEXT("Facilities")?P.SlideIndex<0:bAllHabitats?P.SlideIndex>=0:P.bHero;if(Visible)Result.Add(P);}return Result;})
+ .Visibility_Lambda([this]{return MapPhase==EMapPhase::Overview||(MapPhase==EMapPhase::ZoomOut&&Travel>=MapLegDuration*.88f)?EVisibility::Visible:EVisibility::Collapsed;})
+ .Pins([this]{TArray<FParkMapPin> Result;for(const auto& P:MapPins){if(CardExpansion>.001f&&P.SlideIndex==Index)continue;const bool Visible=ParkSection==TEXT("Research")?P.Code==TEXT("VC"):ParkSection==TEXT("Facilities")?!P.Code.StartsWith(TEXT("ENC-")):bAllHabitats?P.Code.StartsWith(TEXT("ENC-")):P.bHero;if(Visible)Result.Add(P);}return Result;})
  .Choose([this](int32 Next){if(!FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest")))GoTo(Next);})]
- +SOverlay::Slot().HAlign(HAlign_Left)[SNew(SBox).WidthOverride(350)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(25,12))[Side]]]]
- +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(24,26)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(3,3,7,7))[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(12)[Text(TEXT("ISLA NUBLAR\nPARK CONTROL\n1993"),17)]]]
- +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(24,135)
- [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)
-  [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(10)
-   [SNew(STextBlock).Text_Lambda([this]{const int S=FMath::Max(0,FMath::CeilToInt(TimerDuration-TimerElapsed));return FText::FromString(FString::Printf(TEXT("SLIDE %02d / %02d\n%02d:%02d REMAINING"),bTourStarted?Index+1:0,Views.Num(),S/60,S%60));}).Font(Font(15)).ColorAndOpacity(Ink)]]]
+ +SOverlay::Slot().HAlign(HAlign_Left).Padding(0,72,0,0)[SNew(SBox).WidthOverride_Lambda([this]{const float W=DesktopHUD.IsValid()?DesktopHUD->GetCachedGeometry().GetLocalSize().X:0;return W>0?FMath::Min(350.f,W*.3f):350.f;})[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(25,12))[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(296)[Side]]]]]]
+ +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(24,96)[SNew(SBorder).Visibility_Lambda([this]{return CardExpansion<.01f?EVisibility::Visible:EVisibility::Collapsed;}).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(3,3,7,7))[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(12)[Text(TEXT("ISLA NUBLAR\nPARK CONTROL\n1993"),17)]]]
  +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(24,24)[SNew(STextBlock).Text(FText::FromString(TEXT("N\n↑"))).Justification(ETextJustify::Center).Font(FCoreStyle::GetDefaultFontStyle("Mono",30)).ColorAndOpacity(FLinearColor(.93,.96,.88))]
+ +SOverlay::Slot().VAlign(VAlign_Top)[SNew(SBox).HeightOverride(72)
+  [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)
+   [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(24,12))
+    [SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,4))
+      [SNew(STextBlock).Text(FText::FromString(TEXT("git-meta"))).Font(Font(20)).ColorAndOpacity(FLinearColor(.94,.94,.9))]]
+     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(20,0)[Text(TEXT("park visitor survival monitoring system"),20)]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(12,0,24,0)
+      [SNew(STextBlock).Text_Lambda([]{return FText::FromString(TEXT("v0.1 · ")+FDateTime::Now().ToString(TEXT("%H:%M")));}).Font(Font(18)).ColorAndOpacity(Ink)]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,5))
+      [SNew(STextBlock).Text(FText::FromString(TEXT("3α"))).Font(Font(18)).ColorAndOpacity(FLinearColor(.94,.94,.9))]]
+    ]]]]
  +SOverlay::Slot()[Scanlines];
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(DesktopHUD.ToSharedRef(),10); SetMouseMode(false);
 }
 void ASlideGameMode::EndPlay(const EEndPlayReason::Type Reason) {
  if(DesktopHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(DesktopHUD.ToSharedRef());
  DesktopHUD.Reset(); Super::EndPlay(Reason);
+}
+
+FVector4 ASlideGameMode::ExpandedCardBounds() const {
+ const FVector2D Size=DesktopHUD.IsValid()?DesktopHUD->GetCachedGeometry().GetLocalSize():FVector2D(1920,1080);
+ const FVector4 Full(385,40,FMath::Max(400.,Size.X-425),FMath::Max(300.,Size.Y-80));
+ return FMath::Lerp(CardStartRect,Full,CardExpansion);
 }

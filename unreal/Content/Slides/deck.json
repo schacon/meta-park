@@ -75,7 +75,7 @@
           "actor": "",
           "position": [
             0,
-            730,
+            -1050,
             -190
           ],
           "rotation": [
@@ -99,7 +99,7 @@
           "actor": "",
           "position": [
             100,
-            730,
+            -1050,
             0
           ],
           "rotation": [
@@ -123,7 +123,7 @@
           "actor": "",
           "position": [
             200,
-            730,
+            -1050,
             190
           ],
           "rotation": [
@@ -149,10 +149,52 @@
         -400,
         3600
       ],
+      "card": {
+        "slide": "opening",
+        "code": "ENC-01",
+        "label": "Brachiosaurus",
+        "status": "OK",
+        "position": [
+          5400,
+          2300,
+          1300
+        ],
+        "view": {
+          "anchor": [
+            5400,
+            -1770,
+            801.0667537492741
+          ],
+          "eye": [
+            5400,
+            -3800,
+            2600
+          ],
+          "signYaw": -83,
+          "signHeight": 1623.93,
+          "path": [
+            [
+              18000,
+              -26000,
+              36000
+            ],
+            [
+              7200,
+              -7300,
+              7100
+            ]
+          ],
+          "look": [
+            5400,
+            2000,
+            2100
+          ]
+        }
+      },
       "habitat": "tyrannosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     },
     {
       "id": "context",
@@ -186,7 +228,7 @@
           "actor": "",
           "position": [
             0,
-            730,
+            -1050,
             -190
           ],
           "rotation": [
@@ -210,7 +252,7 @@
           "actor": "",
           "position": [
             100,
-            730,
+            -1050,
             0
           ],
           "rotation": [
@@ -234,7 +276,7 @@
           "actor": "",
           "position": [
             200,
-            730,
+            -1050,
             190
           ],
           "rotation": [
@@ -260,10 +302,52 @@
         -4300,
         4150
       ],
+      "card": {
+        "slide": "context",
+        "code": "ENC-02",
+        "label": "T. rex",
+        "status": "FEED DUE",
+        "position": [
+          -6000,
+          -400,
+          1000
+        ],
+        "view": {
+          "anchor": [
+            -6000,
+            -4170,
+            208
+          ],
+          "eye": [
+            -6000,
+            -6200,
+            2300
+          ],
+          "signYaw": -83,
+          "signHeight": 1812,
+          "path": [
+            [
+              -19000,
+              -24000,
+              32000
+            ],
+            [
+              -7800,
+              -9700,
+              6800
+            ]
+          ],
+          "look": [
+            -6000,
+            -400,
+            1500
+          ]
+        }
+      },
       "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     },
     {
       "id": "targets",
@@ -297,7 +381,7 @@
           "actor": "",
           "position": [
             0,
-            760,
+            -1050,
             0
           ],
           "rotation": [
@@ -319,10 +403,52 @@
         4800,
         4100
       ],
+      "card": {
+        "slide": "targets",
+        "code": "ENC-03",
+        "label": "Triceratops",
+        "status": "OK",
+        "position": [
+          4900,
+          -4300,
+          1550
+        ],
+        "view": {
+          "anchor": [
+            4900,
+            -7745,
+            632.1626715144482
+          ],
+          "eye": [
+            4900,
+            -9600,
+            2700
+          ],
+          "signYaw": -83,
+          "signHeight": 1682.84,
+          "path": [
+            [
+              17000,
+              -27000,
+              30000
+            ],
+            [
+              6700,
+              -13100,
+              7200
+            ]
+          ],
+          "look": [
+            4900,
+            -4300,
+            1600
+          ]
+        }
+      },
       "habitat": "stegosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     },
     {
       "id": "authoring",
@@ -349,10 +475,52 @@
         2300,
         3900
       ],
+      "card": {
+        "slide": "authoring",
+        "code": "ENC-04",
+        "label": "Stegosaurus",
+        "status": "OK",
+        "position": [
+          -5700,
+          4800,
+          1500
+        ],
+        "view": {
+          "anchor": [
+            -5700,
+            1160,
+            408
+          ],
+          "eye": [
+            -5700,
+            -800,
+            2900
+          ],
+          "signYaw": -83,
+          "signHeight": 2177,
+          "path": [
+            [
+              -20000,
+              -14000,
+              40000
+            ],
+            [
+              -7500,
+              -4300,
+              7400
+            ]
+          ],
+          "look": [
+            -5700,
+            4800,
+            2000
+          ]
+        }
+      },
       "habitat": "brachiosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     },
     {
       "id": "storage",
@@ -382,7 +550,7 @@
           "actor": "",
           "position": [
             0,
-            760,
+            -1050,
             0
           ],
           "rotation": [
@@ -408,10 +576,52 @@
         -400,
         3600
       ],
+      "card": {
+        "slide": "storage",
+        "code": "VC",
+        "label": "Visitor Centre",
+        "status": "OPEN",
+        "position": [
+          0,
+          -5100,
+          650
+        ],
+        "view": {
+          "anchor": [
+            -660,
+            -7171.2,
+            208.00813522526084
+          ],
+          "eye": [
+            -660,
+            -8700,
+            1650
+          ],
+          "signYaw": -83,
+          "signHeight": 1025.99,
+          "path": [
+            [
+              13000,
+              -25000,
+              26000
+            ],
+            [
+              -2460,
+              -12200,
+              6150
+            ]
+          ],
+          "look": [
+            -660,
+            -5760,
+            850
+          ]
+        }
+      },
       "habitat": "tyrannosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     },
     {
       "id": "merging",
@@ -449,7 +659,7 @@
           "actor": "",
           "position": [
             0,
-            730,
+            -1050,
             -190
           ],
           "rotation": [
@@ -473,7 +683,7 @@
           "actor": "",
           "position": [
             100,
-            730,
+            -1050,
             0
           ],
           "rotation": [
@@ -497,7 +707,7 @@
           "actor": "",
           "position": [
             200,
-            730,
+            -1050,
             190
           ],
           "rotation": [
@@ -523,10 +733,52 @@
         -4300,
         4150
       ],
+      "card": {
+        "slide": "merging",
+        "code": "HELI",
+        "label": "Helipad",
+        "status": "IDLE",
+        "position": [
+          -6400,
+          -5400,
+          350
+        ],
+        "view": {
+          "anchor": [
+            -5516,
+            -5972,
+            208
+          ],
+          "eye": [
+            -4700,
+            -6500,
+            1950
+          ],
+          "signYaw": -25.905242922987902,
+          "signHeight": 1029.2,
+          "path": [
+            [
+              -20000,
+              -28000,
+              26000
+            ],
+            [
+              -6500,
+              -10000,
+              6450
+            ]
+          ],
+          "look": [
+            -6400,
+            -5400,
+            465
+          ]
+        }
+      },
       "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     },
     {
       "id": "scale",
@@ -547,6 +799,10 @@
         },
         {
           "kind": "p",
+          "text": "Public, corporate and personal metadata can use separate destinations. Higher-level tools handle capture, display and synchronization."
+        },
+        {
+          "kind": "p",
           "text": "The README reports about 500 MB of compressed transcript data versus less than 2 MB for its blobless example."
         }
       ],
@@ -556,7 +812,7 @@
           "actor": "",
           "position": [
             0,
-            760,
+            -1050,
             0
           ],
           "rotation": [
@@ -582,69 +838,52 @@
         4800,
         4100
       ],
+      "card": {
+        "slide": "scale",
+        "code": "GATE",
+        "label": "Main Gate",
+        "status": "LOCKED",
+        "position": [
+          0,
+          -10500,
+          1250
+        ],
+        "view": {
+          "anchor": [
+            0,
+            -12562.5,
+            272
+          ],
+          "eye": [
+            0,
+            -13500,
+            2400
+          ],
+          "signYaw": -83,
+          "signHeight": 2128,
+          "path": [
+            [
+              12000,
+              -30000,
+              22000
+            ],
+            [
+              1800,
+              -17000,
+              6900
+            ]
+          ],
+          "look": [
+            0,
+            -10500,
+            2400
+          ]
+        }
+      },
       "habitat": "stegosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 5
-    },
-    {
-      "id": "future",
-      "title": "Context that travels",
-      "accent": "#7b303e",
-      "blocks": [
-        {
-          "kind": "h2",
-          "text": "WHAT COMES NEXT / 08"
-        },
-        {
-          "kind": "p",
-          "text": "Public, corporate and personal metadata can use separate destinations."
-        },
-        {
-          "kind": "p",
-          "text": "The reference implementation exercises the format. Higher-level tools handle display, automatic capture, rebasing and synchronization."
-        },
-        {
-          "kind": "p",
-          "text": "Designed for integration into GitButler, with broader interest from Jujutsu and Git."
-        }
-      ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Cone.Cone",
-          "actor": "",
-          "position": [
-            0,
-            760,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            3,
-            3,
-            3
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 18,
-            "amplitude": 35
-          }
-        }
-      ],
-      "notes": "Source: ../git-meta/README.md, read September 7, 2026. Canonical specification: ../git-meta/spec/README.md.",
-      "position": [
-        5400,
-        2300,
-        3900
-      ],
-      "habitat": "brachiosaurus",
-      "yaw": -90,
-      "cameraDistance": 2050,
-      "transition": 5
+      "transition": 0.8
     }
   ]
 }

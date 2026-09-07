@@ -33,9 +33,9 @@ alpha as an emission mask, lighting only the gate torch flames.
 
 The layout file controls the four paddock locations and elevations.
 Rebuild the Blender scene after changing those locations: terrain plateaus and
-paths are authored around them. The sample currently reuses those four areas for
-its eight slides. Only the selected slide panel deploys, preventing coincident
-slides from overlapping.
+paths are authored around them. The sample maps seven MDX slides to four paddocks,
+the visitor centre, helipad and main gate. Card locations are declared separately
+in the layout's cards list and can be rebuilt with npm run build.
 
 Park statuses in the terminal callouts are illustrative. Dinosaur, enclosure,
 tree, slide and deployed-display counts come from the running scene.

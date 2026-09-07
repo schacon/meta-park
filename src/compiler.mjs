@@ -34,6 +34,24 @@ export function makeManifest(tree, layout = {}) {
   const slides = root.children.filter(n => typeof n !== 'string' || n.trim());
   if (!slides.length || slides.some(n => n.type !== 'slide')) fail('Deck must contain Slide components');
   const island = islandLayout(layout, slides.length);
+  if (layout.cards !== undefined) {
+    if (!island || !Array.isArray(layout.cards) || layout.cards.length !== slides.length) fail('Cards must match the island slide count');
+    const cardIds = new Set(), codes = new Set();
+    for (const card of layout.cards) {
+      if (!slides.some(s => s.props.id === card.slide) || cardIds.has(card.slide)) fail('Each card must reference a unique known slide');
+      if (![card.code,card.label,card.status].every(v=>typeof v==='string' && v.length>0) || codes.has(card.code)) fail('Cards need unique codes, labels and statuses');
+      vector(card.position,undefined,'Card position');
+      if(card.view) {
+        vector(card.view.anchor,undefined,'Sign anchor'); vector(card.view.eye,undefined,'Camera eye');
+        if(card.view.look!==undefined)vector(card.view.look,undefined,'Camera subject');
+        if(!Array.isArray(card.view.path)||card.view.path.length!==2)fail('Flight path needs two control points');
+        card.view.path.forEach(p=>vector(p,undefined,'Flight path'));
+        if(!Number.isFinite(card.view.signYaw))fail('Sign yaw must be finite');
+        positive(card.view.signHeight,1100,'Sign height');
+      }
+      cardIds.add(card.slide); codes.add(card.code);
+    }
+  }
   const ids = new Set();
   const result = slides.map((s, i) => {
     const {id, title, accent = '#563d72'} = s.props;
@@ -62,10 +80,18 @@ export function makeManifest(tree, layout = {}) {
     }
     s.children.forEach(n => visit(n));
     const override = layout.slides?.[id] ?? {};
+    const card = layout.cards?.find(c => c.slide === id);
     const habitat = island?.route[i];
+    const routeCard=card??(habitat?{slide:id,code:`AREA-${i+1}`,label:habitat.label,status:'OK',position:habitat.position}:null);
+    const nativeCard=routeCard?{...routeCard,view:routeCard.view??{
+      anchor:[routeCard.position[0],routeCard.position[1]-2200,0],
+      eye:[routeCard.position[0]+2400,routeCard.position[1]-5000,routeCard.position[2]+1500],
+      signYaw:-45,signHeight:1100,
+      path:[[routeCard.position[0]*1.5,-26000,30000],[routeCard.position[0]+6000,routeCard.position[1]-7000,7000]]
+    }}:null;
     const angle = i * 0.48;
     const position = vector(override.position,habitat ? [habitat.position[0],habitat.position[1],habitat.position[2]+3200] : [Math.round(4200*Math.sin(angle)),Math.round(4200*(1-Math.cos(angle))),i*380],`${id}.position`);
-    return {id,title,accent,blocks,models,notes,position,habitat:habitat?.id??"",yaw: (()=>{const y=override.yaw??(island ? -90 : i*27.5); if(!Number.isFinite(y))fail('yaw must be finite'); return y;})(), cameraDistance:positive(override.cameraDistance,island ? 2050 : 1550,'cameraDistance'), transition:positive(override.transition,layout.transition??(island ? 5 : 2.2),'transition')};
+    return {id,title,accent,blocks,models,notes,position,card:nativeCard,habitat:habitat?.id??"",yaw: (()=>{const y=override.yaw??(island ? -90 : i*27.5); if(!Number.isFinite(y))fail('yaw must be finite'); return y;})(), cameraDistance:positive(override.cameraDistance,island ? 2050 : 1550,'cameraDistance'), transition:positive(override.transition,layout.transition??(island ? 5 : 2.2),'transition')};
   });
   for (const id of Object.keys(layout.slides??{})) if (!ids.has(id)) fail(`Layout references unknown slide: ${id}`);
   return {version:1,title:root.props.title??'Presentation',durationSeconds:positive(layout.durationMinutes,20,'durationMinutes')*60,scene:island?.scene??'gallery',seed:island?.seed??0,habitats:island?.habitats??[],slides:result};

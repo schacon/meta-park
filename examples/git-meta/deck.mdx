@@ -38,7 +38,7 @@ Target + namespaced key + value.
 - Strings for individual values.
 - Lists for appended entries; sets for unique members.
 
-<Model mesh="/Engine/BasicShapes/Sphere.Sphere" position={[0,760,0]} scale={[3,3,3]} />
+<Model mesh="/Engine/BasicShapes/Sphere.Sphere" position={[0,-1050,0]} scale={[3,3,3]} />
 </Slide>
 
 <Slide id="authoring" title="Small commands. Rich context." accent="#563d72">
@@ -92,24 +92,12 @@ Large transcripts should not make every clone enormous.
 
 Blobless fetches bring down trees and commits. Pruned checkpoints keep a useful working set; older values can be fetched on demand.
 
+Public, corporate and personal metadata can use separate destinations. Higher-level tools handle capture, display and synchronization.
+
 The README reports about 500 MB of compressed transcript data versus less than 2 MB for its blobless example.
 
 <DataStore />
 <Notes>The size comparison is a benchmark reported by the README author, not a benchmark of this slideshow engine.</Notes>
-</Slide>
-
-<Slide id="future" title="Context that travels" accent="#7b303e">
-
-## WHAT COMES NEXT / 08
-
-Public, corporate and personal metadata can use separate destinations.
-
-The reference implementation exercises the format. Higher-level tools handle display, automatic capture, rebasing and synchronization.
-
-Designed for integration into GitButler, with broader interest from Jujutsu and Git.
-
-<Animate kind="spin" speed={18}><Model mesh="/Engine/BasicShapes/Cone.Cone" position={[0,760,0]} scale={[3,3,3]} /></Animate>
-<Notes>Source: ../git-meta/README.md, read September 7, 2026. Canonical specification: ../git-meta/spec/README.md.</Notes>
 </Slide>
 
 </Deck>

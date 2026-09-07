@@ -11,6 +11,8 @@
 #include "Serialization/JsonSerializer.h"
 
 namespace {
+TArray<FVector> GroundVertices;
+TArray<FIntVector> GroundTriangles;
 AStaticMeshActor* Asset(UWorld* World,const FString& Name,FVector Position=FVector::ZeroVector,float Yaw=0,float Scale=1) {
  const FString Path=FString::Printf(TEXT("/Game/Models/Park/%s.%s"),*Name,*Name);
  auto* Mesh=LoadObject<UStaticMesh>(nullptr,*Path);
@@ -25,6 +27,16 @@ FVector Position(const TArray<TSharedPtr<FJsonValue>>& Values) {
  return FVector(Values[0]->AsNumber(),Values[1]->AsNumber(),Values[2]->AsNumber());
 }
 }
+float IslandScene::GroundHeight(float X,float Y) {
+ for(const auto& T:GroundTriangles) {
+  const FVector A=GroundVertices[T.X],B=GroundVertices[T.Y],C=GroundVertices[T.Z];
+  const double D=(B.Y-C.Y)*(A.X-C.X)+(C.X-B.X)*(A.Y-C.Y);if(FMath::Abs(D)<.001)continue;
+  const double U=((B.Y-C.Y)*(X-C.X)+(C.X-B.X)*(Y-C.Y))/D;
+  const double V=((C.Y-A.Y)*(X-C.X)+(A.X-C.X)*(Y-C.Y))/D;
+  if(U>=-.0001&&V>=-.0001&&U+V<=1.0001)return U*A.Z+V*B.Z+(1-U-V)*C.Z;
+ }
+ return 200.f;
+}
 IslandScene::FStats IslandScene::Build(UWorld* World,const TArray<TSharedPtr<FJsonValue>>& Habitats,int32 Seed) {
  FString Source;
  if(!FFileHelper::LoadFileToString(Source,*(FPaths::ProjectContentDir()/TEXT("Slides/park-assets.json")))) {
@@ -33,6 +45,12 @@ IslandScene::FStats IslandScene::Build(UWorld* World,const TArray<TSharedPtr<FJs
  TSharedPtr<FJsonObject> Manifest;
  if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Source),Manifest) || !Manifest.IsValid()) {
   UE_LOG(LogTemp,Fatal,TEXT("Invalid Blender park placement manifest")); return {};
+ }
+ GroundVertices.Reset();GroundTriangles.Reset();
+ FString GroundJson;TSharedPtr<FJsonObject> Ground;
+ if(FFileHelper::LoadFileToString(GroundJson,*(FPaths::ProjectContentDir()/TEXT("Slides/park-ground.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(GroundJson),Ground)) {
+  for(const auto& V:Ground->GetArrayField(TEXT("vertices")))GroundVertices.Add(Position(V->AsArray())*100);
+  for(const auto& T:Ground->GetArrayField(TEXT("triangles"))){const auto& A=T->AsArray();GroundTriangles.Add(FIntVector(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber()));}
  }
  // Scenery uses Blender placements; habitat inhabitants still follow the editable deck layout.
  TSet<FString> Species;
