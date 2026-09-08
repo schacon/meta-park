@@ -121,6 +121,7 @@ void ASlideGameMode::BeginPlay() {
   if(bIsland) {
    const auto Card=S->GetObjectField(TEXT("card"));
    HabitatLabel=Card->GetStringField(TEXT("label"));
+   if(Card->GetStringField(TEXT("code"))==TEXT("GATE"))GateSlide=I;
    const FVector Target=Vec(Card,TEXT("position")); CardTargets.Add(Target);
    bool Hidden=false;Card->TryGetBoolField(TEXT("hidden"),Hidden);
    if(Hidden)HiddenSlides.Add(I);
@@ -151,7 +152,7 @@ void ASlideGameMode::BeginPlay() {
   Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString((I==0?TEXT("Space computer demo    ← → overview, then previous / next    Esc overview    N notes"):TEXT("1–7 choose an area    ← → overview, then previous / next    Esc overview    N notes")))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
   auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.035,.035,.035)).Padding(5)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63,1)).Padding(48)[Body]];
   if(bIsland) {
-   Content->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,I]{return Index==I&&MapPhase==EMapPhase::Slide?EVisibility::Visible:EVisibility::Hidden;}));
+   Content->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,I]{return Index==I&&(MapPhase==EMapPhase::Slide||(I==GateSlide&&IslandScene::GateOpenFraction()>0))?EVisibility::Visible:EVisibility::Hidden;}));
    Widget->SetSlateWidget(SNew(SOverlay)
     +SOverlay::Slot()[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63)).Padding(0)[Content]]
     +SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(48)
@@ -196,7 +197,8 @@ void ASlideGameMode::BeginPlay() {
     auto* Stem=Block(GetWorld(),Transform.TransformPosition(FVector(-24,Y,-SignHeight/2)),FVector(.22,.22,SignHeight/100),FColor(65,78,67),Facing);
     Stem->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
    }
-   SlideRoot->SetActorLocationAndRotation(Panels.Last().RaisedPosition,FRotator((CameraStops.Last()-Panels.Last().RaisedPosition).Rotation().Pitch,SignYaw,2));
+   SlideRoot->SetActorLocationAndRotation(Panels.Last().RaisedPosition,FRotator(I==GateSlide?0:(CameraStops.Last()-Panels.Last().RaisedPosition).Rotation().Pitch,SignYaw,I==GateSlide?0:2));
+   if(I==GateSlide)SlideRoot->SetActorScale3D(FVector(1.2f));
    // Fit the physical sign with a small margin, independently of resolution.
    // Decorative MDX models may extend into the surrounding world.
    const FVector Eye=CameraStops.Last();

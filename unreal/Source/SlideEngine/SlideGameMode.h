@@ -25,6 +25,8 @@ private:
  UPROPERTY() TObjectPtr<ACameraActor> Camera;
  TArray<FSlideView> Views;
  TArray<FParkMapPin> MapPins;
+ int32 GateSlide=INDEX_NONE;
+ void TestGate();
  TSharedPtr<FParkTerminal> Terminal;
  void ToggleTerminal();
  void TestTerminal();

@@ -117,7 +117,8 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
    if(!In&&PendingIndex>=0&&Smoke)UE_LOG(LogTemp,Display,TEXT("SlideSmoke: overview between slides=PASS"));
   }
  } else if(MapPhase==EMapPhase::Arrived&&Travel>=.12f&&WalkReview==0) {
-  MapPhase=EMapPhase::Expand;Travel=0;
+  if(Index!=GateSlide){MapPhase=EMapPhase::Expand;Travel=0;}
+  else if(IslandScene::GateOpenFraction()>=1){MapPhase=EMapPhase::Slide;CardExpansion=1;Travel=0;bTimerStarted=true;}
  } else if(MapPhase==EMapPhase::Expand) {
   const float T=FMath::Clamp(Travel/.24f,0.f,1.f);CardExpansion=T*T*(3-2*T);
   if(T>=1){MapPhase=EMapPhase::Loading;Travel=0;}
@@ -132,12 +133,15 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  }
  Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(Camera->GetActorLocation(),CameraLook));
  if(Terminal.IsValid())Terminal->Update(Delta,Camera,!bFreeFlight&&Index==0&&MapPhase==EMapPhase::Slide);
+ const bool AtGate=!bFreeFlight&&Index==GateSlide&&(MapPhase==EMapPhase::Arrived||MapPhase==EMapPhase::Loading||MapPhase==EMapPhase::Slide);
+ IslandScene::TickGate(Delta,AtGate);
  for(const auto& Base:SignBases)if(Base.IsValid())Base->SetActorHiddenInGame(bFreeFlight);
  for(int32 I=0;I<Panels.Num();I++) {
   auto& Panel=Panels[I];if(!Panel.Root.IsValid())continue;
-  const float Rise=!bFreeFlight&&I==Index?CardExpansion:0;
+  const bool GateVisible=I==GateSlide&&!bFreeFlight&&I==Index&&IslandScene::GateOpenFraction()>0;
+  const float Rise=I==GateSlide?(GateVisible?1.f:0.f):(!bFreeFlight&&I==Index?CardExpansion:0);
   Panel.Reveal=Rise;
-  Panel.Root->SetActorLocation(FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
+  Panel.Root->SetActorLocation(I==GateSlide?Panel.RaisedPosition:FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
   Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f,true);
   for(const auto& Model:Panel.Models)if(Model.IsValid())Model->SetActorHiddenInGame(bFreeFlight||I!=Index||MapPhase!=EMapPhase::Slide);
  }
@@ -146,6 +150,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   else M.Actor->SetActorRelativeLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
  }
  if(!Smoke)return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("TerminalTest"))){TestTerminal();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FreeFlightTest"))){TestFreeFlight();return;}
  if(WalkReview>0) {

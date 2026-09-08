@@ -101,6 +101,10 @@ prints `OK`. These are demonstration graphics; no shell command is executed.
 Closing and reopening restarts the sequence. Leaving the area hides the computer.
 Use **Right** or **Page Down** to advance from this area.
 
+At the main gate (**7**), the doors swing inward to reveal a stationary slide
+behind the gateway. Leaving the area closes them again, including interrupted
+visits and switching to free flight.
+
 ## Author slides
 
 The example lives in `examples/git-meta/deck.mdx`. Blank lines around Markdown inside components are significant MDX syntax.

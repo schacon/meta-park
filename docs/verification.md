@@ -11,7 +11,7 @@ Tested on macOS with Unreal Engine 5.8 and Xcode 26.5 SDK.
   movement interrupting travel, drag rotation, vertical/accelerated movement,
   and F/Escape returning to the fitted overview. Exploring before the first slide
   leaves the presentation clock stopped. The raptor arrival was visually reviewed.
-- The park library now contains 27 imported meshes, including the beach bar and
+- The park library now contains 29 imported meshes, including the beach bar and
   interactive workstation; articulated dinosaur parts remain a separate kit.
 - BuildCookRun build, cook, stage, package and archive succeeded.
 - Editor and packaged integration checks passed. The smoke test opens every
@@ -94,3 +94,10 @@ concave neck. All 3,360 sampled contour points lie inside the next outer band,
 and the sand toe extends below the water surface. The rebuilt island and water
 passed native navigation, terrain/gait, and hidden-beach checks. See the
 [north-shore model review](../assets/blender/north-shore-review.png).
+
+`-SlideSmokeTest -GateTest` checks the two fixed hinge positions, mirrored door
+rotations, stationary sign behind the portal, unobstructed sight lines, and
+closing on Escape, interrupted number navigation, and free flight.
+The gate interaction passes at 1440×900, and the full presentation check passes
+at 1024×768. Captures show the [opening doors](screenshots/gate-opening.png)
+and [slide through the open gateway](screenshots/gate-open.png).

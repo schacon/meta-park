@@ -169,7 +169,7 @@ IslandScene::FStats IslandScene::Build(UWorld* World,const TArray<TSharedPtr<FJs
  if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Source),Manifest) || !Manifest.IsValid()) {
   UE_LOG(LogTemp,Fatal,TEXT("Invalid Blender park placement manifest")); return {};
  }
- GroundVertices.Reset();GroundTriangles.Reset();Splashes.Reset();Wanderers.Reset();
+ GroundVertices.Reset();GroundTriangles.Reset();Splashes.Reset();Wanderers.Reset();ResetGate();
  FString GroundJson;TSharedPtr<FJsonObject> Ground;
  if(FFileHelper::LoadFileToString(GroundJson,*(FPaths::ProjectContentDir()/TEXT("Slides/park-ground.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(GroundJson),Ground)) {
   for(const auto& V:Ground->GetArrayField(TEXT("vertices")))GroundVertices.Add(Position(V->AsArray())*100);
@@ -183,6 +183,7 @@ IslandScene::FStats IslandScene::Build(UWorld* World,const TArray<TSharedPtr<FJs
   auto P=Value->AsObject();const FString Name=P->GetStringField(TEXT("asset"));
   if(Name==TEXT("SM_DungPile") || Name==TEXT("SM_Enclosure") || Name==TEXT("SM_RaptorPen") || Name==TEXT("SM_RaptorBeacon") || Species.Contains(Name)) continue;
   auto* Placed=Asset(World,Name,Position(P->GetArrayField(TEXT("position")))*100,P->GetNumberField(TEXT("yaw")),P->GetNumberField(TEXT("scale")));Count++;
+  if(Name==TEXT("SM_GateLeafLeft")||Name==TEXT("SM_GateLeafRight"))RegisterGateLeaf(Placed,Name.EndsWith(TEXT("Left"))?1.f:-1.f);
   if(Name==TEXT("SM_WaterSplash"))Splashes.Add({Placed,Placed->GetActorLocation(),float(P->GetNumberField(TEXT("scale"))),Splashes.Num()*1.7f});
   if(Name.StartsWith(TEXT("SM_Tree")) || Name==TEXT("SM_Palm")) Trees++;
  }
