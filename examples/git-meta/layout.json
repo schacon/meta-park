@@ -370,7 +370,7 @@
           1900
         ],
         "signYaw": 83,
-        "signHeight": 1700,
+        "signHeight": 2040,
         "frameWidth": 5500,
         "path": [
           [
@@ -387,7 +387,7 @@
         "look": [
           0,
           12900,
-          1100
+          1400
         ]
       }
     }

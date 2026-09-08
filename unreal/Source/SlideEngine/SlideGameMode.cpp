@@ -199,6 +199,7 @@ void ASlideGameMode::BeginPlay() {
    }
    SlideRoot->SetActorLocationAndRotation(Panels.Last().RaisedPosition,FRotator(I==GateSlide?0:(CameraStops.Last()-Panels.Last().RaisedPosition).Rotation().Pitch,SignYaw,I==GateSlide?0:2));
    if(I==GateSlide)SlideRoot->SetActorScale3D(FVector(1.2f));
+   else if(HiddenSlides.Contains(I))SlideRoot->SetActorScale3D(FVector(1.5f));
    // Fit the physical sign with a small margin, independently of resolution.
    // Decorative MDX models may extend into the surrounding world.
    const FVector Eye=CameraStops.Last();

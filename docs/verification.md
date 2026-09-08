@@ -105,3 +105,9 @@ and [slide through the open gateway](screenshots/gate-open.png).
 The north-facing beach bar has broad warm and cool fill lights that lift faces
 and the shaded counter without changing the island sun. Presentation and free-flight
 captures were visually checked at 1440×900; the native navigation check passes.
+
+Nedry's shirt, belly, limbs and facial details were broadened together in Blender,
+keeping the flower pattern attached to his clothing. The beach-bar sign is 50%
+larger and raised clear of the roof, with the camera aimed higher to contain it.
+The rebuilt mesh and revised sign were visually checked in presentation and free
+flight at 1440×900; the complete native navigation check passes.

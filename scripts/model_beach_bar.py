@@ -116,6 +116,16 @@ def person(cx,cy,yaw,floral):
         tube('straw hat brim',[(0,0,2.35),(0,0,2.4)],[.5,.5],'#e4bd6e',10)
         tube('straw hat crown',[(0,0,2.4),(0,0,2.65)],[.29,.25],'#eed18c',8)
         tube('hat orange band',[(0,0,2.42),(0,0,2.5)],[.292,.281],'#c47f43',8)
+    if floral:
+        # Broaden the seated silhouette, with the greatest volume through the
+        # belly and waist. Deform clothing, flowers and limbs together so the
+        # pattern stays on the shirt and joints remain connected.
+        for o in parts[first:]:
+            for v in o.data.vertices:
+                z=v.co.z
+                belly=max(0,1-abs(z-1.2)/.55)
+                v.co.x*=1.16+.30*belly
+                v.co.y*=1.12+.52*belly
     tr=Matrix.Translation((cx,cy,0))@Matrix.Rotation(math.radians(yaw),4,'Z')
     for o in parts[first:]:o.matrix_world=tr@o.matrix_world
 person(-1.8,-2.5,25,False);person(1.8,-2.5,-25,True)
