@@ -15,7 +15,6 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboButton.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Styling/CoreStyle.h"
 #include "Brushes/SlateColorBrush.h"
@@ -97,11 +96,17 @@ void ASlideGameMode::CreateDesktopHUD() {
   [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)
    [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(24,12))
     [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SComboButton).HasDownArrow(false).ButtonStyle(&MenuStyle).ContentPadding(0)
-      .OnGetMenuContent_Lambda([this]{
-       FMenuBuilder Menu(true,nullptr);
-       Menu.AddMenuEntry(FText::FromString(TEXT("Quit")),FText::FromString(TEXT("Exit git-meta park")),FSlateIcon(),FUIAction(FExecuteAction::CreateLambda([this]{UKismetSystemLibrary::QuitGame(this,GetWorld()->GetFirstPlayerController(),EQuitPreference::Quit,false);})));
-       return Menu.MakeWidget();
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SAssignNew(ParkMenu,SComboButton).HasDownArrow(false).ButtonStyle(&MenuStyle).ContentPadding(0)
+      .OnGetMenuContent_Lambda([this,Brush,Ink,Gray,SideFont]{
+       auto Menu=SNew(SVerticalBox);
+       Menu->AddSlot().AutoHeight()[SAssignNew(LogoutButton,SButton).ButtonStyle(&MenuStyle).ContentPadding(FMargin(18,10))
+        .OnClicked_Lambda([this]{LogoutToLogin();return FReply::Handled();})
+        [SNew(STextBlock).Text(FText::FromString(TEXT("Logout"))).Font(SideFont(24)).ColorAndOpacity(Ink)]];
+       Menu->AddSlot().AutoHeight()[SNew(SButton).ButtonStyle(&MenuStyle).ContentPadding(FMargin(18,10))
+        .OnClicked_Lambda([this]{UKismetSystemLibrary::QuitGame(this,GetWorld()->GetFirstPlayerController(),EQuitPreference::Quit,false);return FReply::Handled();})
+        [SNew(STextBlock).Text(FText::FromString(TEXT("Exit"))).Font(SideFont(24)).ColorAndOpacity(Ink)]];
+       return SNew(SBox).WidthOverride(250)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)
+        [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(4)[Menu]]];
       })
       .ButtonContent()[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,4))
        [SNew(STextBlock).Text(FText::FromString(TEXT("git-meta"))).Font(Font(20)).ColorAndOpacity(FLinearColor(.94,.94,.9))]] ]
@@ -119,7 +124,8 @@ void ASlideGameMode::CreateDesktopHUD() {
 }
 void ASlideGameMode::EndPlay(const EEndPlayReason::Type Reason) {
  if(DesktopHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(DesktopHUD.ToSharedRef());
- DesktopHUD.Reset(); Super::EndPlay(Reason);
+ if(LoginHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(LoginHUD.ToSharedRef());
+ ParkMenu.Reset();LogoutButton.Reset();LoginButtonWidget.Reset();WorkstationField.Reset();LoginHUD.Reset();DesktopHUD.Reset(); Super::EndPlay(Reason);
 }
 
 FVector4 ASlideGameMode::ExpandedCardBounds() const {

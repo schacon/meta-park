@@ -111,3 +111,23 @@ keeping the flower pattern attached to his clothing. The beach-bar sign is 50%
 larger and raised clear of the roof, with the camera aimed higher to contain it.
 The rebuilt mesh and revised sign were visually checked in presentation and free
 flight at 1440×900; the complete native navigation check passes.
+
+
+`-SlideSmokeTest -LoginTest` exercises startup input blocking, invalid workstation
+numbers, editing the session length, Enter routed through the focused Slate field,
+incremental username/password typing, repeat Enter, the Login button and the actual
+Logout menu button. It checks 45-minute and default 35-minute countdowns, the
+five-minute wrap-up, waiting for the first visible slide, and resetting paused
+sessions, the computer demo, free flight and an opening gate. These checks pass in
+the packaged app at 1024×768 and 1440×900. The six compiler tests and full native
+navigation check also pass. The final logo, tick-marked `xclock`, black IRIX console and Toolchest
+were visually reviewed, along with the top-right auxiliary-window minimize controls and the larger,
+search-free Logout menu. The full login interaction also passes with this desktop.
+Login window refinement (2026-09-09): auxiliary minimize buttons sit at the far
+right, the login panel has no minimize control, and the console is larger with
+14-point text. Its size follows the available desktop space. Native login/logout
+checks pass at 1440×900; the updated login screenshots were visually reviewed.
+
+See the [starting desktop](screenshots/login-screen.png),
+[credential animation](screenshots/login-typing.png), and
+[Logout / Exit menu](screenshots/logout-menu.png).

@@ -45,15 +45,23 @@ travel and retraction. The arrival pause is 0.12 seconds, card expansion takes
 0.24 seconds, and the loading prompt lasts 0.32 seconds.
 
 The top-aligned sidebar links to all seven slide locations and shows park status,
-21 dinosaurs, visitor and staff countdowns, utility meters, and the slide number. The footer reads
-“GIT FINDS A WAY.” This deck sets `durationMinutes` to 35. The timer starts when
+the dinosaur population, visitor and staff countdowns, and the slide number. The footer reads
+“GIT FINDS A WAY.” The app starts at an SGI-style desktop with the Git-meta Park logo, a live clock,
+a black IRIX console, Toolchest menus, and a central workstation login.
+The `xclock` face has minute ticks and quarter-hour numerals; `[-]` at the far right collapses or
+restores each auxiliary window. The login window remains open. The larger console
+uses bigger text and fits the available space beside the login panel. Toolchest can restore the windows or focus the workstation field. **Enter** or
+**Login** types `s.chacon` and a masked password, then opens the overview.
+The editable **Workstation** number sets the session length in minutes (6–180,
+default 35). Visitors start at `(minutes − 5) × 100` and staff at `minutes × 10`,
+preserving five minutes to wrap up. The timer starts when
 the first slide content becomes visible, after arrival and loading. **P** pauses it.
-The clock keeps running on the overview. Visitors start at 3,000 and leave in random
+The clock keeps running on the overview. At workstation 35, visitors start at 3,000 and leave in random
 batches of 1–50, totaling exactly 100 each minute. They reach zero at 30 minutes,
 leaving five minutes to wrap up. Staff start at 350 and leave in batches of 1–10,
 totaling exactly 10 each minute and reaching zero at 35 minutes. Both counters
 pause with the timer, stay at zero, and flash red when empty. The top-right badge reads `s.chacon`. The visible population counters replace the
-remaining-time readout; the 35-minute clock continues internally.
+remaining-time readout; the configured clock continues internally.
 
 The scene uses faceted trees, a volcano, lagoon and waterfall, white paddock
 fences, entrance gate, visitor buildings, helipad and dock. A large cartoon dung pile sits beside the triceratops. Three paddocks each have one cartoon dinosaur; the compact raptor pen has three. The overview uses a distant, narrow-field perspective camera to match the
@@ -64,13 +72,16 @@ with gentle acceleration and deceleration. Their hips, knees, and ankles articul
 recovery steps that finish before a rest. Stride timing follows actual movement, including turns, and the
 three raptors keep separate lanes. The interface adds a workstation frame and subtle scanlines. The scene has its
 own viewport beside the compact sidebar and below the title bar, and preserves
-the full slide sign across window sizes. Click **git-meta → Quit**
-to exit.
+the full slide sign across window sizes. Click **git-meta → Logout** to return to login, retaining the workstation number
+and resetting the clock, counters, camera, gate and computer demo. The next login
+starts a fresh session; the timer again waits for the first slide.
+Click **git-meta → Exit** to exit.
 
 ## Controls
 
 | Key | Action |
 | --- | --- |
+| Enter on login | Type credentials and open park control |
 | 1–7 / numeric keypad | Open the corresponding map card |
 | 8 / numeric keypad 8 | Visit the hidden north-beach bar and bonus slide |
 | Click a map card or sidebar location | Open that area's slide |

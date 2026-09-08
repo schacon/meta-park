@@ -54,3 +54,8 @@ forest_material = unreal.load_asset('/Game/Models/M_IslandLit')
 forest_material.set_editor_property('used_with_instanced_static_meshes', True)
 unreal.MaterialEditingLibrary.recompile_material(forest_material)
 unreal.EditorAssetLibrary.save_asset('/Game/Models/M_IslandLit')
+
+# Branded starting screen, kept in the cooked Models directory.
+from pathlib import Path
+root=Path(unreal.Paths.project_dir()).resolve().parent
+exec(compile((root/'scripts/import_park_logo.py').read_text(),str(root/'scripts/import_park_logo.py'),'exec'))

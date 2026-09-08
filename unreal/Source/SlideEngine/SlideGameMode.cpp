@@ -222,10 +222,11 @@ void ASlideGameMode::BeginPlay() {
  }
 
  CreateDesktopHUD();
- UE_LOG(LogTemp,Display,TEXT("SlideEngine ready: %d slides, %d animated models; starting in park overview"),Views.Num(),Motions.Num());
+ if(bIsland){CreateLoginHUD();LogoutToLogin();}
+ UE_LOG(LogTemp,Display,TEXT("SlideEngine ready: %d slides, %d animated models; starting at workstation login"),Views.Num(),Motions.Num());
 }
 void ASlideGameMode::GoTo(int32 Next,bool Instant) {
- if(Views.IsEmpty()) return;
+ if(bLocked||Views.IsEmpty()) return;
  if(bIsland) {
   if(bFreeFlight){FlyToArea(Next);return;}
   const int32 Selected=(Next%Views.Num()+Views.Num())%Views.Num();
@@ -249,7 +250,7 @@ void ASlideGameMode::Overview() {
  Camera->SetActorLocationAndRotation(Eye,(Center-Eye).Rotation());
 }
 void ASlideGameMode::TickPresentationClock(float Delta) {
- if((bIsland?bTimerStarted:bTourStarted)&&!bTimerPaused)
+ if(!bLocked&&(bIsland?bTimerStarted:bTourStarted)&&!bTimerPaused)
   TimerElapsed=FMath::Min(TimerDuration,TimerElapsed+Delta);
 }
 int32 ASlideGameMode::RemainingVisitors() const {
@@ -268,6 +269,7 @@ FSlateColor ASlideGameMode::PopulationColor(int32 Remaining) const {
 }
 void ASlideGameMode::Tick(float Delta) {
  Super::Tick(Delta); if(!Camera || Views.IsEmpty()) return; Elapsed+=Delta;
+ if(bLocked){TickLogin(Delta);return;}
  TickPresentationClock(Delta);
  if(bIsland) { TickParkNavigation(Delta); return; }
  for(int32 PanelIndex=0;PanelIndex<Panels.Num();PanelIndex++) {
