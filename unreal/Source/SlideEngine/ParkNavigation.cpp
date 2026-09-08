@@ -2,6 +2,7 @@
 #include "IslandScene.h"
 #include "ParkViewportClient.h"
 #include "ParkCamera.h"
+#include "ParkTerminal.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneComponent.h"
@@ -56,6 +57,7 @@ void ASlideGameMode::HandleParkKey(const FKey& Key) {
   else if(Key==EKeys::P)bTimerPaused=!bTimerPaused;
   return;
  }
+ if(Key==EKeys::SpaceBar&&Index==0&&MapPhase==EMapPhase::Slide){ToggleTerminal();return;}
  const int32 Current=PendingIndex>=0?PendingIndex:Index;
  const bool Forward=Key==EKeys::Right||Key==EKeys::SpaceBar||Key==EKeys::PageDown;
  const bool Backward=Key==EKeys::Left||Key==EKeys::PageUp;
@@ -129,6 +131,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   const int32 Next=PendingIndex;PendingIndex=-1;GoTo(Next);
  }
  Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(Camera->GetActorLocation(),CameraLook));
+ if(Terminal.IsValid())Terminal->Update(Delta,Camera,!bFreeFlight&&Index==0&&MapPhase==EMapPhase::Slide);
  for(const auto& Base:SignBases)if(Base.IsValid())Base->SetActorHiddenInGame(bFreeFlight);
  for(int32 I=0;I<Panels.Num();I++) {
   auto& Panel=Panels[I];if(!Panel.Root.IsValid())continue;
@@ -143,6 +146,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   else M.Actor->SetActorRelativeLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
  }
  if(!Smoke)return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("TerminalTest"))){TestTerminal();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FreeFlightTest"))){TestFreeFlight();return;}
  if(WalkReview>0) {
   if(SmokeStep==0&&Elapsed>2){GoTo(FMath::Clamp(WalkReview-1,0,3));SmokeStep=1;}

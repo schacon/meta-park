@@ -8,6 +8,7 @@ class ACameraActor;
 class SWidget;
 class UTextureRenderTarget2D;
 class ASceneCapture2D;
+class FParkTerminal;
 struct FParkMapPin { FVector Position; FString Code, Name, Status; int32 SlideIndex=-1; bool bHero=false; };
 struct FSlideView { FVector Position; FRotator Rotation; float Duration; };
 struct FSlideMotion { TWeakObjectPtr<AActor> Actor; FVector Origin; FRotator Rotation; FString Kind; float Speed; float Amplitude; };
@@ -24,6 +25,9 @@ private:
  UPROPERTY() TObjectPtr<ACameraActor> Camera;
  TArray<FSlideView> Views;
  TArray<FParkMapPin> MapPins;
+ TSharedPtr<FParkTerminal> Terminal;
+ void ToggleTerminal();
+ void TestTerminal();
  TSet<int32> HiddenSlides;
  int32 NextVisibleSlide(int32 Current,int32 Direction) const;
  bool bAllHabitats=false;

@@ -148,7 +148,7 @@ void ASlideGameMode::BeginPlay() {
    Body->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Content)).Font(FCoreStyle::GetDefaultFontStyle(Heading?"Bold":Code?"Mono":"Regular",(Code?20:Heading?19:27)*TypeScale)).ColorAndOpacity(Heading?Accent:FLinearColor(.004,.004,.004)).AutoWrapText(true)];
   }
   Body->AddSlot().FillHeight(1);
-  Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString(TEXT("1–7 choose an area    ← → overview, then previous / next    Esc overview    N notes"))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
+  Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString((I==0?TEXT("Space computer demo    ← → overview, then previous / next    Esc overview    N notes"):TEXT("1–7 choose an area    ← → overview, then previous / next    Esc overview    N notes")))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
   auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.035,.035,.035)).Padding(5)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63,1)).Padding(48)[Body]];
   if(bIsland) {
    Content->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,I]{return Index==I&&MapPhase==EMapPhase::Slide?EVisibility::Visible:EVisibility::Hidden;}));
