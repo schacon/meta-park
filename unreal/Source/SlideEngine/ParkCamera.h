@@ -6,5 +6,5 @@ UCLASS()
 class SLIDEENGINE_API AParkCamera : public ACameraActor {
  GENERATED_BODY()
 public:
- virtual void CalcCamera(float DeltaTime, FMinimalViewInfo& OutResult) override;
+ void FrameScene(float FrameWidth, float LookDistance);
 };

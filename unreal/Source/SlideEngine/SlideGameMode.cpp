@@ -89,6 +89,9 @@ void ASlideGameMode::BeginPlay() {
   TreeCount=Stats.Trees; DinoCount=Stats.Dinosaurs;
  }
  double Duration; if(Deck->TryGetNumberField(TEXT("durationSeconds"),Duration)) TimerDuration=Duration;
+ FRandomStream DeparturesRandom(FMath::Rand());
+ VisitorDepartures.Build(3000,100,50,DeparturesRandom);
+ StaffDepartures.Build(350,10,10,DeparturesRandom);
  if(!bIsland) Block(GetWorld(),FVector(0,0,-1100),FVector(2000,2000,1),FColor::FromHex(TEXT("#488b67")));
  // Enclosing unlit sphere gives the flat cyan horizon of the workstation reference.
  auto* Sky=GetWorld()->SpawnActor<AStaticMeshActor>();
@@ -119,7 +122,9 @@ void ASlideGameMode::BeginPlay() {
    const auto Card=S->GetObjectField(TEXT("card"));
    HabitatLabel=Card->GetStringField(TEXT("label"));
    const FVector Target=Vec(Card,TEXT("position")); CardTargets.Add(Target);
-   MapPins.Add({Target,Card->GetStringField(TEXT("code")),HabitatLabel,Card->GetStringField(TEXT("status")),I,true});
+   bool Hidden=false;Card->TryGetBoolField(TEXT("hidden"),Hidden);
+   if(Hidden)HiddenSlides.Add(I);
+   else MapPins.Add({Target,Card->GetStringField(TEXT("code")),HabitatLabel,Card->GetStringField(TEXT("status")),I,true});
   }
   auto* SlideRoot=GetWorld()->SpawnActor<AActor>();
   auto* RootComponent=NewObject<USceneComponent>(SlideRoot); SlideRoot->SetRootComponent(RootComponent); SlideRoot->AddInstanceComponent(RootComponent); RootComponent->RegisterComponent();
@@ -131,18 +136,19 @@ void ASlideGameMode::BeginPlay() {
   Panel->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
   Frame->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
   TSharedRef<SVerticalBox> Body=SNew(SVerticalBox);
+  const int32 TypeScale=HiddenSlides.Contains(I)?2:1; // Bonus signs are read behind the scenery.
   const FString CardHeading=bIsland?FString::Printf(TEXT("[%d] %s  /  %s"),I+1,*S->GetObjectField(TEXT("card"))->GetStringField(TEXT("code")),*HabitatLabel):FString::Printf(TEXT("Slide %d / %d"),I+1,Slides.Num());
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.13,.61,.24)).Padding(12)
    [SNew(STextBlock).Text(FText::FromString(CardHeading)).Font(FCoreStyle::GetDefaultFontStyle("Mono",24)).ColorAndOpacity(FLinearColor(.015,.025,.02))]];
-  Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(S->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
+  Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(S->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48*TypeScale)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
   for(auto& Value:S->GetArrayField(TEXT("blocks"))) {
    auto B=Value->AsObject(); FString Kind=B->GetStringField(TEXT("kind")); FString Content=B->GetStringField(TEXT("text"));
    if(Kind==TEXT("li")) Content=TEXT("•  ")+Content;
    const bool Heading=Kind.StartsWith(TEXT("h")); const bool Code=Kind==TEXT("pre");
-   Body->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Content)).Font(FCoreStyle::GetDefaultFontStyle(Heading?"Bold":Code?"Mono":"Regular",Code?20:Heading?19:27)).ColorAndOpacity(Heading?Accent:FLinearColor(.004,.004,.004)).AutoWrapText(true)];
+   Body->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Content)).Font(FCoreStyle::GetDefaultFontStyle(Heading?"Bold":Code?"Mono":"Regular",(Code?20:Heading?19:27)*TypeScale)).ColorAndOpacity(Heading?Accent:FLinearColor(.004,.004,.004)).AutoWrapText(true)];
   }
   Body->AddSlot().FillHeight(1);
-  Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString(TEXT("1–7 choose an area    ← → previous / next    Esc overview    N notes"))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
+  Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString(TEXT("1–7 choose an area    ← → overview, then previous / next    Esc overview    N notes"))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
   auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.035,.035,.035)).Padding(5)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63,1)).Padding(48)[Body]];
   if(bIsland) {
    Content->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,I]{return Index==I&&MapPhase==EMapPhase::Slide?EVisibility::Visible:EVisibility::Hidden;}));
@@ -185,19 +191,28 @@ void ASlideGameMode::BeginPlay() {
    const auto& Path=View->GetArrayField(TEXT("path"));
    for(int32 K=0;K<2;K++){const auto& V=Path[K]->AsArray();(K==0?SwoopA:SwoopB).Add(FVector(V[0]->AsNumber(),V[1]->AsNumber(),V[2]->AsNumber()));}
    // A low plinth marks the fixed ground location. Twin stems rise from it.
-   Block(GetWorld(),Anchor+FVector(0,0,15),FVector(5,2,.3),FColor(125,139,125),FRotator(0,SignYaw,0));
+   SignBases.Add(Block(GetWorld(),Anchor+FVector(0,0,15),FVector(5,2,.3),FColor(125,139,125),FRotator(0,SignYaw,0)));
    for(float Y:{-480.f,480.f}) {
     auto* Stem=Block(GetWorld(),Transform.TransformPosition(FVector(-24,Y,-SignHeight/2)),FVector(.22,.22,SignHeight/100),FColor(65,78,67),Facing);
     Stem->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
    }
    SlideRoot->SetActorLocationAndRotation(Panels.Last().RaisedPosition,FRotator((CameraStops.Last()-Panels.Last().RaisedPosition).Rotation().Pitch,SignYaw,2));
+   // Fit the physical sign with a small margin, independently of resolution.
+   // Decorative MDX models may extend into the surrounding world.
+   const FVector Eye=CameraStops.Last();
+   const FQuat ViewRotation=(CameraTargets.Last()-Eye).Rotation().Quaternion();
+   float HalfTangent=0;
+   auto Include=[&](FVector Point){const FVector V=ViewRotation.UnrotateVector(Point-Eye);const float Depth=FMath::Max(10.f,float(V.X));HalfTangent=FMath::Max(HalfTangent,FMath::Max(FMath::Abs(V.Y)/Depth,FMath::Abs(V.Z)/Depth*(16.f/9.f)));};
+   for(float Y:{-740.f,740.f})for(float Z:{-470.f,470.f})Include(SlideRoot->GetActorTransform().TransformPosition(FVector(0,Y,Z)));
+   double FrameWidth=0;View->TryGetNumberField(TEXT("frameWidth"),FrameWidth);
+   FocusFrameWidths.Add(FMath::Max(float(FrameWidth),2*FVector::Distance(Eye,CameraTargets.Last())*HalfTangent*1.12f));
   }
   RootComponent->SetVisibility(false,true);
  }
  if(!Views.IsEmpty()) {
   if(bIsland) {
    Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Perspective);
-   Camera->GetCameraComponent()->SetFieldOfView(FMath::RadiansToDegrees(2*FMath::Atan(40000.f/400000.f)));
+   Camera->GetCameraComponent()->SetFieldOfView(FMath::RadiansToDegrees(2*FMath::Atan(OverviewFrameWidth/(2*FVector::Distance(MapEye,MapCenter)))));
    Camera->SetActorLocationAndRotation(MapEye,(MapCenter-MapEye).Rotation()); bOverview=true;
   } else { GoTo(0,true); Overview(); }
   bTourStarted=false;
@@ -209,6 +224,7 @@ void ASlideGameMode::BeginPlay() {
 void ASlideGameMode::GoTo(int32 Next,bool Instant) {
  if(Views.IsEmpty()) return;
  if(bIsland) {
+  if(bFreeFlight){FlyToArea(Next);return;}
   const int32 Selected=(Next%Views.Num()+Views.Num())%Views.Num();
   if(MapPhase==EMapPhase::Overview) { Index=Selected; BeginMapLeg(true); }
   else { PendingIndex=Selected; BeginMapLeg(false); }
@@ -229,9 +245,27 @@ void ASlideGameMode::Overview() {
  if(bIsland) { Center=FVector(2850,-750,0); Eye+=Center; }
  Camera->SetActorLocationAndRotation(Eye,(Center-Eye).Rotation());
 }
+void ASlideGameMode::TickPresentationClock(float Delta) {
+ if((bIsland?bTimerStarted:bTourStarted)&&!bTimerPaused)
+  TimerElapsed=FMath::Min(TimerDuration,TimerElapsed+Delta);
+}
+int32 ASlideGameMode::RemainingVisitors() const {
+ return VisitorDepartures.Remaining(TimerElapsed);
+}
+int32 ASlideGameMode::RemainingStaff() const {
+ return StaffDepartures.Remaining(TimerElapsed);
+}
+int32 ASlideGameMode::DinoPopulation() const {
+ return 100+FMath::FloorToInt(TimerElapsed/60.f);
+}
+FSlateColor ASlideGameMode::PopulationColor(int32 Remaining) const {
+ if(Remaining>0)return FLinearColor(.018,.022,.018);
+ // Keep the warning alive after the presentation clock has stopped at zero.
+ return FMath::Fmod(Elapsed,1.f)<.5f?FLinearColor(.85,.015,.01):FLinearColor(.24,.005,.003);
+}
 void ASlideGameMode::Tick(float Delta) {
  Super::Tick(Delta); if(!Camera || Views.IsEmpty()) return; Elapsed+=Delta;
- if(bTourStarted&&!bTimerPaused) TimerElapsed+=Delta;
+ TickPresentationClock(Delta);
  if(bIsland) { TickParkNavigation(Delta); return; }
  for(int32 PanelIndex=0;PanelIndex<Panels.Num();PanelIndex++) {
   auto& Panel=Panels[PanelIndex];if(!Panel.Root.IsValid())continue;

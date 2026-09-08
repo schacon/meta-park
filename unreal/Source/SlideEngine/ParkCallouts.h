@@ -43,8 +43,9 @@ public:
    Box(P+FVector2D(12,54),FVector2D(Pin.Status.Len()*10+12,19),Live?Green:FLinearColor(.39,.41,.37),5);
    Text(Pin.Status,P+FVector2D(18,53),13,6);
    TArray<FVector2D> Circle;for(int I=0;I<=20;I++){float A=I*2*PI/20;Circle.Add(Anchor+FVector2D(FMath::Cos(A),FMath::Sin(A))*8);}
-   Box(Anchor-FVector2D(5,5),FVector2D(10,10),Ink,7);
-   FSlateDrawElement::MakeLines(Out,Layer+8,G.ToPaintGeometry(),Circle,ESlateDrawEffect::None,FLinearColor(.96,.96,.87,Fade.Get()),true,2.5);
+   // Ground markers share the leader layer, below every card background.
+   Box(Anchor-FVector2D(5,5),FVector2D(10,10),Ink,1);
+   FSlateDrawElement::MakeLines(Out,Layer+1,G.ToPaintGeometry(),Circle,ESlateDrawEffect::None,FLinearColor(.96,.96,.87,Fade.Get()),true,2.5);
    if(Pin.SlideIndex>=0)HitAreas.Add({FSlateRect(P.X,P.Y,P.X+Size.X,P.Y+Size.Y),Pin.SlideIndex});
   }
   return Layer+9;

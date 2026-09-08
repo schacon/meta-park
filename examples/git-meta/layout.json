@@ -38,24 +38,24 @@
       "color": "#d4be70"
     },
     {
-      "id": "stegosaurus",
-      "label": "Stegosaurus range",
-      "species": "stegosaurus",
+      "id": "velociraptor",
+      "label": "Velociraptor pen",
+      "species": "velociraptor",
       "position": [
         -5700,
         4800,
         900
       ],
-      "color": "#7e9b5e"
+      "color": "#66876c"
     }
   ],
   "slides": {},
-  "durationMinutes": 20,
+  "durationMinutes": 35,
   "cards": [
     {
       "slide": "opening",
       "code": "ENC-01",
-      "label": "Brachiosaurus",
+      "label": "Brontosaurus",
       "status": "OK",
       "position": [
         5400,
@@ -181,7 +181,7 @@
     {
       "slide": "authoring",
       "code": "ENC-04",
-      "label": "Stegosaurus",
+      "label": "Velociraptor pen",
       "status": "OK",
       "position": [
         -5700,
@@ -216,7 +216,7 @@
         "look": [
           -5700,
           4800,
-          2000
+          1550
         ]
       }
     },
@@ -343,6 +343,50 @@
           0,
           -10500,
           2400
+        ]
+      }
+    },
+    {
+      "slide": "beach-bar",
+      "code": "BAR",
+      "label": "North Beach Bar",
+      "status": "OFF DUTY",
+      "hidden": true,
+      "position": [
+        0,
+        13100,
+        700
+      ],
+      "view": {
+        "anchor": [
+          0,
+          11600,
+          200
+        ],
+        "eye": [
+          0,
+          16600,
+          1900
+        ],
+        "signYaw": 83,
+        "signHeight": 1700,
+        "frameWidth": 5500,
+        "path": [
+          [
+            27000,
+            -1000,
+            18000
+          ],
+          [
+            15000,
+            18000,
+            9500
+          ]
+        ],
+        "look": [
+          0,
+          12900,
+          1100
         ]
       }
     }

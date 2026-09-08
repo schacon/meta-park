@@ -41,6 +41,7 @@ export function makeManifest(tree, layout = {}) {
       if (!slides.some(s => s.props.id === card.slide) || cardIds.has(card.slide)) fail('Each card must reference a unique known slide');
       if (![card.code,card.label,card.status].every(v=>typeof v==='string' && v.length>0) || codes.has(card.code)) fail('Cards need unique codes, labels and statuses');
       vector(card.position,undefined,'Card position');
+      if(card.hidden!==undefined&&typeof card.hidden!=='boolean')fail('Card hidden must be a boolean');
       if(card.view) {
         vector(card.view.anchor,undefined,'Sign anchor'); vector(card.view.eye,undefined,'Camera eye');
         if(card.view.look!==undefined)vector(card.view.look,undefined,'Camera subject');
@@ -48,6 +49,7 @@ export function makeManifest(tree, layout = {}) {
         card.view.path.forEach(p=>vector(p,undefined,'Flight path'));
         if(!Number.isFinite(card.view.signYaw))fail('Sign yaw must be finite');
         positive(card.view.signHeight,1100,'Sign height');
+        if(card.view.frameWidth!==undefined)positive(card.view.frameWidth,4500,'Camera frame width');
       }
       cardIds.add(card.slide); codes.add(card.code);
     }

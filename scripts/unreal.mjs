@@ -12,7 +12,7 @@ const task=process.argv[2];
 if(task==='build') run(join(root,'Engine/Build/BatchFiles',mac?'Mac/Build.sh':win?'Build.bat':'Linux/Build.sh'),['SlideEngineEditor',platform,'Development',project,'-WaitMutex']);
 else if(task==='prepare') run(editor,[project,'-unattended','-nullrhi',`-ExecutePythonScript=${resolve('scripts/prepare.py')}`,'-stdout']);
 else if(task==='import-assets') run(editor,[project,'-unattended','-nullrhi',`-ExecutePythonScript=${resolve('scripts/import_park_assets.py')}`,'-stdout']);
-else if(task==='smoke') run(editor,[project,'/Game/Maps/Presentation','-game','-windowed','-ResX=1600','-ResY=1000','-unattended','-nosound','-SlideSmokeTest','-stdout']);
+else if(task==='smoke') run(editor,[project,'/Game/Maps/Presentation','-game','-windowed','-ResX=1600','-ResY=1000','-unattended','-nosound','-SlideSmokeTest','-stdout',...process.argv.slice(3)]);
 else if(task==='play') run(editor,[project,'/Game/Maps/Presentation','-game','-windowed','-ResX=1600','-ResY=1000','-log']);
 else if(task==='package') run(join(root,'Engine/Build/BatchFiles',win?'RunUAT.bat':'RunUAT.sh'),['BuildCookRun',`-project=${project}`,'-noP4',`-platform=${platform}`,'-clientconfig=Development','-build','-cook','-stage','-package','-pak','-archive',`-archivedirectory=${resolve('dist')}`]);
 else throw new Error('Expected build, prepare, play or package');

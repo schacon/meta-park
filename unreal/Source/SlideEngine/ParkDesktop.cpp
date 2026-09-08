@@ -1,5 +1,6 @@
 #include "SlideGameMode.h"
 #include "ParkCallouts.h"
+#include "ParkFlightInput.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "Camera/CameraActor.h"
@@ -13,6 +14,9 @@
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SComboButton.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Styling/CoreStyle.h"
 #include "Brushes/SlateColorBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
@@ -33,68 +37,82 @@ void ASlideGameMode::CreateDesktopHUD() {
  const auto* Brush=FCoreStyle::Get().GetBrush("WhiteBrush");
  static FButtonStyle MenuStyle=FButtonStyle().SetNormal(FSlateColorBrush(FLinearColor::Transparent)).SetHovered(FSlateColorBrush(FLinearColor(.32,.64,.35))).SetPressed(FSlateColorBrush(FLinearColor(.18,.48,.25)));
  auto Font=[](int Size) {return FSlateFontInfo(FPaths::ProjectContentDir()/TEXT("Fonts/RobotoMono-Bold.ttf"),Size);};
- auto Text=[&](const TCHAR* Value,int Size=20) { return SNew(STextBlock).Text(FText::FromString(Value)).Font(Font(Size)).ColorAndOpacity(Ink); };
+ auto SideFont=[](int Size) {return FSlateFontInfo(FPaths::ProjectContentDir()/TEXT("Fonts/RobotoMono-Regular.ttf"),FMath::RoundToInt(Size*.85f));};
+ auto Text=[&](const TCHAR* Value,int Size=20) { return SNew(STextBlock).Text(FText::FromString(Value)).Font(SideFont(Size)).ColorAndOpacity(Ink); };
  auto Side=SNew(SVerticalBox);
  auto Rule=[&](){Side->AddSlot().AutoHeight().Padding(0,8)[SNew(SBox).HeightOverride(2)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink)]];};
  auto Row=[&](const TCHAR* Label,TAttribute<FText> Value) {
   Side->AddSlot().AutoHeight().Padding(0,2)[SNew(SHorizontalBox)
    +SHorizontalBox::Slot().FillWidth(1)[Text(Label)]
-   +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(Value).Font(Font(20)).ColorAndOpacity(Ink)]];
+   +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(Value).Font(SideFont(20)).ColorAndOpacity(Ink)]];
  };
  Side->AddSlot().AutoHeight().Padding(0,10,0,0)[Text(TEXT("ingen:~$"),23)]; Rule();
- for(const FString Label:{TEXT("Park Status"),TEXT("Dinosaurs"),TEXT("Enclosures"),TEXT("Research"),TEXT("Facilities"),TEXT("Maps"),TEXT("System")}) {
+ for(const auto& Pin:MapPins) {
+  const int32 SlideIndex=Pin.SlideIndex;
+  FString Name=Pin.Name;
+  if(Name==TEXT("Brontosaurus"))Name=TEXT("Bronto. paddock");
+  else if(Name==TEXT("Triceratops"))Name=TEXT("Tri. paddock");
+  else if(Name==TEXT("T. rex"))Name+=TEXT(" paddock");
+  const FString Label=FString::Printf(TEXT("%d %s"),SlideIndex+1,*Name);
   Side->AddSlot().AutoHeight()[SNew(SBorder).BorderImage(Brush).Padding(0)
-   .BorderBackgroundColor_Lambda([this,Active,Label]{return ParkSection==Label?Active:FLinearColor::Transparent;})
-   [SNew(SButton).ButtonStyle(&MenuStyle).IsFocusable(false).ContentPadding(FMargin(9,1))
-    .OnClicked_Lambda([this,Label]{if(!FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"))){ParkSection=Label;bAllHabitats=Label==TEXT("Dinosaurs")||Label==TEXT("Enclosures");Overview();}return FReply::Handled();})
-    [SNew(STextBlock).Text_Lambda([this,Label]{return FText::FromString((ParkSection==Label?TEXT("> "):TEXT("  "))+Label);}).Font(Font(20)).ColorAndOpacity(Ink)]]];
+   .BorderBackgroundColor_Lambda([this,Active,SlideIndex]{return (PendingIndex>=0?PendingIndex:MapPhase!=EMapPhase::Overview?Index:-1)==SlideIndex?Active:FLinearColor::Transparent;})
+   [SNew(SButton).ButtonStyle(&MenuStyle).IsFocusable(false).ContentPadding(FMargin(6,3))
+    .OnClicked_Lambda([this,SlideIndex]{GoTo(SlideIndex);return FReply::Handled();})
+    [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly).HAlign(HAlign_Left)
+     [SNew(STextBlock).Text(FText::FromString(Label)).Font(SideFont(18)).ColorAndOpacity(Ink)]]]];
  }
  Rule();
  Side->AddSlot().AutoHeight().Padding(0,0,0,8)[Text(TEXT("PARK STATUS"),18)];
  Side->AddSlot().AutoHeight().HAlign(HAlign_Left)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Active).Padding(FMargin(10,4))[Text(TEXT("OPERATIONAL"),22)]];
  Rule();
- Row(TEXT("Visitors"),FText::FromString(TEXT("1,248")));
- Row(TEXT("Staff"),FText::FromString(TEXT("312")));
- Row(TEXT("Dinosaurs"),TAttribute<FText>::CreateLambda([this]{return FText::AsNumber(DinoCount);}));
- Row(TEXT("Enclosures"),TAttribute<FText>::CreateLambda([this]{return FText::AsNumber(HabitatCount);}));
- Rule();
- auto Meter=[&](const TCHAR* Label,int Percent) {
-  auto Cells=SNew(SHorizontalBox);
-  for(int I=0;I<5;I++)Cells->AddSlot().AutoWidth().Padding(2,0)[SNew(SBox).WidthOverride(19).HeightOverride(22)
-   [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(1.5)
-    [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(I<FMath::RoundToInt(Percent/20.f)?Active:FLinearColor(.38,.4,.36))]]];
-  Side->AddSlot().AutoHeight().Padding(0,5)[SNew(SHorizontalBox)
-   +SHorizontalBox::Slot().FillWidth(1)[Text(Label,17)]
-   +SHorizontalBox::Slot().AutoWidth().Padding(0,0,5,0)[Text(*FString::Printf(TEXT("%d%%"),Percent),17)]
-   +SHorizontalBox::Slot().AutoWidth()[Cells]];
+ auto PopulationRow=[&](const TCHAR* Label,bool Visitors) {
+  auto Count=[this,Visitors]{return Visitors?RemainingVisitors():RemainingStaff();};
+  Side->AddSlot().AutoHeight().Padding(0,2)[SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Label)).Font(SideFont(20))
+    .ColorAndOpacity_Lambda([this,Count]{return PopulationColor(Count());})]
+   +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([Count]{return FText::AsNumber(Count());}).Font(SideFont(20))
+    .ColorAndOpacity_Lambda([this,Count]{return PopulationColor(Count());})]];
  };
- Meter(TEXT("Power"),87);Meter(TEXT("Water"),92);Meter(TEXT("Security"),94);
- Rule();
- Side->AddSlot().AutoHeight().Padding(0,12)[SNew(STextBlock).Text_Lambda([this]{const int S=FMath::Max(0,FMath::CeilToInt(TimerDuration-TimerElapsed));return FText::FromString(FString::Printf(TEXT("SLIDE %02d / %02d\n%02d:%02d REMAINING"),bOverview?0:Index+1,Views.Num(),S/60,S%60));}).Font(Font(17)).ColorAndOpacity(Ink)];
+ PopulationRow(TEXT("Visitors"),true);PopulationRow(TEXT("Staff"),false);
+ Row(TEXT("Dinosaurs"),TAttribute<FText>::CreateLambda([this]{return FText::AsNumber(DinoPopulation());}));
  Rule();
  Side->AddSlot().FillHeight(1).MinHeight(12);
- Side->AddSlot().AutoHeight().Padding(0,6,0,12)[Text(TEXT("G I T\nF I N D S\nA  W A Y  _"),22)];
+ Side->AddSlot().AutoHeight().HAlign(HAlign_Right).Padding(0,12)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(bFreeFlight?TEXT("FREE FLIGHT\nDrag to look\nWASD / arrows move\nQ down · E up\nShift faster\n1–7 fly · F overview"):(HiddenSlides.Contains(Index)&&!bOverview?TEXT("BONUS 08"):FString::Printf(TEXT("SLIDE %02d / %02d"),bOverview?0:Index+1,Views.Num()-HiddenSlides.Num())));}).Font(SideFont(17)).ColorAndOpacity(Ink).Justification(ETextJustify::Right)];
+ Rule();
+ Side->AddSlot().AutoHeight().HAlign(HAlign_Right).Padding(0,6,0,12)[SNew(STextBlock).Text(FText::FromString(TEXT("G I T\nF I N D S\nA  W A Y  _"))).Font(SideFont(22)).ColorAndOpacity(Ink).Justification(ETextJustify::Right)];
  auto Scanlines=SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible);
  for(int I=0;I<140;I++) Scanlines->AddSlot().FillHeight(1).VAlign(VAlign_Bottom)[SNew(SBox).HeightOverride(1)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(FLinearColor(0,0,0,.008f))]];
  DesktopHUD=SNew(SOverlay)
+ +SOverlay::Slot()[SNew(SParkFlightInput).Visibility_Lambda([this]{return bFreeFlight?EVisibility::Visible:EVisibility::Collapsed;}).Look([this](FVector2D Delta){FreeDrag+=Delta;})]
  +SOverlay::Slot()[SNew(SParkCallouts).Controller(GetWorld()->GetFirstPlayerController())
- .Visibility_Lambda([this]{return MapPhase==EMapPhase::Overview||(MapPhase==EMapPhase::ZoomOut&&Travel>=MapLegDuration*.88f)?EVisibility::Visible:EVisibility::Collapsed;})
- .Pins([this]{TArray<FParkMapPin> Result;for(const auto& P:MapPins){if(CardExpansion>.001f&&P.SlideIndex==Index)continue;const bool Visible=ParkSection==TEXT("Research")?P.Code==TEXT("VC"):ParkSection==TEXT("Facilities")?!P.Code.StartsWith(TEXT("ENC-")):bAllHabitats?P.Code.StartsWith(TEXT("ENC-")):P.bHero;if(Visible)Result.Add(P);}return Result;})
+ .Visibility_Lambda([this]{return !bFreeFlight&&(MapPhase==EMapPhase::Overview||(MapPhase==EMapPhase::ZoomOut&&Travel>=MapLegDuration*.88f))?EVisibility::Visible:EVisibility::Collapsed;})
+ .Pins([this]{return MapPins;})
  .Choose([this](int32 Next){if(!FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest")))GoTo(Next);})]
- +SOverlay::Slot().HAlign(HAlign_Left).Padding(0,72,0,0)[SNew(SBox).WidthOverride_Lambda([this]{const float W=DesktopHUD.IsValid()?DesktopHUD->GetCachedGeometry().GetLocalSize().X:0;return W>0?FMath::Min(350.f,W*.3f):350.f;})[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(25,12))[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(296)[Side]]]]]]
+ +SOverlay::Slot().HAlign(HAlign_Left).Padding(0,72,0,0)[SNew(SBox).WidthOverride_Lambda([this]{const float W=DesktopHUD.IsValid()?DesktopHUD->GetCachedGeometry().GetLocalSize().X:0;return W>0?FMath::Min(280.f,W*.26f):280.f;})[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(19,10))[SNew(SScaleBox).VAlign(VAlign_Top).Stretch(EStretch::ScaleToFit)[SNew(SBox).WidthOverride(238)
+   .HeightOverride_Lambda([this]{const float H=DesktopHUD.IsValid()?DesktopHUD->GetCachedGeometry().GetLocalSize().Y:0;return H>0?FMath::Max(400.f,H-72.f-24.f-20.f):600.f;})
+   [Side]]]]]]
  +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(24,96)[SNew(SBorder).Visibility_Lambda([this]{return CardExpansion<.01f?EVisibility::Visible:EVisibility::Collapsed;}).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(3,3,7,7))[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(12)[Text(TEXT("ISLA NUBLAR\nPARK CONTROL\n1993"),17)]]]
  +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(24,24)[SNew(STextBlock).Text(FText::FromString(TEXT("N\n↑"))).Justification(ETextJustify::Center).Font(FCoreStyle::GetDefaultFontStyle("Mono",30)).ColorAndOpacity(FLinearColor(.93,.96,.88))]
  +SOverlay::Slot().VAlign(VAlign_Top)[SNew(SBox).HeightOverride(72)
   [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(2)
    [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(24,12))
     [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,4))
-      [SNew(STextBlock).Text(FText::FromString(TEXT("git-meta"))).Font(Font(20)).ColorAndOpacity(FLinearColor(.94,.94,.9))]]
-     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(20,0)[Text(TEXT("park visitor survival monitoring system"),20)]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SComboButton).HasDownArrow(false).ButtonStyle(&MenuStyle).ContentPadding(0)
+      .OnGetMenuContent_Lambda([this]{
+       FMenuBuilder Menu(true,nullptr);
+       Menu.AddMenuEntry(FText::FromString(TEXT("Quit")),FText::FromString(TEXT("Exit git-meta park")),FSlateIcon(),FUIAction(FExecuteAction::CreateLambda([this]{UKismetSystemLibrary::QuitGame(this,GetWorld()->GetFirstPlayerController(),EQuitPreference::Quit,false);})));
+       return Menu.MakeWidget();
+      })
+      .ButtonContent()[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,4))
+       [SNew(STextBlock).Text(FText::FromString(TEXT("git-meta"))).Font(Font(20)).ColorAndOpacity(FLinearColor(.94,.94,.9))]] ]
+     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(20,0)[SNew(SHorizontalBox)
+      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("park visitor survival monitoring system"))).Font(Font(20)).ColorAndOpacity(Ink)]
+      +SHorizontalBox::Slot().FillWidth(1).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(16,0)[SNew(STextBlock).Text(FText::FromString(TEXT("it's UNIX, I know this..."))).Font(SideFont(18)).Justification(ETextJustify::Center).ColorAndOpacity(FLinearColor(.025,.22,.055))]
+     ]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(12,0,24,0)
-      [SNew(STextBlock).Text_Lambda([]{return FText::FromString(TEXT("v0.1 · ")+FDateTime::Now().ToString(TEXT("%H:%M")));}).Font(Font(18)).ColorAndOpacity(Ink)]
+      [SNew(STextBlock).Text_Lambda([]{return FText::FromString(TEXT("v2.55.0 · ")+FDateTime::Now().ToString(TEXT("%H:%M")));}).Font(Font(18)).ColorAndOpacity(Ink)]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,5))
-      [SNew(STextBlock).Text(FText::FromString(TEXT("3α"))).Font(Font(18)).ColorAndOpacity(FLinearColor(.94,.94,.9))]]
+      [SNew(STextBlock).Text(FText::FromString(TEXT("s.chacon"))).Font(Font(18)).ColorAndOpacity(FLinearColor(.94,.94,.9))]]
     ]]]]
  +SOverlay::Slot()[Scanlines];
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(DesktopHUD.ToSharedRef(),10); SetMouseMode(false);

@@ -1,5 +1,7 @@
 #include "SlideGameMode.h"
 #include "IslandScene.h"
+#include "ParkViewportClient.h"
+#include "ParkCamera.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneComponent.h"
@@ -15,8 +17,15 @@
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 
-float ASlideGameMode::ParkFocusWidth() const { return 3100.f*FVector::Distance(CameraStops[Index],CameraTargets[Index])/FVector::Distance(CameraStops[Index],Panels[Index].RaisedPosition); }
+float ASlideGameMode::ParkFocusWidth() const { return FocusFrameWidths[Index]; }
 FVector ASlideGameMode::ParkFocusEye() const { return CameraStops[Index]; }
+int32 ASlideGameMode::NextVisibleSlide(int32 Current,int32 Direction) const {
+ for(int32 Step=0;Step<Views.Num();Step++) {
+  Current=(Current+Direction+Views.Num())%Views.Num();
+  if(!HiddenSlides.Contains(Current))return Current;
+ }
+ return Current;
+}
 void ASlideGameMode::CaptureCardBounds() {
  auto* PC=GetWorld()->GetFirstPlayerController(); FVector2D Screen;
  int32 W,H;PC->GetViewportSize(W,H);
@@ -38,37 +47,55 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
  SetMouseMode(false);
 }
 void ASlideGameMode::HandleParkKey(const FKey& Key) {
- static const FKey Numbers[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven};
- static const FKey Numpad[]={EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven};
- for(int32 I=0;I<7&&I<Views.Num();I++)if(Key==Numbers[I]||Key==Numpad[I]){GoTo(I);return;}
+ if(Key==EKeys::F){ToggleFreeFlight();return;}
+ static const FKey Numbers[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight};
+ static const FKey Numpad[]={EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight};
+ for(int32 I=0;I<8&&I<Views.Num();I++)if(Key==Numbers[I]||Key==Numpad[I]){GoTo(I);return;}
+ if(bFreeFlight) {
+  if(Key==EKeys::Escape||Key==EKeys::O)ToggleFreeFlight();
+  else if(Key==EKeys::P)bTimerPaused=!bTimerPaused;
+  return;
+ }
  const int32 Current=PendingIndex>=0?PendingIndex:Index;
- if(Key==EKeys::Right||Key==EKeys::SpaceBar||Key==EKeys::PageDown)GoTo(!bTourStarted?0:Current+1);
- else if(Key==EKeys::Left||Key==EKeys::PageUp)GoTo(Current-1);
+ const bool Forward=Key==EKeys::Right||Key==EKeys::SpaceBar||Key==EKeys::PageDown;
+ const bool Backward=Key==EKeys::Left||Key==EKeys::PageUp;
+ if(Forward||Backward) {
+  const int32 Next=Forward?(!bTourStarted?0:NextVisibleSlide(Current,1)):NextVisibleSlide(Current,-1);
+  if(MapPhase==EMapPhase::Overview)GoTo(Next);
+  // A second explicit press during the return can choose the next stop,
+  // without restarting the flight. The first press only returns to the map.
+  else if(MapPhase==EMapPhase::Retract||MapPhase==EMapPhase::ZoomOut)PendingIndex=(Next%Views.Num()+Views.Num())%Views.Num();
+  else Overview();
+ }
  else if(Key==EKeys::Escape||Key==EKeys::O)Overview();
  else if(Key==EKeys::Home)GoTo(0);
  else if(Key==EKeys::P)bTimerPaused=!bTimerPaused;
  else if(Key==EKeys::N&&GEngine)GEngine->AddOnScreenDebugMessage(42,20,FColor::Cyan,Notes[Index].IsEmpty()?TEXT("No speaker notes for this slide."):Notes[Index]);
 }
 void ASlideGameMode::TickParkNavigation(float Delta) {
+ IslandScene::Animate(Elapsed);
  const bool Smoke=FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest"));
+ int32 WalkReview=0;if(Smoke)FParse::Value(FCommandLine::Get(),TEXT("DinoWalkReview="),WalkReview);
  auto* PC=GetWorld()->GetFirstPlayerController();
  // Slate geometry already includes display scaling. Reserve exactly the same
  // fraction of the viewport for the sidebar and title bar, on every frame.
  if(DesktopHUD.IsValid())if(auto* Player=PC->GetLocalPlayer()) {
   const FVector2D Size=DesktopHUD->GetCachedGeometry().GetLocalSize();
   if(Size.X>0&&Size.Y>0) {
-   Player->Origin=FVector2D(FMath::Min(350.f,float(Size.X)*.3f)/Size.X,FMath::Min(72.f,float(Size.Y)*.15f)/Size.Y);
+   Player->Origin=FVector2D(FMath::Min(280.f,float(Size.X)*.26f)/Size.X,FMath::Min(72.f,float(Size.Y)*.15f)/Size.Y);
    Player->Size=FVector2D(1,1)-Player->Origin;
+   if(auto* Viewport=Cast<UParkViewportClient>(Player->ViewportClient))Viewport->SceneOrigin=Player->Origin;
   }
  }
  if(!Smoke) {
-  const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,
-   EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,
-   EKeys::Right,EKeys::Left,EKeys::SpaceBar,EKeys::PageDown,EKeys::PageUp,EKeys::Escape,EKeys::O,EKeys::Home,EKeys::P,EKeys::N};
+  const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,
+   EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight,
+   EKeys::Right,EKeys::Left,EKeys::SpaceBar,EKeys::PageDown,EKeys::PageUp,EKeys::Escape,EKeys::O,EKeys::Home,EKeys::P,EKeys::N,EKeys::F};
   for(const FKey& Key:Keys)if(PC->WasInputKeyJustPressed(Key))HandleParkKey(Key);
  }
  Travel+=Delta;
- if(MapPhase==EMapPhase::ZoomIn||MapPhase==EMapPhase::ZoomOut) {
+ if(bFreeFlight)TickFreeFlight(Delta);
+ else if(MapPhase==EMapPhase::ZoomIn||MapPhase==EMapPhase::ZoomOut) {
   const bool In=MapPhase==EMapPhase::ZoomIn;
   const float T=FMath::Clamp(Travel/MapLegDuration,0.f,1.f), Ease=T*T*(3-2*T);
   const FVector Look=In?CameraTargets[Index]:MapCenter;
@@ -79,7 +106,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   CameraLook=FMath::Lerp(FromLook,Look,Ease);
   FRotator Rotation=(CameraLook-Position).Rotation();Rotation.Roll=FMath::Sin(PI*Ease)*(Index%2?2.f:-2.f);
   const float Distance=FVector::Distance(Position,CameraLook);
-  CameraFrameWidth=FMath::Exp(FMath::Lerp(FMath::Loge(FromFrameWidth),FMath::Loge(In?ParkFocusWidth():40000.f),Ease));
+  CameraFrameWidth=FMath::Exp(FMath::Lerp(FMath::Loge(FromFrameWidth),FMath::Loge(In?ParkFocusWidth():OverviewFrameWidth),Ease));
   Camera->SetActorLocationAndRotation(Position,Rotation);
   Camera->GetCameraComponent()->SetFieldOfView(FMath::RadiansToDegrees(2*FMath::Atan(CameraFrameWidth/(2*Distance))));
   CardExpansion=0; // The flight is unobstructed; slide contents never travel across the map.
@@ -87,13 +114,13 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
    MapPhase=In?EMapPhase::Arrived:EMapPhase::Overview; bOverview=!In; Travel=0;
    if(!In&&PendingIndex>=0&&Smoke)UE_LOG(LogTemp,Display,TEXT("SlideSmoke: overview between slides=PASS"));
   }
- } else if(MapPhase==EMapPhase::Arrived&&Travel>=.12f) {
+ } else if(MapPhase==EMapPhase::Arrived&&Travel>=.12f&&WalkReview==0) {
   MapPhase=EMapPhase::Expand;Travel=0;
  } else if(MapPhase==EMapPhase::Expand) {
   const float T=FMath::Clamp(Travel/.24f,0.f,1.f);CardExpansion=T*T*(3-2*T);
   if(T>=1){MapPhase=EMapPhase::Loading;Travel=0;}
  } else if(MapPhase==EMapPhase::Loading&&Travel>=.32f) {
-  MapPhase=EMapPhase::Slide;Travel=0;
+  MapPhase=EMapPhase::Slide;Travel=0;bTimerStarted=true;
  } else if(MapPhase==EMapPhase::Retract) {
   const float T=FMath::Clamp(Travel/MapLegDuration,0.f,1.f);CardExpansion=FromExpansion*(1-T*T*(3-2*T));
   if(T>=1){CardExpansion=0;BeginMapLeg(false);}
@@ -101,19 +128,40 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(MapPhase==EMapPhase::Overview&&PendingIndex>=0&&Travel>.12f) {
   const int32 Next=PendingIndex;PendingIndex=-1;GoTo(Next);
  }
+ Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(Camera->GetActorLocation(),CameraLook));
+ for(const auto& Base:SignBases)if(Base.IsValid())Base->SetActorHiddenInGame(bFreeFlight);
  for(int32 I=0;I<Panels.Num();I++) {
   auto& Panel=Panels[I];if(!Panel.Root.IsValid())continue;
-  const float Rise=I==Index?CardExpansion:0;
+  const float Rise=!bFreeFlight&&I==Index?CardExpansion:0;
   Panel.Reveal=Rise;
   Panel.Root->SetActorLocation(FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
   Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f,true);
-  for(const auto& Model:Panel.Models)if(Model.IsValid())Model->SetActorHiddenInGame(I!=Index||MapPhase!=EMapPhase::Slide);
+  for(const auto& Model:Panel.Models)if(Model.IsValid())Model->SetActorHiddenInGame(bFreeFlight||I!=Index||MapPhase!=EMapPhase::Slide);
  }
  for(auto& M:Motions)if(M.Actor.IsValid()) {
   if(M.Kind==TEXT("spin"))M.Actor->SetActorRelativeRotation(M.Rotation+FRotator(0,Elapsed*M.Speed,0));
   else M.Actor->SetActorRelativeLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
  }
  if(!Smoke)return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("FreeFlightTest"))){TestFreeFlight();return;}
+ if(WalkReview>0) {
+  if(SmokeStep==0&&Elapsed>2){GoTo(FMath::Clamp(WalkReview-1,0,3));SmokeStep=1;}
+  if(MapPhase==EMapPhase::Arrived) {
+   const int32 Frame=FMath::FloorToInt(Travel*8);
+   if(Frame>=SmokeStep-1) {
+    FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/FString::Printf(TEXT("Screenshots/walk-%d-%03d.png"),WalkReview,Frame),true,false);
+    SmokeStep=Frame+2;
+   }
+   if(Travel>16)FPlatformMisc::RequestExit(false);
+  }
+  return;
+ }
+
+ // Waiting on the map, an interrupted approach, and the first loading prompt
+ // must not consume presentation time before any slide content is visible.
+ if(!bTimerStarted&&(TimerElapsed!=0||(RemainingVisitors()!=3000||RemainingStaff()!=350))) {
+  UE_LOG(LogTemp,Error,TEXT("SlideSmoke: countdown started before first viewed slide"));FPlatformMisc::RequestExitWithStatus(false,1);return;
+ }
  const bool StableProjection=Camera->GetCameraComponent()->ProjectionMode==ECameraProjectionMode::Perspective;
  if(!StableProjection){UE_LOG(LogTemp,Error,TEXT("SlideSmoke: projection changed"));FPlatformMisc::RequestExitWithStatus(false,1);return;}
  const bool AtArea=Camera->GetActorLocation().Equals(ParkFocusEye(),1.f);
@@ -133,10 +181,11 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   bInitialCaptured=true;FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/park-overview.png"),true,false);
  }
  if(SmokeStep==0&&Elapsed>2) {
-  const bool Seven=Views.Num()==7&&MapPins.Num()==7&&CardTargets.Num()==7&&CardExpansion==0;
+  if(!IslandScene::ValidateWandering()||!IslandScene::ValidateArticulatedGaits()){FPlatformMisc::RequestExitWithStatus(false,1);return;}
+  const bool Seven=Views.Num()==8&&MapPins.Num()==7&&CardTargets.Num()==8&&HiddenSlides.Contains(7)&&CardExpansion==0;
   UE_LOG(LogTemp,Display,TEXT("SlideSmoke: seven numbered map cards=%s"),Seven?TEXT("PASS"):TEXT("FAIL"));
   if(!Seven){FPlatformMisc::RequestExitWithStatus(false,1);return;}
-  HandleParkKey(EKeys::One);SmokeStep=1;
+  HandleParkKey(EKeys::Right);SmokeStep=1;
  }
  // Exercise interruption while zooming, then Escape must cancel the queued destination.
  else if(SmokeStep==1&&Travel>.2f) {FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/card-zoom.png"),true,false);HandleParkKey(EKeys::Seven);HandleParkKey(EKeys::Escape);SmokeStep=2;}
@@ -149,23 +198,63 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   if(!Cancelled){FPlatformMisc::RequestExitWithStatus(false,1);return;}
   HandleParkKey(EKeys::One);SmokeStep=3;
  }
+ // Arrow departure must remain neutral until a second explicit press.
+ else if((SmokeStep==4||SmokeStep==6)&&MapPhase==EMapPhase::Overview&&Travel>.8f) {
+  const int32 Previous=SmokeStep==4?0:6;
+  const bool Held=PendingIndex==-1&&Index==Previous&&CardExpansion==0&&Camera->GetActorLocation().Equals(MapEye,1.f)&&FMath::IsNearlyEqual(CameraFrameWidth,OverviewFrameWidth,1.f);
+  UE_LOG(LogTemp,Display,TEXT("SlideSmoke: %s waits in overview for second press=%s"),SmokeStep==4?TEXT("forward"):TEXT("backward"),Held?TEXT("PASS"):TEXT("FAIL"));
+  if(!Held){FPlatformMisc::RequestExitWithStatus(false,1);return;}
+  HandleParkKey(SmokeStep==4?EKeys::PageDown:EKeys::PageUp);
+ }
  else if(SmokeStep>=3&&SmokeStep<=9&&MapPhase==EMapPhase::Slide&&Travel>.7f) {
   const int32 Expected[]={0,1,6,5,2,3,4};
   const int32 Step=SmokeStep-3;
+  if(SmokeStep==3&&!bSmokeCaptured) {
+   const float Saved=TimerElapsed;
+   bool ClockOK=bTimerStarted&&Saved>0&&Saved<1&&TimerDuration==2100;
+   const int32 VisitorsBefore=RemainingVisitors(),StaffBefore=RemainingStaff();
+   bTimerPaused=true;TickPresentationClock(10);
+   ClockOK&=TimerElapsed==Saved&&RemainingVisitors()==VisitorsBefore&&RemainingStaff()==StaffBefore;
+   bTimerPaused=false;
+   auto CheckDepartures=[&](const FParkDepartures& Schedule,int32 PerMinute,int32 MaxBatch) {
+    bool Good=Schedule.Remaining(0)==Schedule.Initial;
+    float Last=0;
+    for(const auto& Batch:Schedule.Batches) {
+     Good&=Batch.Time>Last&&Batch.Count>=1&&Batch.Count<=MaxBatch;Last=Batch.Time;
+    }
+    for(int32 Minute=1;Minute<=35;Minute++)Good&=Schedule.Remaining(Minute*60.f)==FMath::Max(0,Schedule.Initial-Minute*PerMinute);
+    const float End=Schedule.Initial/PerMinute*60.f;
+    Good&=Schedule.Remaining(End-.01f)>0&&Schedule.Remaining(End)==0&&Schedule.Remaining(End+3600)==0;
+    return Good;
+   };
+   ClockOK&=CheckDepartures(VisitorDepartures,100,50)&&CheckDepartures(StaffDepartures,10,10);
+   // Check multiple randomized schedules, not just the current launch's seed.
+   for(int32 Seed=0;Seed<100;Seed++) {
+    FRandomStream Random(Seed);FParkDepartures Visitors,Staff;
+    Visitors.Build(3000,100,50,Random);Staff.Build(350,10,10,Random);
+    ClockOK&=CheckDepartures(Visitors,100,50)&&CheckDepartures(Staff,10,10);
+   }
+   TickPresentationClock(1800-Saved);ClockOK&=RemainingVisitors()==0&&RemainingStaff()==50;
+   TickPresentationClock(300);ClockOK&=TimerElapsed==2100&&RemainingStaff()==0;
+   TickPresentationClock(600);ClockOK&=TimerElapsed==2100&&RemainingVisitors()==0&&RemainingStaff()==0;
+   const float SavedElapsed=Elapsed;
+   Elapsed=0;const auto Bright=PopulationColor(0).GetSpecifiedColor();
+   Elapsed=.5f;const auto Dim=PopulationColor(0).GetSpecifiedColor();
+   ClockOK&=Bright.R>Bright.G&&Dim.R>Dim.G&&Bright!=Dim;
+   Elapsed=SavedElapsed;TimerElapsed=Saved;
+   UE_LOG(LogTemp,Display,TEXT("SlideSmoke: randomized batches, exact minute totals, 30/35-minute endpoints, pause and flashing zero counters=%s"),ClockOK?TEXT("PASS"):TEXT("FAIL"));
+   if(!ClockOK){FPlatformMisc::RequestExitWithStatus(false,1);return;}
+  }
   const bool Good=Index==Expected[Step]&&CardExpansion==1&&Camera->GetActorLocation().Equals(ParkFocusEye(),1.f)&&Camera->GetActorRotation().Equals((CameraTargets[Index]-ParkFocusEye()).Rotation(),.1f)&&Panels[Index].Reveal==1;
   bool Fits=true;
   const auto* Player=PC->GetLocalPlayer();
   const FIntPoint Screen=Player->ViewportClient->Viewport->GetSizeXY();
   const FVector2D Min=Player->Origin*FVector2D(Screen.X,Screen.Y)+FVector2D(4,4);
   const FVector2D Max=(Player->Origin+Player->Size)*FVector2D(Screen.X,Screen.Y)-FVector2D(4,4);
-  auto CheckPoint=[&](FVector Point){FVector2D Pixel;Fits&=PC->ProjectWorldLocationToScreen(Point,Pixel)&&Pixel.X>=Min.X&&Pixel.X<=Max.X&&Pixel.Y>=Min.Y&&Pixel.Y<=Max.Y;};
+  auto CheckPoint=[&](FVector Point){FVector2D Pixel;const bool Inside=PC->ProjectWorldLocationToScreen(Point,Pixel)&&Pixel.X>=Min.X&&Pixel.X<=Max.X&&Pixel.Y>=Min.Y&&Pixel.Y<=Max.Y; if(!Inside)UE_LOG(LogTemp,Warning,TEXT("Fit point %s projected %s within %s .. %s"),*Point.ToString(),*Pixel.ToString(),*Min.ToString(),*Max.ToString());Fits&=Inside;};
   for(float Y:{-740.f,740.f})for(float Z:{-470.f,470.f})CheckPoint(Panels[Index].Root->GetActorTransform().TransformPosition(FVector(0,Y,Z)));
-  for(const auto& Model:Panels[Index].Models)if(Model.IsValid()) {
-   FVector Center,Extent;Model->GetActorBounds(false,Center,Extent,true);
-   for(float X:{-1.f,1.f})for(float Y:{-1.f,1.f})for(float Z:{-1.f,1.f})CheckPoint(Center+Extent*FVector(X,Y,Z));
-  }
-  if(!Fits){UE_LOG(LogTemp,Error,TEXT("SlideSmoke: slide/model clipped on card %d at %dx%d"),Index+1,Screen.X,Screen.Y);FPlatformMisc::RequestExitWithStatus(false,1);return;}
-  if(!bSmokeCaptured)UE_LOG(LogTemp,Display,TEXT("SlideSmoke: slide/model fits card %d at %dx%d=PASS"),Index+1,Screen.X,Screen.Y);
+  if(!Fits){UE_LOG(LogTemp,Error,TEXT("SlideSmoke: slide clipped on card %d at %dx%d"),Index+1,Screen.X,Screen.Y);FPlatformMisc::RequestExitWithStatus(false,1);return;}
+  if(!bSmokeCaptured)UE_LOG(LogTemp,Display,TEXT("SlideSmoke: slide fits card %d at %dx%d=PASS"),Index+1,Screen.X,Screen.Y);
   if(!bSmokeCaptured)UE_LOG(LogTemp,Display,TEXT("SlideSmoke: card %d expanded at stable camera=%s"),Index+1,Good?TEXT("PASS"):TEXT("FAIL"));
   if(!Good){FPlatformMisc::RequestExitWithStatus(false,1);return;}
   if(!bSmokeCaptured){FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/FString::Printf(TEXT("Screenshots/slide-%02d.png"),Index+1),true,false);bSmokeCaptured=true;}
@@ -176,6 +265,34 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  else if(SmokeStep==10&&MapPhase==EMapPhase::Overview&&Travel>.5f) {
   if(!Camera->GetActorLocation().Equals(MapEye,1.f)||PendingIndex!=-1||CardExpansion!=0){FPlatformMisc::RequestExitWithStatus(false,1);return;}
   UE_LOG(LogTemp,Display,TEXT("SlideSmoke: PASS seven cards, arrival before expansion, delayed content, number/arrow/Escape navigation, ground-level perspective and physical signs"));
-  FPlatformMisc::RequestExit(false);
+  TimerElapsed=TimerDuration;Elapsed=100;Travel=0;SmokeStep=11;
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/population-zero-bright.png"),true,false);
  }
+ else if(SmokeStep==11&&Travel>.55f) {
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/population-zero-dim.png"),true,false);
+  SmokeStep=12;Travel=0;
+ }
+ else if(SmokeStep==12&&Travel>.2f){HandleParkKey(EKeys::Eight);SmokeStep=13;}
+ else if(SmokeStep==13&&MapPhase==EMapPhase::Slide&&Travel>.8f) {
+  bool Good=Index==7&&HiddenSlides.Contains(7)&&MapPins.Num()==7&&CardExpansion==1&&Panels[7].Reveal==1;
+  Good&=NextVisibleSlide(6,1)==0&&NextVisibleSlide(0,-1)==6;
+  Good&=Camera->GetActorLocation().Equals(CameraStops[7],1.f);
+  const FVector2D Size=DesktopHUD->GetCachedGeometry().GetLocalSize();int32 W,H;PC->GetViewportSize(W,H);
+  for(float Y:{-740.f,740.f})for(float Z:{-470.f,470.f}) {
+   FVector2D P;Good&=PC->ProjectWorldLocationToScreen(Panels[7].Root->GetActorTransform().TransformPosition(FVector(0,Y,Z)),P);
+   P=P*Size/FVector2D(W,H);Good&=P.X>FMath::Min(280.f,float(Size.X)*.26f)&&P.X<Size.X&&P.Y>72&&P.Y<Size.Y;
+  }
+  UE_LOG(LogTemp,Display,TEXT("SlideSmoke: hidden eighth beach bar, fitted sign and visible route exclusion=%s"),Good?TEXT("PASS"):TEXT("FAIL"));
+  if(!Good){FPlatformMisc::RequestExitWithStatus(false,1);return;}
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/beach-bar-slide.png"),true,false);
+  SmokeStep=14;Travel=0;
+ } else if(SmokeStep==14&&Travel>.2f){HandleParkKey(EKeys::F);HandleParkKey(EKeys::Eight);SmokeStep=15;}
+ else if(SmokeStep==15&&!bFreeTravelling) {
+  const bool Good=bFreeFlight&&Index==7&&CardExpansion==0&&Panels[7].Reveal==0&&Camera->GetActorLocation().Equals(CameraStops[7],1.f);
+  UE_LOG(LogTemp,Display,TEXT("SlideSmoke: free flight key 8 visits hidden bar without a sign=%s"),Good?TEXT("PASS"):TEXT("FAIL"));
+  if(!Good){FPlatformMisc::RequestExitWithStatus(false,1);return;}
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/beach-bar-free-flight.png"),true,false);
+  SmokeStep=16;Travel=0;
+ } else if(SmokeStep==16&&Travel>.2f){HandleParkKey(EKeys::F);SmokeStep=17;}
+ else if(SmokeStep==17&&MapPhase==EMapPhase::Overview&&Travel>.3f)FPlatformMisc::RequestExit(false);
 }

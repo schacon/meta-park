@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "Git metadata / Beyond the commit",
-  "durationSeconds": 1200,
+  "durationSeconds": 2100,
   "scene": "isla-nublar",
   "seed": 1993,
   "habitats": [
@@ -39,15 +39,15 @@
       "color": "#d4be70"
     },
     {
-      "id": "stegosaurus",
-      "label": "Stegosaurus range",
-      "species": "stegosaurus",
+      "id": "velociraptor",
+      "label": "Velociraptor pen",
+      "species": "velociraptor",
       "position": [
         -5700,
         4800,
         900
       ],
-      "color": "#7e9b5e"
+      "color": "#66876c"
     }
   ],
   "slides": [
@@ -152,7 +152,7 @@
       "card": {
         "slide": "opening",
         "code": "ENC-01",
-        "label": "Brachiosaurus",
+        "label": "Brontosaurus",
         "status": "OK",
         "position": [
           5400,
@@ -445,7 +445,7 @@
           ]
         }
       },
-      "habitat": "stegosaurus",
+      "habitat": "velociraptor",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 0.8
@@ -478,7 +478,7 @@
       "card": {
         "slide": "authoring",
         "code": "ENC-04",
-        "label": "Stegosaurus",
+        "label": "Velociraptor pen",
         "status": "OK",
         "position": [
           -5700,
@@ -513,7 +513,7 @@
           "look": [
             -5700,
             4800,
-            2000
+            1550
           ]
         }
       },
@@ -880,7 +880,81 @@
           ]
         }
       },
-      "habitat": "stegosaurus",
+      "habitat": "velociraptor",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 0.8
+    },
+    {
+      "id": "beach-bar",
+      "title": "Nobody cares.",
+      "accent": "#537b3a",
+      "blocks": [
+        {
+          "kind": "h2",
+          "text": "A LITTLE CONTEXT / 08"
+        },
+        {
+          "kind": "p",
+          "text": "We have metadata here!"
+        },
+        {
+          "kind": "p",
+          "text": "Keep the useful context. Share it with the people who need it."
+        }
+      ],
+      "models": [],
+      "notes": "Hidden bonus stop. Press 8 to visit the beach bar behind the volcano. Replace this example with your own closing thought or questions.",
+      "position": [
+        5400,
+        2300,
+        3900
+      ],
+      "card": {
+        "slide": "beach-bar",
+        "code": "BAR",
+        "label": "North Beach Bar",
+        "status": "OFF DUTY",
+        "hidden": true,
+        "position": [
+          0,
+          13100,
+          700
+        ],
+        "view": {
+          "anchor": [
+            0,
+            11600,
+            200
+          ],
+          "eye": [
+            0,
+            16600,
+            1900
+          ],
+          "signYaw": 83,
+          "signHeight": 1700,
+          "frameWidth": 5500,
+          "path": [
+            [
+              27000,
+              -1000,
+              18000
+            ],
+            [
+              15000,
+              18000,
+              9500
+            ]
+          ],
+          "look": [
+            0,
+            12900,
+            1100
+          ]
+        }
+      },
+      "habitat": "brachiosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 0.8
