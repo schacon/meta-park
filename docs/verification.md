@@ -131,3 +131,8 @@ checks pass at 1440×900; the updated login screenshots were visually reviewed.
 See the [starting desktop](screenshots/login-screen.png),
 [credential animation](screenshots/login-typing.png), and
 [Logout / Exit menu](screenshots/logout-menu.png).
+
+The main-gate camera pulls back 22 metres, aims higher, and widens its frame to
+show the raised park lettering above the doorway. `-GateTest` now verifies both
+the slide sight lines through the opening and the lettering's viewport bounds.
+The interaction and visual review pass at 1440×900.

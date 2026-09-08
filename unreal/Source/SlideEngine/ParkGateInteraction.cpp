@@ -32,7 +32,12 @@ void ASlideGameMode::TestGate() {
    const FVector Portal=FMath::Lerp(Eye,P,(-10500-Eye.Y)/(P.Y-Eye.Y));
    Fits&=P.Y>-10500&&FMath::Abs(Portal.X)<1050&&Portal.Z>200&&Portal.Z<2288;
   }
-  if(!Check(Fits,TEXT("open doorway frames the sign behind the gate")))return;
+  // The pullback must also retain the raised lettering above the opening.
+  for(float X:{-1100.f,1100.f})for(float Z:{2480.f,3460.f}) {
+   FVector2D Screen;Fits&=PC->ProjectWorldLocationToScreen(FVector(X,-10750,Z),Screen);
+   Fits&=Screen.X>W*Player->Origin.X&&Screen.X<W&&Screen.Y>H*Player->Origin.Y&&Screen.Y<H;
+  }
+  if(!Check(Fits,TEXT("open doorway frames the slide and the park lettering stays visible")))return;
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/gate-open.png"),true,false);SmokeStep=3;Travel=0;
  } else if(SmokeStep==3&&Travel>.4f){HandleParkKey(EKeys::Escape);SmokeStep=4;}
  else if(SmokeStep==4&&MapPhase==EMapPhase::Overview&&Open==0) {
