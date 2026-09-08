@@ -1,9 +1,10 @@
 import {build} from 'esbuild';
 import {islandLayout} from './island.mjs';
 import mdx from '@mdx-js/esbuild';
-import {mkdtemp, rm, readFile} from 'node:fs/promises';
+import {mkdtemp, rm, readFile, readdir} from 'node:fs/promises';
 import {resolve, join} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {createElement} from 'react';
 
 const fail = message => { throw new Error(message); };
 const vector = (v, fallback, label) => {
@@ -108,4 +109,57 @@ export async function compileDeck(input, layoutFile) {
     const layout = layoutFile ? JSON.parse(await readFile(layoutFile,'utf8')) : {};
     return makeManifest(mod.default({}),layout);
   } finally { await rm(temp,{recursive:true,force:true}); }
+}
+
+// MDX pages use this native component registry without needing import statements.
+const components = Object.fromEntries(['Model','Animate','Notes','Computer'].map(name =>
+  [name, props => createElement(name.toLowerCase(), props)]));
+async function readPage(input) {
+  const temp = await mkdtemp(resolve('.slide-build-'));
+  try {
+    const outfile = join(temp,'page.mjs');
+    await build({entryPoints:[resolve(input)],outfile,bundle:true,platform:'node',format:'esm',plugins:[mdx()],packages:'external',logLevel:'silent'});
+    return expand((await import(pathToFileURL(outfile).href)).default({components}));
+  } finally { await rm(temp,{recursive:true,force:true}); }
+}
+const meaningful = nodes => nodes.filter(n => typeof n !== 'string' || n.trim());
+const element = n => typeof n === 'string' ? n : createElement(n.type,n.props,...n.children.map(element));
+export async function compileStations(directory, layoutFile) {
+  const layout = JSON.parse(await readFile(layoutFile,'utf8'));
+  if (!Array.isArray(layout.cards) || !layout.cards.length) fail('Station layout needs cards');
+  const stations = [];
+  for (const [index, card] of layout.cards.entries()) {
+    const folder = join(directory,String(index+1).padStart(2,'0'));
+    const names = (await readdir(folder)).filter(n => /\.mdx$/i.test(n))
+      .sort((a,b)=>a.localeCompare(b,'en',{numeric:true}) || a.localeCompare(b));
+    if (!names.length) fail(`${folder}: station needs at least one MDX file`);
+    const steps = [];
+    for (const name of names) {
+      const source = join(folder,name);
+      try {
+        const nodes = meaningful(await readPage(source));
+        const visible = nodes.filter(n=>n.type!=='notes');
+        if (!visible.length) fail('Page needs content');
+        const standalone = visible.length===1 && ['computer','model','animate'].includes(visible[0].type);
+        let component = null;
+        if (standalone && visible[0].type==='computer') {
+          const children = meaningful(visible[0].children);
+          if (children.length!==2 || children.filter(n=>n.type==='prompt').length!==1 || children.filter(n=>n.type==='output').length!==1)
+            fail('Computer needs exactly one prompt and one output');
+          component = {type:'Computer',prompt:plain(children.find(n=>n.type==='prompt')),output:plain(children.find(n=>n.type==='output'))};
+          if (!component.prompt.trim()) fail('Computer prompt cannot be empty');
+        }
+        const heading = visible.find(n=>['h1','h2','h3'].includes(n.type));
+        const title = heading ? plain(heading) : component ? 'Computer' : name.replace(/\.mdx$/i,'');
+        const body = nodes.filter(n=>n!==heading && !(component && n===visible[0]));
+        const page = makeManifest(createElement('deck',{},createElement('slide',{id:card.slide,title},...body.map(element)))).slides[0];
+        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,blocks:page.blocks,models:page.models,notes:page.notes});
+      } catch (error) { throw new Error(`${source}: ${error.message}`,{cause:error}); }
+    }
+    stations.push({card,steps});
+  }
+  const deck = makeManifest(createElement('deck',{title:'git-meta park'},...stations.map(({card,steps})=>
+    createElement('slide',{id:card.slide,title:steps[0].title}))),layout);
+  deck.slides.forEach((station,i)=>Object.assign(station,stations[i].steps[0],{id:station.id,steps:stations[i].steps}));
+  return deck;
 }

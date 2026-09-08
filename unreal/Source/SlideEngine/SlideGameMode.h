@@ -12,7 +12,7 @@ class FParkTerminal;
 struct FParkMapPin { FVector Position; FString Code, Name, Status; int32 SlideIndex=-1; bool bHero=false; };
 struct FSlideView { FVector Position; FRotator Rotation; float Duration; };
 struct FSlideMotion { TWeakObjectPtr<AActor> Actor; FVector Origin; FRotator Rotation; FString Kind; float Speed; float Amplitude; };
-struct FSlidePanel { TWeakObjectPtr<AActor> Root; FVector RaisedPosition; float Reveal = 0; TArray<TWeakObjectPtr<AActor>> Models; };
+struct FSlidePanel { TWeakObjectPtr<AActor> Root; FVector RaisedPosition; float Reveal = 0; TArray<TWeakObjectPtr<AActor>> Models; TArray<int32> ModelSteps; };
 UCLASS()
 class SLIDEENGINE_API ASlideGameMode : public AGameModeBase {
  GENERATED_BODY()
@@ -28,8 +28,9 @@ private:
  int32 GateSlide=INDEX_NONE;
  void TestGate();
  TSharedPtr<FParkTerminal> Terminal;
- void ToggleTerminal();
+
  void TestTerminal();
+ void TestStationContent();
  TSet<int32> HiddenSlides;
  int32 NextVisibleSlide(int32 Current,int32 Direction) const;
  bool bAllHabitats=false;
@@ -76,7 +77,14 @@ private:
  void MoveFreeCamera(float Delta, FVector Move, FVector2D Look, bool Fast);
  void TestFreeFlight();
  EMapPhase MapPhase=EMapPhase::Overview;
- TArray<TSharedPtr<SWidget>> SlideContents;
+ TArray<TArray<TSharedPtr<class FJsonObject>>> StationSteps;
+ int32 PageIndex=0, PreviousPage=INDEX_NONE, PageDirection=1, ActiveComponentPage=INDEX_NONE;
+ float PageSwipe=1;
+ TSharedRef<SWidget> BuildStationContent(TSharedPtr<FJsonObject> Station,int32 StationIndex,const FString& Label,FLinearColor Accent);
+ bool AdvancePage(int32 Direction);
+ bool IsComponentPage() const;
+ void ResetStationPage();
+ void TickStationPage(float Delta);
  TArray<FVector> CardTargets, SignAnchors, CameraStops, CameraTargets, SwoopA, SwoopB;
  TArray<float> SignYaws, FocusFrameWidths;
  FVector MapCenter=FVector(-350,-750,0), MapEye=MapCenter+FVector(3000,-28000,23000).GetSafeNormal()*200000;

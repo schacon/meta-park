@@ -16,6 +16,11 @@
 
 namespace {
 // Physical display rectangle: frame around the CRT, allowing peripherals to crop.
+FSlateFontInfo FontForText(const FString& Text,int32 Size) {
+ TArray<FString> Lines;Text.ParseIntoArrayLines(Lines,false);
+ int32 Longest=1;for(const auto& Line:Lines)Longest=FMath::Max(Longest,Line.Len());
+ return FSlateFontInfo(FPaths::ProjectContentDir()/TEXT("Fonts/RobotoMono-Regular.ttf"),FMath::Clamp(1500/Longest,28,Size));
+}
 const FVector DisplayCenter(65,-58.42,158.675);
 const FBox DisplayBounds(DisplayCenter-FVector(97.75,0,66.7),DisplayCenter+FVector(97.75,0,66.7));
 }
@@ -36,14 +41,14 @@ FParkTerminal::FParkTerminal(UWorld* World) {
   .BorderBackgroundColor(FLinearColor(.007,.015,.32)).Padding(52)
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,76)[SNew(STextBlock).Text(FText::FromString(TEXT("git-meta / system terminal\nREADY"))).Font(Font(28)).ColorAndOpacity(FLinearColor(.66,.78,1))]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,38)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Command()+(FMath::Fmod(Clock,.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font(Font(82)).ColorAndOpacity(FLinearColor(.91,.94,1))]
-   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(OutputReady()?TEXT("OK"):TEXT(""));}).Font(Font(96)).ColorAndOpacity(FLinearColor(.72,1,.74))]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,38)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Command()+(FMath::Fmod(Clock,.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font_Lambda([this]{return FontForText(Prompt,82);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.91,.94,1))]
+   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(OutputReady()?Output:TEXT(""));}).Font_Lambda([this]{return FontForText(Output,96);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.72,1,.74))]
   ]);
  Model->SetActorHiddenInGame(true);
 }
-void FParkTerminal::Toggle(){Raised=!Raised;if(Raised)Clock=0;}
+void FParkTerminal::Show(const FString& InPrompt,const FString& InOutput){Prompt=InPrompt;Output=InOutput;Raised=true;Clock=0;}
 FString FParkTerminal::Command() const {
- return FString(TEXT("git meta set")).Left(FMath::Clamp(FMath::FloorToInt((Clock-.15f)/.09f),0,12));
+ return Prompt.Left(FMath::Clamp(FMath::FloorToInt((Clock-.15f)/.09f),0,Prompt.Len()));
 }
 void FParkTerminal::Update(float Delta,ACameraActor* Camera,bool InFirstArea) {
  if(!Actor.IsValid())return;

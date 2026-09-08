@@ -60,7 +60,9 @@ void ASlideGameMode::BeginPlay() {
   auto* Settings=GEngine->GetGameUserSettings();Settings->SetFullscreenMode(EWindowMode::Windowed);Settings->SetScreenResolution(FIntPoint(W,H));Settings->ApplyResolutionSettings(false);
  }
  FString Text; TSharedPtr<FJsonObject> Deck;
- if (!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Slides/deck.json"))) ||
+ FString ManifestPath=FPaths::ProjectContentDir()/TEXT("Slides/deck.json");
+ if(FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest")))FParse::Value(FCommandLine::Get(),TEXT("SlideManifest="),ManifestPath);
+ if (!FFileHelper::LoadFileToString(Text,*ManifestPath) ||
      !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Deck) || !Deck.IsValid() || Deck->GetIntegerField(TEXT("version"))!=1) {
   UE_LOG(LogTemp,Error,TEXT("Missing or invalid Slides/deck.json. Run npm run build."));
   if(GEngine) GEngine->AddOnScreenDebugMessage(-1,120,FColor::Red,TEXT("Missing deck. Run npm run build, then restart.")); return;
@@ -136,21 +138,7 @@ void ASlideGameMode::BeginPlay() {
   Widget->SetWidgetSpace(EWidgetSpace::World); Widget->SetDrawSize(FVector2D(1440,900)); Widget->SetTwoSided(true); Widget->SetPivot(FVector2D(.5,.5)); Widget->RegisterComponent(); Widget->SetWorldLocationAndRotation(Origin,Facing);
   Panel->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
   Frame->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
-  TSharedRef<SVerticalBox> Body=SNew(SVerticalBox);
-  const int32 TypeScale=HiddenSlides.Contains(I)?2:1; // Bonus signs are read behind the scenery.
-  const FString CardHeading=bIsland?FString::Printf(TEXT("[%d] %s  /  %s"),I+1,*S->GetObjectField(TEXT("card"))->GetStringField(TEXT("code")),*HabitatLabel):FString::Printf(TEXT("Slide %d / %d"),I+1,Slides.Num());
-  Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.13,.61,.24)).Padding(12)
-   [SNew(STextBlock).Text(FText::FromString(CardHeading)).Font(FCoreStyle::GetDefaultFontStyle("Mono",24)).ColorAndOpacity(FLinearColor(.015,.025,.02))]];
-  Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(S->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48*TypeScale)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
-  for(auto& Value:S->GetArrayField(TEXT("blocks"))) {
-   auto B=Value->AsObject(); FString Kind=B->GetStringField(TEXT("kind")); FString Content=B->GetStringField(TEXT("text"));
-   if(Kind==TEXT("li")) Content=TEXT("•  ")+Content;
-   const bool Heading=Kind.StartsWith(TEXT("h")); const bool Code=Kind==TEXT("pre");
-   Body->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Content)).Font(FCoreStyle::GetDefaultFontStyle(Heading?"Bold":Code?"Mono":"Regular",(Code?20:Heading?19:27)*TypeScale)).ColorAndOpacity(Heading?Accent:FLinearColor(.004,.004,.004)).AutoWrapText(true)];
-  }
-  Body->AddSlot().FillHeight(1);
-  Body->AddSlot().AutoHeight().Padding(0,0,0,45)[SNew(STextBlock).Text(FText::FromString((I==0?TEXT("Space computer demo    ← → overview, then previous / next    Esc overview    N notes"):TEXT("1–7 choose an area    ← → overview, then previous / next    Esc overview    N notes")))).Font(FCoreStyle::GetDefaultFontStyle("Regular",15)).ColorAndOpacity(Accent)];
-  auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.035,.035,.035)).Padding(5)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63,1)).Padding(48)[Body]];
+  auto Content=BuildStationContent(S,I,HabitatLabel,Accent);
   if(bIsland) {
    Content->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,I]{return Index==I&&(MapPhase==EMapPhase::Slide||(I==GateSlide&&IslandScene::GateOpenFraction()>0))?EVisibility::Visible:EVisibility::Hidden;}));
    Widget->SetSlateWidget(SNew(SOverlay)
@@ -164,7 +152,7 @@ void ASlideGameMode::BeginPlay() {
   const float CameraRise=bIsland ? 450.f : 0.f;
   Views.Add({Transform.TransformPosition(FVector(Distance,0,CameraRise)),FRotator(-FMath::RadiansToDegrees(FMath::Atan2(CameraRise,Distance)),Facing.Yaw+180,0),float(S->GetNumberField(TEXT("transition")))});
   Notes.Add(S->GetStringField(TEXT("notes"))); Titles.Add(S->GetStringField(TEXT("title"))); HabitatNames.Add(HabitatLabel);
-  for(auto& MV:S->GetArrayField(TEXT("models"))) {
+  for(int32 Page=0;Page<StationSteps[I].Num();Page++)for(auto& MV:StationSteps[I][Page]->GetArrayField(TEXT("models"))) {
    auto M=MV->AsObject(); FVector P=Transform.TransformPosition(Vec(M,TEXT("position"))); FRotator R=(Facing.Quaternion()*Rot(Vec(M,TEXT("rotation"))).Quaternion()).Rotator();
    AActor* Model=nullptr; const FString Asset=M->GetStringField(TEXT("actor"));
    if(!Asset.IsEmpty()) { if(auto* Class=LoadClass<AActor>(nullptr,*Asset)) Model=GetWorld()->SpawnActor<AActor>(Class,P,R); }
@@ -173,7 +161,7 @@ void ASlideGameMode::BeginPlay() {
     if(Mesh) { auto* A=GetWorld()->SpawnActor<AStaticMeshActor>(P,R); A->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable); A->GetStaticMeshComponent()->SetStaticMesh(Mesh); if(M->GetStringField(TEXT("mesh")).StartsWith(TEXT("/Engine/BasicShapes/"))) Tint(A->GetStaticMeshComponent(),FColor::FromHex(TEXT("#9864bc"))); Model=A; }
    }
    if(!Model) { UE_LOG(LogTemp,Error,TEXT("Could not load model on slide %s"),*S->GetStringField(TEXT("id"))); continue; }
-   Panels.Last().Models.Add(Model);
+   Panels.Last().Models.Add(Model);Panels.Last().ModelSteps.Add(Page);
    Model->SetActorScale3D(Vec(M,TEXT("scale"))); Model->AttachToActor(SlideRoot,FAttachmentTransformRules::KeepWorldTransform);
    const TSharedPtr<FJsonObject>* Animation;
    if(M->TryGetObjectField(TEXT("animation"),Animation)) Motions.Add({Model,Model->GetRootComponent()->GetRelativeLocation(),Model->GetRootComponent()->GetRelativeRotation(),(*Animation)->GetStringField(TEXT("kind")),float((*Animation)->GetNumberField(TEXT("speed"))),float((*Animation)->GetNumberField(TEXT("amplitude")))});

@@ -206,6 +206,7 @@ void ASlideGameMode::StartLogin() {
  FSlateApplication::Get().SetKeyboardFocus(LoginHUD,EFocusCause::SetDirectly);
 }
 void ASlideGameMode::ResetPresentationSession() {
+ ResetStationPage();
  TimerElapsed=0;TimerDuration=WorkstationMinutes*60.f;bTimerStarted=false;bTimerPaused=false;bTourStarted=false;
  FRandomStream Random(FMath::Rand());
  VisitorDepartures.Build((WorkstationMinutes-5)*100,100,50,Random);

@@ -46,7 +46,7 @@ void ASlideGameMode::TestLogin() {
   GoTo(0);LoginTestStep=5;
  } else if(LoginTestStep==5&&MapPhase==EMapPhase::Slide&&Travel>.3f) {
   if(!Check(bTimerStarted&&TimerElapsed>0&&TimerElapsed<1,TEXT("clock starts when first slide is visible")))return;
-  HandleParkKey(EKeys::SpaceBar);LoginTestStep=6;
+  HandleParkKey(EKeys::Right);LoginTestStep=6;
  } else if(LoginTestStep==6&&Terminal.IsValid()&&Terminal->IsRaised()) {
   TickPresentationClock(100);bTimerPaused=true;ParkMenu->SetIsOpen(true);Capture(TEXT("logout-menu.png"));LoginTestStep=11;Travel=0;
  } else if(LoginTestStep==11&&Travel>.3f) {

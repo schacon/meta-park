@@ -44,7 +44,8 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
  MapLegDuration=Views[Index].Duration*(ZoomIn?1.f:.75f);
  MapPhase=ZoomIn?EMapPhase::ZoomIn:CardExpansion>0?EMapPhase::Retract:EMapPhase::ZoomOut;
  if(MapPhase==EMapPhase::Retract)MapLegDuration=.16f;
- if(ZoomIn) { bTourStarted=true; PendingIndex=-1; CardExpansion=0; }
+ if(!ZoomIn&&Terminal.IsValid()&&!Terminal->IsHidden()) {Terminal->Hide();MapPhase=EMapPhase::Retract;MapLegDuration=.5f;}
+ if(ZoomIn) { ResetStationPage(); bTourStarted=true; PendingIndex=-1; CardExpansion=0; }
  SetMouseMode(false);
 }
 void ASlideGameMode::HandleParkKey(const FKey& Key) {
@@ -58,11 +59,11 @@ void ASlideGameMode::HandleParkKey(const FKey& Key) {
   else if(Key==EKeys::P)bTimerPaused=!bTimerPaused;
   return;
  }
- if(Key==EKeys::SpaceBar&&Index==0&&MapPhase==EMapPhase::Slide){ToggleTerminal();return;}
  const int32 Current=PendingIndex>=0?PendingIndex:Index;
  const bool Forward=Key==EKeys::Right||Key==EKeys::SpaceBar||Key==EKeys::PageDown;
  const bool Backward=Key==EKeys::Left||Key==EKeys::PageUp;
  if(Forward||Backward) {
+  if(MapPhase==EMapPhase::Slide&&AdvancePage(Forward?1:-1))return;
   const int32 Next=Forward?(!bTourStarted?0:NextVisibleSlide(Current,1)):NextVisibleSlide(Current,-1);
   if(MapPhase==EMapPhase::Overview)GoTo(Next);
   // A second explicit press during the return can choose the next stop,
@@ -133,7 +134,8 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   const int32 Next=PendingIndex;PendingIndex=-1;GoTo(Next);
  }
  Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(Camera->GetActorLocation(),CameraLook));
- if(Terminal.IsValid())Terminal->Update(Delta,Camera,!bFreeFlight&&Index==0&&MapPhase==EMapPhase::Slide);
+ TickStationPage(Delta);
+ if(Terminal.IsValid())Terminal->Update(Delta,Camera,!bFreeFlight&&(MapPhase==EMapPhase::Slide||MapPhase==EMapPhase::Retract));
  const bool AtGate=!bFreeFlight&&Index==GateSlide&&(MapPhase==EMapPhase::Arrived||MapPhase==EMapPhase::Loading||MapPhase==EMapPhase::Slide);
  IslandScene::TickGate(Delta,AtGate);
  for(const auto& Base:SignBases)if(Base.IsValid())Base->SetActorHiddenInGame(bFreeFlight);
@@ -143,8 +145,12 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   const float Rise=I==GateSlide?(GateVisible?1.f:0.f):(!bFreeFlight&&I==Index?CardExpansion:0);
   Panel.Reveal=Rise;
   Panel.Root->SetActorLocation(I==GateSlide?Panel.RaisedPosition:FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
-  Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f,true);
-  for(const auto& Model:Panel.Models)if(Model.IsValid())Model->SetActorHiddenInGame(bFreeFlight||I!=Index||MapPhase!=EMapPhase::Slide);
+  Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f&&!(I==Index&&IsComponentPage()),true);
+  for(int32 M=0;M<Panel.Models.Num();M++)if(Panel.Models[M].IsValid()) {
+   const bool Visible=!bFreeFlight&&I==Index&&MapPhase==EMapPhase::Slide&&Panel.ModelSteps[M]==PageIndex;
+   Panel.Models[M]->SetActorHiddenInGame(!Visible);
+   Panel.Models[M]->GetRootComponent()->SetVisibility(Visible,true);
+  }
  }
  for(auto& M:Motions)if(M.Actor.IsValid()) {
   if(M.Kind==TEXT("spin"))M.Actor->SetActorRelativeRotation(M.Rotation+FRotator(0,Elapsed*M.Speed,0));
@@ -153,6 +159,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(!Smoke)return;
  if(FParse::Param(FCommandLine::Get(),TEXT("LoginTest"))){TestLogin();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("TerminalTest"))){TestTerminal();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FreeFlightTest"))){TestFreeFlight();return;}
  if(WalkReview>0) {
@@ -271,6 +278,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   if(!bSmokeCaptured){FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/FString::Printf(TEXT("Screenshots/slide-%02d.png"),Index+1),true,false);bSmokeCaptured=true;}
   if(Travel<1.f)return;
   const FKey NextKeys[]={EKeys::Right,EKeys::Seven,EKeys::Left,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Escape};
+  if(Step==0)PageIndex=StationSteps[0].Num()-1;
   HandleParkKey(NextKeys[Step]);SmokeStep++;bSmokeCaptured=false;
  }
  else if(SmokeStep==10&&MapPhase==EMapPhase::Overview&&Travel>.5f) {

@@ -136,3 +136,26 @@ The main-gate camera pulls back 22 metres, aims higher, and widens its frame to
 show the raised park lettering above the doorway. `-GateTest` now verifies both
 the slide sight lines through the opening and the lettering's viewport bounds.
 The interaction and visual review pass at 1440×900.
+
+## Station MDX sequences (2026-09-08)
+
+The default build now compiles numbered `slides/01`–`slides/08` directories into
+ordered station steps. Nine compiler tests pass, including numeric filename
+ordering, first-heading extraction, native components without imports, custom
+computer prompt/output, notes, scene models, and actionable authoring errors.
+Legacy single-file deck tests remain passing.
+
+Native `StationContentTest` uses a temporary four-page fixture without changing
+source slides. It verifies both swipe directions, a fixed camera and physical
+sign during swipes, repeat-key protection, authored computer playback, sign
+restoration on returning to Markdown, an explicit overview pause at the station
+boundary, and first-page reset on number selection. `TerminalTest` exercises the
+actual first station, including incremental typing and replay. Full route smoke
+passes all eight camera/viewport checks at 1440×900. `LoginTest` passes at
+1024×768, including logout while the MDX computer is raised.
+
+The Mac standalone package builds successfully. Use
+`node scripts/check-stations.mjs -SlideTestWidth=1440 -SlideTestHeight=900`
+to repeat the sequence test independently of the current authored content.
+The packaged 1440×900 terminal test also passes: arrow entry, incremental typing,
+backward retraction, replay, and cleanup on station departure.
