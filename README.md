@@ -30,11 +30,12 @@ Run `unreal:build` and `unreal:prepare` before the first package. The prepare st
 ## Park workstation
 
 The application opens on the island overview with seven numbered map cards.
-Press **1–7** (including the numeric keypad), or click a card, to zoom into its
+Press **1–7** (including the numeric keypad), click a card, or click its numbered sidebar location to zoom into its
 location. After arriving, a blank card expands, shows a brief Unix-style
 loading prompt, then reveals the full MDX slide. **Esc** returns to the overview.
-**Left/Right** choose the previous/next slide, wrapping around the seven cards.
-Choosing another slide first returns to the overview, then zooms into the new area.
+**Left/Right** first return to the overview and stay there. Press again to fly to the
+previous/next slide, wrapping around the seven cards. The initial forward press opens slide one.
+Selecting a number, map card, or sidebar location flies directly to that destination via the overview.
 Other cards disappear immediately during a zoom and pop back in during the final
 12% of the return to overview.
 Each area has a fixed, elevated camera angle and its own 0.8-second swooping
@@ -43,30 +44,48 @@ continuously into the close view without switching projection modes. Content sta
 travel and retraction. The arrival pause is 0.12 seconds, card expansion takes
 0.24 seconds, and the loading prompt lasts 0.32 seconds.
 
-The sidebar shows park status, live dinosaur/enclosure counts, illustrative visitor
-and staff counts, utility meters, and the slide/countdown display. The footer reads
-“GIT FINDS A WAY.” `durationMinutes` sets the timer (20 by default). It starts when
-you first select a slide; **P** pauses it. The clock keeps running on the overview.
+The top-aligned sidebar links to all seven slide locations and shows park status,
+21 dinosaurs, visitor and staff countdowns, utility meters, and the slide number. The footer reads
+“GIT FINDS A WAY.” This deck sets `durationMinutes` to 35. The timer starts when
+the first slide content becomes visible, after arrival and loading. **P** pauses it.
+The clock keeps running on the overview. Visitors start at 3,000 and leave in random
+batches of 1–50, totaling exactly 100 each minute. They reach zero at 30 minutes,
+leaving five minutes to wrap up. Staff start at 350 and leave in batches of 1–10,
+totaling exactly 10 each minute and reaching zero at 35 minutes. Both counters
+pause with the timer, stay at zero, and flash red when empty. The top-right badge reads `s.chacon`. The visible population counters replace the
+remaining-time readout; the 35-minute clock continues internally.
 
 The scene uses faceted trees, a volcano, lagoon and waterfall, white paddock
-fences, entrance gate, visitor buildings, helipad and dock. Each habitat has one
-cartoon dinosaur. The overview uses a distant, narrow-field perspective camera to match the
-supplied island-diorama mockup. The interface adds a workstation frame and subtle scanlines.
+fences, entrance gate, visitor buildings, helipad and dock. A large cartoon dung pile sits beside the triceratops. Three paddocks each have one cartoon dinosaur; the compact raptor pen has three. The overview uses a distant, narrow-field perspective camera to match the
+supplied island-diorama mockup. All six dinosaur models wander within their
+enclosures along varied, smooth loops, walking for 12–19 seconds and resting for
+7–11 seconds on staggered schedules. Walking is six times the original speed,
+with gentle acceleration and deceleration. Their hips, knees, and ankles articulate with planted support feet and lifted
+recovery steps that finish before a rest. Stride timing follows actual movement, including turns, and the
+three raptors keep separate lanes. The interface adds a workstation frame and subtle scanlines. The scene has its
+own viewport beside the compact sidebar and below the title bar, and preserves
+the full slide sign across window sizes. Click **git-meta → Quit**
+to exit.
 
 ## Controls
 
 | Key | Action |
 | --- | --- |
 | 1–7 / numeric keypad | Open the corresponding map card |
-| Click a map card | Open that area's slide |
-| Right / Space / Page Down | Next slide, through the overview |
-| Left / Page Up | Previous slide, through the overview |
+| Click a map card or sidebar location | Open that area's slide |
+| Right / Space / Page Down | Return to overview; press again for next slide |
+| Left / Page Up | Return to overview; press again for previous slide |
 | Esc / O | Return to the overview; cancel any queued destination |
 | Home | Open slide one |
 | N | Show current speaker notes for 20 seconds |
 | P | Pause or resume the countdown |
+| F | Toggle free flight; leaving returns to overview |
+| Drag in free flight | Look around |
+| WASD / Q / E in free flight | Move forward/left/back/right / down / up |
+| Arrow keys in free flight | Move forward/back and left/right, like WASD |
+| Shift in free flight | Move faster |
 
-Free-flight controls remain available in the generic gallery layout.
+Free flight hides all slide signs and map labels. Number keys and sidebar locations fly directly to the subject, without opening a slide or starting the presentation clock. Moving or dragging interrupts a destination flight. The sidebar stays available, and Escape also exits to overview.
 
 ## Author slides
 
@@ -144,7 +163,7 @@ Edit `examples/git-meta/layout.json`:
 | 1 | Brachiosaurus | Beyond the commit |
 | 2 | T. rex | The context we lose |
 | 3 | Triceratops | Attach it where it belongs |
-| 4 | Stegosaurus | Small commands. Rich context. |
+| 4 | Velociraptor pen | Small commands. Rich context. |
 | 5 | Visitor Centre | Local speed. Git transport. |
 | 6 | Helipad | Let the tree do the work |
 | 7 | Main Gate | Fetch what you need |
@@ -162,7 +181,7 @@ The Blender scene contains an authored forest with varied broadleaf trees and pa
 
 The editable source is [assets/blender/park.blend](assets/blender/park.blend).
 It contains independent collections for eight dinosaur sculptures, architecture,
-fences, foliage, terrain, and water. The scene currently places four dinosaurs,
+fences, foliage, terrain, and water. The scene currently places six dinosaurs in four enclosures,
 two offshore islands, a boulder with shallow water, and the git-meta park entrance.
 The other four dinosaur models remain available in the asset library.
 

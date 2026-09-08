@@ -42,3 +42,20 @@ tree, slide and deployed-display counts come from the running scene.
 
 The workstation font is Roboto Mono Bold, distributed with its OFL license in
 unreal/Content/Fonts. That directory is staged with packaged builds.
+
+Dinosaurs wander in the native runtime; the source Blender poses stay editable.
+The articulated kit lives in `blender/dinosaur-rigs.blend`, with an editable joint
+hierarchy for each active species. Rebuild it with:
+
+    /Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build_dinosaur_rigs.py
+
+`npm run unreal:import-assets` also imports these 40 body/limb meshes and stages
+`dinosaur-rigs.json`. Upper-leg, lower-leg, and foot meshes have joint-centered
+origins. The native two-bone IK solver keeps supporting feet planted in world
+space, and lifts each foot during recovery. The paint material no longer deforms
+leg vertices. For a walking review capture:
+
+    node scripts/unreal.mjs smoke -DinoWalkReview=3 -SlideTestWidth=1440 -SlideTestHeight=900
+
+This captures a 16-second close view of the selected paddock at eight frames per
+second in `unreal/Saved/Screenshots/walk-3-*.png`. Use 1, 2, or 4 for the other pens.
