@@ -16,6 +16,17 @@ The saved library contains the current scene and named asset collections.
 Individual parts remain editable; the export creates a temporary combined mesh
 per collection, then removes only that temporary object.
 
+`SM_BeachBar` is the secluded north-beach scene: thatched roof, wooden counter,
+stools, parasols, palms, two seated visitors and the shaving-foam can. Its source
+is `scripts/model_beach_bar.py`; the island and shallow-water outlines extend
+around its position at `(0,131,2)` metres, facing north.
+
+`SM_Terminal` is the first area's interactive workstation, authored by
+`scripts/model_terminal.py`. The enlarged CRT includes a curled yellow sticky
+note. `Workstation • model review` in `park.blend` provides an isolated view.
+Unreal overlays the blue screen with a native widget for the typing animation.
+Both assets are rebuilt and imported by the standard park workflow.
+
 Then run:
 
     npm run build
@@ -34,7 +45,9 @@ alpha as an emission mask, lighting only the gate torch flames.
 The layout file controls the four paddock locations and elevations.
 Rebuild the Blender scene after changing those locations: terrain plateaus and
 paths are authored around them. The sample maps seven MDX slides to four paddocks,
-the visitor centre, helipad and main gate. Card locations are declared separately
+the visitor centre, helipad and main gate, plus a hidden eighth beach-bar stop.
+The bonus card's `hidden: true` keeps it off the visible map and normal route.
+Card locations are declared separately
 in the layout's cards list and can be rebuilt with npm run build.
 
 Park statuses in the terminal callouts are illustrative. Dinosaur, enclosure,

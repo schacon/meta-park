@@ -11,7 +11,8 @@ Tested on macOS with Unreal Engine 5.8 and Xcode 26.5 SDK.
   movement interrupting travel, drag rotation, vertical/accelerated movement,
   and F/Escape returning to the fitted overview. Exploring before the first slide
   leaves the presentation clock stopped. The raptor arrival was visually reviewed.
-- Blender's 25 imported mesh assets remain in the native scene.
+- The park library now contains 27 imported meshes, including the beach bar and
+  interactive workstation; articulated dinosaur parts remain a separate kit.
 - BuildCookRun build, cook, stage, package and archive succeeded.
 - Editor and packaged integration checks passed. The smoke test opens every
   numbered card, switches with number and
@@ -25,6 +26,13 @@ Tested on macOS with Unreal Engine 5.8 and Xcode 26.5 SDK.
   all seven subject-facing arrivals (dinosaurs through their gateways, visitor
   door, main gate, and helipad), a content-free loading prompt, and cards reappearing near
   the end of the overview return.
+- The hidden eighth stop is excluded from overview cards, sidebar locations and
+  sequential navigation. Native checks exercise key 8 in presentation and free
+  flight, confirm the bonus sign fits, and capture both views.
+- `-SlideSmokeTest -TerminalTest` exercises the first area's Space toggle,
+  incremental `git meta set` typing, delayed `OK`, retraction, replay, and hiding
+  on navigation. It checks the screen fills most of the available viewport and that
+  Space still navigates in other areas.
 
 The terminal top bar includes a live local clock. Gate flames use masked
 material flicker and movement; the waterfall uses flowing color bands and gentle
@@ -73,3 +81,10 @@ feet visibly lift clear of the ground. Two-legged and four-legged gaits use
 separate step sequences. The walking material deformation has been removed.
 
 A native close-view capture is available in [triceratops-walk.mp4](screenshots/triceratops-walk.mp4).
+
+The screen-focused framing and curled sticky note were visually checked at 1440×900
+and 1024×768. The terminal interaction passes at both sizes, including incremental
+typing, `OK`, unchanged camera position, retraction, replay, and navigation cleanup.
+See [the computer demo](screenshots/terminal-ok.png),
+[the hidden beach slide](screenshots/beach-bar-slide.png), and
+[the beach in free flight](screenshots/beach-bar-free-flight.png).

@@ -72,8 +72,10 @@ to exit.
 | Key | Action |
 | --- | --- |
 | 1–7 / numeric keypad | Open the corresponding map card |
+| 8 / numeric keypad 8 | Visit the hidden north-beach bar and bonus slide |
 | Click a map card or sidebar location | Open that area's slide |
 | Right / Space / Page Down | Return to overview; press again for next slide |
+| Space in the first area | Raise the computer, type `git meta set`, show `OK`; press again to retract |
 | Left / Page Up | Return to overview; press again for previous slide |
 | Esc / O | Return to the overview; cancel any queued destination |
 | Home | Open slide one |
@@ -86,6 +88,18 @@ to exit.
 | Shift in free flight | Move faster |
 
 Free flight hides all slide signs and map labels. Number keys and sidebar locations fly directly to the subject, without opening a slide or starting the presentation clock. Moving or dragging interrupts a destination flight. The sidebar stays available, and Escape also exits to overview.
+
+The north beach extends behind the volcano, with a thatched bar, two seated
+visitors, umbrellas, stools, bottles and palms. Its eighth stop is hidden from
+the map, sidebar and normal forward/back route; press **8** to discover it. The
+example bonus slide rises behind the bar. In free flight, **8** visits the scene
+without revealing the slide.
+
+In the first area, **Space** toggles a camera-facing 3D workstation with a large
+CRT and yellow sticky note. Its command types after the computer rises, then
+prints `OK`. These are demonstration graphics; no shell command is executed.
+Closing and reopening restarts the sequence. Leaving the area hides the computer.
+Use **Right** or **Page Down** to advance from this area.
 
 ## Author slides
 
