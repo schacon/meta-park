@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "title": "Git metadata / Beyond the commit",
+  "title": "git-meta park",
   "durationSeconds": 2100,
   "scene": "isla-nublar",
   "seed": 1993,
@@ -53,97 +53,44 @@
   "slides": [
     {
       "id": "opening",
-      "title": "Beyond the commit",
+      "title": "The Problem",
       "accent": "#563d72",
       "blocks": [
         {
           "kind": "h2",
-          "text": "GIT METADATA / 01"
+          "text": "New Metadata Use Cases"
         },
         {
-          "kind": "p",
-          "text": "Code has history. Now give it context."
+          "kind": "li",
+          "text": "trust (identity)"
         },
         {
-          "kind": "p",
-          "text": "A proposal and Rust reference implementation for flexible, scalable metadata that travels with Git."
+          "kind": "li",
+          "text": "provenance (prompts)"
+        },
+        {
+          "kind": "li",
+          "text": "review (signoffs)"
+        },
+        {
+          "kind": "li",
+          "text": "versions (evolog)"
+        },
+        {
+          "kind": "li",
+          "text": "licensing"
+        },
+        {
+          "kind": "li",
+          "text": "testing"
+        },
+        {
+          "kind": "li",
+          "text": "binary (hints, locks)"
         }
       ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            0,
-            -1050,
-            -190
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 15,
-            "amplitude": 35
-          }
-        },
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            100,
-            -1050,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 30,
-            "amplitude": 35
-          }
-        },
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            200,
-            -1050,
-            190
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 45,
-            "amplitude": 35
-          }
-        }
-      ],
-      "notes": "Based on the sibling git-meta README. This is an overview of the proposal, not a replacement for its canonical spec.",
+      "models": [],
+      "notes": "",
       "position": [
         -6000,
         -400,
@@ -194,108 +141,89 @@
       "habitat": "tyrannosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/01/01-problem.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-problem",
+          "source": "slides/01/01-problem.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "The Problem",
+          "blocks": [
+            {
+              "kind": "h2",
+              "text": "New Metadata Use Cases"
+            },
+            {
+              "kind": "li",
+              "text": "trust (identity)"
+            },
+            {
+              "kind": "li",
+              "text": "provenance (prompts)"
+            },
+            {
+              "kind": "li",
+              "text": "review (signoffs)"
+            },
+            {
+              "kind": "li",
+              "text": "versions (evolog)"
+            },
+            {
+              "kind": "li",
+              "text": "licensing"
+            },
+            {
+              "kind": "li",
+              "text": "testing"
+            },
+            {
+              "kind": "li",
+              "text": "binary (hints, locks)"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        },
+        {
+          "id": "02-example",
+          "source": "slides/01/02-example.mdx",
+          "kind": "component",
+          "component": {
+            "type": "Computer",
+            "prompt": "git meta set",
+            "output": "OK"
+          },
+          "title": "Computer",
+          "blocks": [],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "context",
-      "title": "The context we lose",
-      "accent": "#7b303e",
+      "title": "Metadata Properties",
+      "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "THE PROBLEM / 02"
+          "kind": "li",
+          "text": "granularity (targets - file, line, byte?)"
         },
         {
           "kind": "li",
-          "text": "Trust: who made and reviewed this change?"
+          "text": "mutability (mutable - locks, appendable - comments, immutable - authorship)"
         },
         {
           "kind": "li",
-          "text": "Provenance: which prompts and transcripts produced it?"
-        },
-        {
-          "kind": "li",
-          "text": "Review, testing, licensing and binary-file hints."
-        },
-        {
-          "kind": "p",
-          "text": "Commit trailers and notes leave us with size limits, fixed fields and limited control over metadata properties."
+          "text": "exchange (local, exchanged, partially)"
         }
       ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            0,
-            -1050,
-            -190
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 15,
-            "amplitude": 35
-          }
-        },
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            100,
-            -1050,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 30,
-            "amplitude": 35
-          }
-        },
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            200,
-            -1050,
-            190
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 45,
-            "amplitude": 35
-          }
-        }
-      ],
+      "models": [],
       "notes": "",
       "position": [
         4900,
@@ -347,56 +275,63 @@
       "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/02/01-properties.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-properties",
+          "source": "slides/02/01-properties.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "Metadata Properties",
+          "blocks": [
+            {
+              "kind": "li",
+              "text": "granularity (targets - file, line, byte?)"
+            },
+            {
+              "kind": "li",
+              "text": "mutability (mutable - locks, appendable - comments, immutable - authorship)"
+            },
+            {
+              "kind": "li",
+              "text": "exchange (local, exchanged, partially)"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "targets",
-      "title": "Attach it where it belongs",
-      "accent": "#294e7e",
+      "title": "3. Problems with existing solutions",
+      "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "THE DATA MODEL / 03"
-        },
-        {
           "kind": "p",
-          "text": "Target + namespaced key + value."
+          "text": "commit headers,\nCODEOWNERS type files,\ncommit message trailers,\ngit notes"
         },
         {
           "kind": "li",
-          "text": "Targets: commit, change ID, path, branch, project."
+          "text": "fixed targets"
         },
         {
           "kind": "li",
-          "text": "Strings for individual values."
+          "text": "fixed fields"
         },
         {
           "kind": "li",
-          "text": "Lists for appended entries; sets for unique members."
+          "text": "pollution"
+        },
+        {
+          "kind": "li",
+          "text": "size, scalability"
         }
       ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Sphere.Sphere",
-          "actor": "",
-          "position": [
-            0,
-            -1050,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            3,
-            3,
-            3
-          ],
-          "animation": null
-        }
-      ],
+      "models": [],
       "notes": "",
       "position": [
         -5700,
@@ -448,28 +383,72 @@
       "habitat": "velociraptor",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/03/01-problems.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-problems",
+          "source": "slides/03/01-problems.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "3. Problems with existing solutions",
+          "blocks": [
+            {
+              "kind": "p",
+              "text": "commit headers,\nCODEOWNERS type files,\ncommit message trailers,\ngit notes"
+            },
+            {
+              "kind": "li",
+              "text": "fixed targets"
+            },
+            {
+              "kind": "li",
+              "text": "fixed fields"
+            },
+            {
+              "kind": "li",
+              "text": "pollution"
+            },
+            {
+              "kind": "li",
+              "text": "size, scalability"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "authoring",
-      "title": "Small commands. Rich context.",
+      "title": "git-meta intro",
       "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "THE CLI / 04"
+          "kind": "p",
+          "text": "a git notes-like key value system, but much more flexible."
         },
         {
-          "kind": "pre",
-          "text": "git meta set commit:314e7f0fa7 agent:model \"claude-opus-4-6[1m]\"\ngit meta list:push branch:sc-feature-1 review:comments \"love it\"\ngit meta set:add path:src/metrics owners schacon\n"
+          "kind": "li",
+          "text": "fine-grained targets"
+        },
+        {
+          "kind": "li",
+          "text": "namespaced keys"
+        },
+        {
+          "kind": "li",
+          "text": "crdt-shaped data types"
         },
         {
           "kind": "p",
-          "text": "Keys can be deeply namespaced. Read a namespace to retrieve its subkeys."
+          "text": "getting and setting example"
         }
       ],
       "models": [],
-      "notes": "These commands come from the README examples. Refer to git-meta/spec for current CLI semantics.",
+      "notes": "",
       "position": [
         5400,
         2300,
@@ -520,56 +499,59 @@
       "habitat": "brachiosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/04/01-intro.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-intro",
+          "source": "slides/04/01-intro.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "git-meta intro",
+          "blocks": [
+            {
+              "kind": "p",
+              "text": "a git notes-like key value system, but much more flexible."
+            },
+            {
+              "kind": "li",
+              "text": "fine-grained targets"
+            },
+            {
+              "kind": "li",
+              "text": "namespaced keys"
+            },
+            {
+              "kind": "li",
+              "text": "crdt-shaped data types"
+            },
+            {
+              "kind": "p",
+              "text": "getting and setting example"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "storage",
-      "title": "Local speed. Git transport.",
-      "accent": "#7b303e",
+      "title": "storage",
+      "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "STORAGE & EXCHANGE / 05"
+          "kind": "li",
+          "text": "sqlite, serialize, materialize"
         },
         {
-          "kind": "p",
-          "text": "Work with tuples in a local SQLite database."
-        },
-        {
-          "kind": "p",
-          "text": "Serialize shared values into a Git tree, then commit to refs/meta/local/main."
-        },
-        {
-          "kind": "p",
-          "text": "Fetch metadata into refs/meta/remotes/main and materialize it into the local store."
+          "kind": "li",
+          "text": "sync"
         }
       ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Cylinder.Cylinder",
-          "actor": "",
-          "position": [
-            0,
-            -1050,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            2.5,
-            2.5,
-            3.5
-          ],
-          "animation": {
-            "kind": "bob",
-            "speed": 1.5,
-            "amplitude": 25
-          }
-        }
-      ],
+      "models": [],
       "notes": "",
       "position": [
         -6000,
@@ -621,113 +603,52 @@
       "habitat": "tyrannosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/05/01-storage.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-storage",
+          "source": "slides/05/01-storage.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "storage",
+          "blocks": [
+            {
+              "kind": "li",
+              "text": "sqlite, serialize, materialize"
+            },
+            {
+              "kind": "li",
+              "text": "sync"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "merging",
-      "title": "Let the tree do the work",
-      "accent": "#294e7e",
+      "title": "exchange",
+      "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "COLLABORATION / 06"
-        },
-        {
-          "kind": "p",
-          "text": "Separate keys become separate tree entries."
+          "kind": "li",
+          "text": "tree storage"
         },
         {
           "kind": "li",
-          "text": "Independent edits merge naturally."
+          "text": "ff-only"
         },
         {
           "kind": "li",
-          "text": "The README proposes local preference for conflicting values."
-        },
-        {
-          "kind": "li",
-          "text": "Append-only list entries can combine across collaborators."
-        },
-        {
-          "kind": "li",
-          "text": "Explicit tombstones express deletion; absence does not."
+          "text": "filters / local"
         }
       ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            0,
-            -1050,
-            -190
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 15,
-            "amplitude": 35
-          }
-        },
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            100,
-            -1050,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 30,
-            "amplitude": 35
-          }
-        },
-        {
-          "mesh": "/Engine/BasicShapes/Cube.Cube",
-          "actor": "",
-          "position": [
-            200,
-            -1050,
-            190
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1.1,
-            1.1,
-            1.1
-          ],
-          "animation": {
-            "kind": "spin",
-            "speed": 45,
-            "amplitude": 35
-          }
-        }
-      ],
-      "notes": "The README labels spec/README.md canonical. This slide describes the README proposal rather than asserting current implementation conflict semantics.",
+      "models": [],
+      "notes": "",
       "position": [
         4900,
         -4300,
@@ -778,61 +699,56 @@
       "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/06/01-exchange.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-exchange",
+          "source": "slides/06/01-exchange.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "exchange",
+          "blocks": [
+            {
+              "kind": "li",
+              "text": "tree storage"
+            },
+            {
+              "kind": "li",
+              "text": "ff-only"
+            },
+            {
+              "kind": "li",
+              "text": "filters / local"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "scale",
-      "title": "Fetch what you need",
+      "title": "scaling",
       "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "SCALE / 07"
+          "kind": "li",
+          "text": "partial/shallow/promisors"
         },
         {
-          "kind": "p",
-          "text": "Large transcripts should not make every clone enormous."
+          "kind": "li",
+          "text": "pruning"
         },
         {
-          "kind": "p",
-          "text": "Blobless fetches bring down trees and commits. Pruned checkpoints keep a useful working set; older values can be fetched on demand."
-        },
-        {
-          "kind": "p",
-          "text": "Public, corporate and personal metadata can use separate destinations. Higher-level tools handle capture, display and synchronization."
-        },
-        {
-          "kind": "p",
-          "text": "The README reports about 500 MB of compressed transcript data versus less than 2 MB for its blobless example."
+          "kind": "li",
+          "text": "speed tests"
         }
       ],
-      "models": [
-        {
-          "mesh": "/Engine/BasicShapes/Cylinder.Cylinder",
-          "actor": "",
-          "position": [
-            0,
-            -1050,
-            0
-          ],
-          "rotation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            2.5,
-            2.5,
-            3.5
-          ],
-          "animation": {
-            "kind": "bob",
-            "speed": 1.5,
-            "amplitude": 25
-          }
-        }
-      ],
-      "notes": "The size comparison is a benchmark reported by the README author, not a benchmark of this slideshow engine.",
+      "models": [],
+      "notes": "",
       "position": [
         -5700,
         4800,
@@ -884,28 +800,48 @@
       "habitat": "velociraptor",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/07/01-scaling.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-scaling",
+          "source": "slides/07/01-scaling.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "scaling",
+          "blocks": [
+            {
+              "kind": "li",
+              "text": "partial/shallow/promisors"
+            },
+            {
+              "kind": "li",
+              "text": "pruning"
+            },
+            {
+              "kind": "li",
+              "text": "speed tests"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     },
     {
       "id": "beach-bar",
-      "title": "Nobody cares.",
-      "accent": "#537b3a",
+      "title": "example: github blame",
+      "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "A LITTLE CONTEXT / 08"
-        },
-        {
           "kind": "p",
-          "text": "We have metadata here!"
-        },
-        {
-          "kind": "p",
-          "text": "Keep the useful context. Share it with the people who need it."
+          "text": "github blame"
         }
       ],
       "models": [],
-      "notes": "Hidden bonus stop. Press 8 to visit the beach bar behind the volcano. Replace this example with your own closing thought or questions.",
+      "notes": "",
       "position": [
         5400,
         2300,
@@ -958,7 +894,27 @@
       "habitat": "brachiosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
-      "transition": 0.8
+      "transition": 0.8,
+      "source": "slides/08/01-example.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-example",
+          "source": "slides/08/01-example.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "example: github blame",
+          "blocks": [
+            {
+              "kind": "p",
+              "text": "github blame"
+            }
+          ],
+          "models": [],
+          "notes": ""
+        }
+      ]
     }
   ]
 }
