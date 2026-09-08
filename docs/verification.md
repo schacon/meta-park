@@ -88,3 +88,9 @@ typing, `OK`, unchanged camera position, retraction, replay, and navigation clea
 See [the computer demo](screenshots/terminal-ok.png),
 [the hidden beach slide](screenshots/beach-bar-slide.png), and
 [the beach in free flight](screenshots/beach-bar-free-flight.png).
+
+The rear beach uses shoreline-normal offsets instead of radial scaling at its
+concave neck. All 3,360 sampled contour points lie inside the next outer band,
+and the sand toe extends below the water surface. The rebuilt island and water
+passed native navigation, terrain/gait, and hidden-beach checks. See the
+[north-shore model review](../assets/blender/north-shore-review.png).

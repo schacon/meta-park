@@ -2,7 +2,7 @@
 Each asset is a named collection, exported independently with flat normals + vertex colours.
 The existing Blender scene is preserved. The assembled scene is saved as park.blend.
 """
-import bpy, math, random, json
+import bpy, math, random, json, os
 from pathlib import Path
 from mathutils import Vector, Matrix
 from mathutils.geometry import delaunay_2d_cdt
@@ -396,6 +396,20 @@ outline=[(0,170),(32,167),(49,149),(48,125),(34,94),(70,68),(86,40),(94,17),
 (-105,24),(-110,53),(-97,85),(-67,99),(-43,121),(-46,147),(-29,165)]
 coast=list(reversed(outline))
 coast_count=len(coast)
+def shore_ring(factor,offset):
+    # Radial scaling folds the water back over the concave north-beach neck.
+    # Offset neighboring edge lines instead; retain the established southern coast.
+    ring=[]
+    for j,(x,y) in enumerate(coast):
+        a=coast[j-1];b=coast[(j+1)%coast_count]
+        dx,dy=x-a[0],y-a[1];length=math.hypot(dx,dy);n0=(dy/length,-dx/length)
+        dx,dy=b[0]-x,b[1]-y;length=math.hypot(dx,dy);n1=(dy/length,-dx/length)
+        denominator=1+n0[0]*n1[0]+n0[1]*n1[1]
+        ox=x+offset*(n0[0]+n1[0])/denominator
+        oy=y+offset*(n0[1]+n1[1])/denominator
+        blend=max(0,min(1,(y-65)/25));blend=blend*blend*(3-2*blend)
+        ring.append((x*factor+(ox-x*factor)*blend,y*factor+(oy-y*factor)*blend))
+    return ring
 def ground(x,y):
     if y>=110:return 2
     z=2
@@ -419,13 +433,14 @@ def ground(x,y):
         t=max(0,min(1,(math.hypot(x-px,y-py)-r)/12));z=2+(z-2)*t*t*(3-2*t)
     return z
 begin()
-for factor,z,c in [(1,-.8,'#efd28b'),(.953,1.15,'#f7df99'),(.9,2,'#b1c65e')]:
-    if factor==1:prev=[(x*1.018,y*1.018,-1.8) for x,y in coast]
+for factor,offset,z,c in [(1,0,-.8,'#efd28b'),(.953,-4.5,1.15,'#f7df99'),(.9,-9.5,2,'#b1c65e')]:
+    if factor==1:prev=[(x,y,-3.05) for x,y in shore_ring(1.018,2.5)]
     else:prev=ring
-    ring=[(x*factor,y*factor,z) for x,y in coast]
+    ring=[(x,y,z) for x,y in shore_ring(factor,offset)]
     vs=prev+ring;fs=[(j,(j+1)%coast_count,(j+1)%coast_count+coast_count,j+coast_count) for j in range(coast_count)]
     mesh('sculpted beach contour',vs,fs,c,[('#f2d99b' if factor==.9 and (coast[j][1]+coast[(j+1)%coast_count][1])*.5>110 else c) for j in range(coast_count)])
-coords=[Vector((x*.9,y*.9)) for x,y in coast]
+inner_shore=shore_ring(.9,-9.5)
+coords=[Vector(p) for p in inner_shore]
 for y in range(-112,116,9):
     for x in range(-95,99,9):
         xx=x+rng.uniform(-2,2);yy=y+rng.uniform(-2,2)
@@ -449,7 +464,7 @@ for h in habitats:
     coords.extend(Vector((px+24*math.cos(j*math.pi/8),py+24*math.sin(j*math.pi/8))) for j in range(16))
     lake_edges.extend((first+j,first+(j+1)%16) for j in range(16))
 v,e,f,*_=delaunay_2d_cdt(coords,lake_edges,[list(range(coast_count))],1,.001)
-boundary={(round(x*.9,4),round(y*.9,4)) for x,y in coast}
+boundary={(round(x,4),round(y,4)) for x,y in inner_shore}
 verts=[]
 for x,y in v:
     z=ground(x,y);ratio=lagoon_ratio(x,y)
@@ -535,7 +550,8 @@ for x,y,rx,ry in islets:
     ell('islet rock',(x+rx*.25,body_y+ry*.12,2.9),(rx*.14,ry*.13,1.8),'#a09c87',7,3)
 finish('SM_Islets')
 begin()
-for factor,z,c in [(1.23,-2.8,'#429fc1'),(1.15,-2.76,'#50b3cc'),(1.075,-2.72,'#75d0d9')]:slab('shallow water band',[(x*factor,y*factor) for x,y in coast],z,.015,c)
+for factor,offset,z,c in [(1.23,23,-2.8,'#429fc1'),(1.15,15,-2.76,'#50b3cc'),(1.075,7.5,-2.72,'#75d0d9')]:
+    slab('shallow water band',shore_ring(factor,offset),z,.015,c)
 poly=[lagoon(j) for j in range(32)]
 slab('turquoise lagoon',poly,.52,.1,'#48adc4')
 for x,y,rx,ry in islets:
@@ -630,7 +646,10 @@ tree.links.new(rl.outputs['Image'],flip.inputs['Image']);tree.links.new(flip.out
 scene.compositing_node_group=tree
 # Export each source collection, preserving edited components in the blend file.
 report=[]
+export_names=set(filter(None,os.environ.get('PARK_EXPORT_ASSETS','').split(',')))
 for name,col in assets.items():
+    report.append({'name':name,'objects':len(col.objects),'polygons':sum(len(o.data.polygons) for o in col.objects)})
+    if export_names and name not in export_names:continue
     scene.collection.children.link(col)
     # Bake one export mesh with explicit handedness conversion. Unreal's FBX
     # importer flips Y; pre-reflection preserves layout coordinates in centimetres.
@@ -652,7 +671,6 @@ for name,col in assets.items():
     bpy.ops.object.select_all(action='DESELECT');export.select_set(True);bpy.context.view_layer.objects.active=export
     bpy.ops.export_scene.fbx(filepath=str(OUT/(name+'.fbx')),use_selection=True,object_types={'MESH'},bake_anim=False,axis_forward='-Y',axis_up='Z',apply_unit_scale=True,mesh_smooth_type='FACE',colors_type='LINEAR',use_triangles=True)
     bpy.data.objects.remove(export,do_unlink=True);parts.clear()
-    report.append({'name':name,'objects':len(col.objects),'polygons':sum(len(o.data.polygons) for o in col.objects)})
     scene.collection.children.unlink(col)
 (OUT/'park-assets.json').write_text(json.dumps({'version':1,'units':'metres','treeCount':trees,'assets':report,'placements':placements},indent=2)+'\n')
 scene.render.filepath=str(ROOT/'assets/blender/park-review.png')
