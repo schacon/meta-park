@@ -363,6 +363,7 @@ mesh('angular sea boulder',[(-1.45,-.5,-.35),(-.8,-1.2,-.35),(.6,-1.4,-.35),(1.5
 finish('SM_Rock')
 
 exec(compile((ROOT/'scripts/model_beach_bar.py').read_text(),str(ROOT/'scripts/model_beach_bar.py'),'exec'))
+exec(compile((ROOT/'scripts/model_terminal.py').read_text(),str(ROOT/'scripts/model_terminal.py'),'exec'))
 
 # Island: hand-shaped shoreline rings, triangulated meadow, a broad ridge volcano and lagoon.
 layout=json.loads((ROOT/'examples/git-meta/layout.json').read_text())
@@ -655,5 +656,9 @@ for name,col in assets.items():
     scene.collection.children.unlink(col)
 (OUT/'park-assets.json').write_text(json.dumps({'version':1,'units':'metres','treeCount':trees,'assets':report,'placements':placements},indent=2)+'\n')
 scene.render.filepath=str(ROOT/'assets/blender/park-review.png')
-bpy.data.libraries.write(str(ROOT/'assets/blender/park.blend'),{scene,*assets.values()},fake_user=True)
+exec(compile((ROOT/'scripts/review_terminal.py').read_text(),str(ROOT/'scripts/review_terminal.py'),'exec'))
+# Initialize both view layers before Blender's partial library writer copies them.
+bpy.context.window.scene=terminal_review;bpy.context.view_layer.update()
+bpy.context.window.scene=scene;bpy.context.view_layer.update()
+bpy.data.libraries.write(str(ROOT/'assets/blender/park.blend'),{scene,terminal_review,*assets.values()},fake_user=True)
 result={'blend':bpy.data.filepath,'assets':report,'trees':trees,'placements':len(placements)}

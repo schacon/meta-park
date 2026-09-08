@@ -109,6 +109,11 @@
       "polygons": 17913
     },
     {
+      "name": "SM_Terminal",
+      "objects": 120,
+      "polygons": 9810
+    },
+    {
       "name": "SM_Island",
       "objects": 21,
       "polygons": 2819
