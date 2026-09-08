@@ -3,8 +3,10 @@
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/RectLight.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -12,6 +14,22 @@
 #include "Serialization/JsonSerializer.h"
 
 namespace {
+void LightBeachBar(UWorld* World,const FTransform& Bar) {
+ // Broad sand/sky bounce lifts faces and the counter beneath the thatch.
+ // Place the lights in model space so they follow the north-facing bar.
+ auto Fill=[&](FVector Offset,float Intensity,FLinearColor Color) {
+  const FVector Position=Bar.TransformPosition(Offset);
+  const FVector Target=Bar.TransformPosition(FVector(0,-200,300));
+  auto* Light=World->SpawnActor<ARectLight>(Position,(Target-Position).Rotation());
+  auto* Component=Light->RectLightComponent.Get();
+  Component->SetMobility(EComponentMobility::Movable);
+  Component->SetIntensityUnits(ELightUnits::Candelas);Component->SetIntensity(Intensity);
+  Component->SetLightColor(Color);Component->SetSourceWidth(2200);Component->SetSourceHeight(1500);
+  Component->SetAttenuationRadius(5000);Component->SetCastShadows(false);
+ };
+ Fill(FVector(-450,-1050,750),1400,FLinearColor(1,.95,.85));
+ Fill(FVector(700,-650,450),700,FLinearColor(.8,.91,1));
+}
 struct FSplash { TWeakObjectPtr<AStaticMeshActor> Actor; FVector Origin; float Scale,Phase; };
 TArray<FSplash> Splashes;
 struct FWander {
@@ -183,6 +201,7 @@ IslandScene::FStats IslandScene::Build(UWorld* World,const TArray<TSharedPtr<FJs
   auto P=Value->AsObject();const FString Name=P->GetStringField(TEXT("asset"));
   if(Name==TEXT("SM_DungPile") || Name==TEXT("SM_Enclosure") || Name==TEXT("SM_RaptorPen") || Name==TEXT("SM_RaptorBeacon") || Species.Contains(Name)) continue;
   auto* Placed=Asset(World,Name,Position(P->GetArrayField(TEXT("position")))*100,P->GetNumberField(TEXT("yaw")),P->GetNumberField(TEXT("scale")));Count++;
+  if(Name==TEXT("SM_BeachBar"))LightBeachBar(World,Placed->GetActorTransform());
   if(Name==TEXT("SM_GateLeafLeft")||Name==TEXT("SM_GateLeafRight"))RegisterGateLeaf(Placed,Name.EndsWith(TEXT("Left"))?1.f:-1.f);
   if(Name==TEXT("SM_WaterSplash"))Splashes.Add({Placed,Placed->GetActorLocation(),float(P->GetNumberField(TEXT("scale"))),Splashes.Num()*1.7f});
   if(Name.StartsWith(TEXT("SM_Tree")) || Name==TEXT("SM_Palm")) Trees++;

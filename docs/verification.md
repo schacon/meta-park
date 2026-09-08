@@ -101,3 +101,7 @@ closing on Escape, interrupted number navigation, and free flight.
 The gate interaction passes at 1440×900, and the full presentation check passes
 at 1024×768. Captures show the [opening doors](screenshots/gate-opening.png)
 and [slide through the open gateway](screenshots/gate-open.png).
+
+The north-facing beach bar has broad warm and cool fill lights that lift faces
+and the shaded counter without changing the island sun. Presentation and free-flight
+captures were visually checked at 1440×900; the native navigation check passes.
