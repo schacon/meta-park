@@ -46,7 +46,7 @@ def mesh(name, verts, faces, color, face_colors=None):
     colors=m.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='CORNER')
     for p in m.polygons:
         c=lin(face_colors[p.index] if face_colors else color)
-        for k in p.loop_indices: colors.data[k].color=c[:3]+(1 if 'flame' in name.lower() else 0,)
+        for k in p.loop_indices: colors.data[k].color=c[:3]+(1 if 'flame' in name.lower() or 'beacon red lens' in name.lower() else 0,)
     parts.append(o); return o
 
 def box(name,p,s,c,bevel=0):
@@ -94,11 +94,12 @@ def slab(name,poly,z,thickness,c):
     n=len(poly); vs=[(x,y,z) for x,y in poly]+[(x,y,z-thickness) for x,y in poly]
     fs=[tuple(range(n)),tuple(reversed(range(n,2*n)))]+[(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
     return mesh(name,vs,fs,c)
-def text(name,value,p,size,c,rot=(math.pi/2,0,math.pi)):
+def text(name,value,p,size,c,rot=(math.pi/2,0,math.pi),depth=.025,bevel=0,offset=0,font=None):
     curve=bpy.data.curves.new(name,'FONT');curve.body=value;
     font_path=Path('/System/Library/Fonts/Supplemental/Arial Bold.ttf')
     if font_path.exists():curve.font=bpy.data.fonts.load(str(font_path),check_existing=True)
-    curve.align_x='CENTER';curve.size=size;curve.extrude=.025
+    curve.align_x='CENTER';curve.size=size;curve.extrude=depth;curve.bevel_depth=bevel;curve.bevel_resolution=1;curve.offset=offset
+    if font:curve.font=bpy.data.fonts.load(font,check_existing=True)
     o=bpy.data.objects.new(name,curve);scene.collection.objects.link(o);o.location=p;o.rotation_euler=rot
     bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o;bpy.ops.object.convert(target='MESH')
     o=bpy.context.object; o.data.materials.append(mat)
@@ -264,8 +265,10 @@ for side in (-1,1):
     box('bronze door handle',(side*.42,-1.04,5.8),(.16,.2,.75),'#655139')
 outline=[(-7.2,12.4),(-7.2,17.3),(-4.4,17.9),(0,19),(4.4,17.9),(7.2,17.3),(7.2,12.4)]
 vs=[(x,-.72,z) for x,z in outline]+[(x,.72,z) for x,z in outline]
-mesh('arched park sign',vs,[tuple(reversed(range(7))),tuple(range(7,14))]+[(i,(i+1)%7,(i+1)%7+7,i+7) for i in range(7)],'#e3dfba')
-text('park lettering','git-meta\npark',(0,-.79,16.1),2.6,'#de6428')
+mesh('arched park sign',vs,[tuple(reversed(range(7))),tuple(range(7,14))]+[(i,(i+1)%7,(i+1)%7+7,i+7) for i in range(7)],'#354348')
+# Layered cast letters: dark extrusion, gold rim and bevelled red face.
+for label,y,depth,offset,color in [('letter shadow',-.89,.22,.09,'#202827'),('gold letter outline',-1.13,.16,.065,'#f3cf60'),('red raised letter face',-1.35,.10,0,'#bf422b')]:
+    text(label,'git-meta\npark',(0,y,16.1),2.6,color,depth=depth,bevel=.025,offset=offset,font='/System/Library/Fonts/Supplemental/Impact.ttf')
 box('broad entrance ramp',(0,-8,.05),(15,11,.7),'#c5c3af')
 for x in (-7.7,7.7):
     box('ramp stone block',(x,-11.4,.85),(1.65,3.1,2.6),'#a0a89a')
@@ -323,6 +326,8 @@ for z in (.3,3):box('gate frame',(0,-15.25,z),(3.3,.2,.2),'#6e755c')
 beam('gate diagonal',(-1.45,-15.4,.45),(1.45,-15.4,2.9),.12,'#6e755c',4)
 finish('SM_Enclosure')
 
+exec(compile((ROOT/'scripts/model_raptor_pen.py').read_text(),str(ROOT/'scripts/model_raptor_pen.py'),'exec'))
+
 # Reusable foliage: branching broadleaf tree, sculpted palms and angular boulders.
 begin()
 tube('branching trunk',[(0,0,0),(.15,0,2),(-.05,0,4.7)],[.45,.32,.13],WOOD,7)
@@ -357,6 +362,8 @@ mesh('angular sea boulder',[(-1.45,-.5,-.35),(-.8,-1.2,-.35),(.6,-1.4,-.35),(1.5
 [(0,1,7,6),(1,2,8,7),(2,3,8),(3,4,9,8),(4,5,10,9),(5,0,6,10),(6,7,11,10),(7,8,11),(8,9,11),(9,10,11)],'#978d7b')
 finish('SM_Rock')
 
+exec(compile((ROOT/'scripts/model_beach_bar.py').read_text(),str(ROOT/'scripts/model_beach_bar.py'),'exec'))
+
 # Island: hand-shaped shoreline rings, triangulated meadow, a broad ridge volcano and lagoon.
 layout=json.loads((ROOT/'examples/git-meta/layout.json').read_text())
 habitats=layout['habitats']
@@ -382,13 +389,14 @@ def lagoon_ratio(x,y):
     return 1/best
 # Art-directed, asymmetric coast: broad middle, narrow northern headland,
 # eastern coves and a southern entrance. Preserve long straight edges and sharp corners.
-outline=[(0,124),(23,115),(34,94),(70,68),(86,40),(94,17),
+outline=[(0,170),(32,167),(49,149),(48,125),(34,94),(70,68),(86,40),(94,17),
 (91,3),(104,-16),(96,-40),(76,-72),(47,-98),(16,-112),(-5,-116),
 (-31,-106),(-61,-89),(-83,-65),(-96,-36),(-97,-22),(-109,-6),
-(-101,22),(-91,50),(-75,79),(-56,93),(-27,106),(-21,116)]
+(-105,24),(-110,53),(-97,85),(-67,99),(-43,121),(-46,147),(-29,165)]
 coast=list(reversed(outline))
 coast_count=len(coast)
 def ground(x,y):
+    if y>=110:return 2
     z=2
     for cx,cy,h,r in [(65,-76,6,25),(-79,35,5,24),(26,80,7,22),(9,-24,3.3,18)]:
         z+=h*math.exp(-((x-cx)**2+(y-cy)**2)/(r*r))
@@ -396,6 +404,11 @@ def ground(x,y):
     for h in habitats:
         px,py,pz=[v/100 for v in h['position']]
         d=math.hypot(x-px,y-py)
+        if h['species']=='velociraptor':
+            # Flat terrace under every wall, the apron, and the rear watchtower;
+            # a broad rounded rectangle blends into the expanded headland.
+            dx=max(abs(x-px)-22,0);dy=max(py-23-y,y-(py+26),0)
+            d=22+math.hypot(dx,dy)
         if d<=22:return pz
         if d<38:
             weight=((38-d)/(d-22))**2
@@ -410,18 +423,27 @@ for factor,z,c in [(1,-.8,'#efd28b'),(.953,1.15,'#f7df99'),(.9,2,'#b1c65e')]:
     else:prev=ring
     ring=[(x*factor,y*factor,z) for x,y in coast]
     vs=prev+ring;fs=[(j,(j+1)%coast_count,(j+1)%coast_count+coast_count,j+coast_count) for j in range(coast_count)]
-    mesh('sculpted beach contour',vs,fs,c)
+    mesh('sculpted beach contour',vs,fs,c,[('#f2d99b' if factor==.9 and (coast[j][1]+coast[(j+1)%coast_count][1])*.5>110 else c) for j in range(coast_count)])
 coords=[Vector((x*.9,y*.9)) for x,y in coast]
 for y in range(-112,116,9):
     for x in range(-95,99,9):
         xx=x+rng.uniform(-2,2);yy=y+rng.uniform(-2,2)
         if (xx/90)**2+(yy/108)**2<1:coords.append(Vector((xx,yy)))
+# A triangulated sandy terrace, continuous with the existing northern shore.
+coords.extend(Vector((x,y)) for y in range(108,153,7) for x in range(-32,36,7))
 lake_start=len(coords)
 for factor in (1,1.07,1.25):
     coords.extend(Vector(lagoon(j,factor)) for j in range(32))
 lake_edges=[(lake_start+k*32+j,lake_start+k*32+(j+1)%32) for k in range(3) for j in range(32)]
 for h in habitats:
     px,py,pz=[v/100 for v in h['position']]
+    if h['species']=='velociraptor':
+        for margin in (0,7,14):
+            first=len(coords)
+            ring=[(-22-margin,-23-margin),(0,-23-margin),(22+margin,-23-margin),(22+margin,1.5),(22+margin,26+margin),(0,26+margin),(-22-margin,26+margin),(-22-margin,1.5)]
+            coords.extend(Vector((px+x,py+y)) for x,y in ring)
+            lake_edges.extend((first+j,first+(j+1)%8) for j in range(8))
+        continue
     first=len(coords)
     coords.extend(Vector((px+24*math.cos(j*math.pi/8),py+24*math.sin(j*math.pi/8))) for j in range(16))
     lake_edges.extend((first+j,first+(j+1)%16) for j in range(16))
@@ -438,7 +460,7 @@ for x,y in v:
 cs=[]
 for face in f:
     x=sum(v[k].x for k in face)/len(face);y=sum(v[k].y for k in face)/len(face)
-    cs.append(tone('#e5d39c' if 1<=lagoon_ratio(x,y)<=1.07 else '#9db756',rng.uniform(.96,1.035)))
+    cs.append(tone('#f1d89a' if y>108+3*math.sin(x*.12) else '#e5d39c' if 1<=lagoon_ratio(x,y)<=1.07 else '#9db756',rng.uniform(.96,1.035)))
 mesh('triangulated meadow',verts,f,'#a6be58',cs)
 (OUT/'park-ground.json').write_text(json.dumps({'vertices':verts,'triangles':f}))
 terrain_bvh=BVHTree.FromPolygons(verts,f)
@@ -522,21 +544,55 @@ for x,y,rx,ry in islets:
 for radius,z,c in [(14,-2.64,'#429fbd'),(11,-2.60,'#58b6c9'),(8,-2.56,'#78cbd2')]:
     slab('boulder shallows',[(96+radius*math.cos(j*2*math.pi/9)*(1+.07*math.sin(j*2)),-101+radius*.85*math.sin(j*2*math.pi/9)) for j in range(9)],z,.02,c)
 # Broad, folded cascade with a bright lip, multiple chutes, and a foamy plunge pool.
-for a,b,c in [(-2.6,-.9,'#86d5e0'),(-.9,1,'#b5e9ec'),(1,2.9,'#68c9dc')]:
+for a,b,c in [(-5,-1.6,'#86d5e0'),(-1.6,1.7,'#b5e9ec'),(1.7,5,'#68c9dc')]:
     vs=[(a,32,17),(b,32,17),(b*.85,29,15),(a*.85,29,15),
-        (a*1.1,27,7),(b*1.1,27,7),(b*1.6,23,.9),(a*1.6,23,.9)]
+        (a*1.5,27,7),(b*1.5,27,7),(b*2.1,22,.5),(a*2.1,22,.5)]
     mesh('folded waterfall chute',vs,[(0,1,2,3),(3,2,5,4),(4,5,6,7)],c)
-for j in range(12):
-    a=j*2*math.pi/12
-    ell('plunge pool foam',(4*math.cos(a),22+1.7*math.sin(a),.82),(.95,1.2,.22),'#b4e7e4',7,3)
+# A broad apron joins the cascade continuously to the lagoon under the rocks.
+slab('water beneath gorge rocks',[(-10,26),(10,26),(10,22),(7,19),(-7,19),(-10,22)],.57,.08,'#7dccd8')
 finish('SM_Water')
+begin()
+ell('rounded splash lobe',(0,0,0),(1,1,.85),'#c0ece8',9,5)
+finish('SM_WaterSplash')
+
+# Oversized, deliberately simple dung heap for the triceratops paddock.
+# Broad overlapping lobes give it a soft, heaped silhouette in the faceted park style.
+begin()
+ell('dung heap broad base',(0,0,1.1),(4.8,3.7,1.6),'#62412b',12,6)
+for p,size,c in [((-2.6,-1.4,1.5),(2.2,2,1.5),'#704a2d'),
+                 ((2.5,-1.1,1.3),(2.3,2,1.5),'#795033'),
+                 ((.4,.4,2.8),(3.3,2.7,1.7),'#785031'),
+                 ((-1,-.2,4),(2,1.9,1.5),'#845b38')]:
+    ell('rounded dung mound',p,size,c,11,6)
+tube('curled heap crest',[(-1,.1,4.4),(-.7,.2,5.1),(.2,.4,5.7),(.9,.5,5.9)],[1.2,.95,.55,.08],'#8a603c',9)
+ell('loose dung clump',(4,-2.7,.4),(.95,.7,.6),'#70472c',9,5)
+ell('loose dung clump',(-3.8,2.4,.3),(.8,.65,.5),'#68472e',9,5)
+finish('SM_DungPile')
 
 # Assemble the review scene from the same independent assets used by Unreal.
-instance('SM_Island');instance('SM_Water');instance('SM_Islets');instance('SM_Rock',(96,-101,-1.5),15,4.2)
+instance('SM_Island');instance('SM_Water');instance('SM_Islets');
+instance('SM_BeachBar',(0,131,2),180,2.8)
+for j in range(10):
+    a=j*math.tau/10
+    splash=instance('SM_WaterSplash',(6.8*math.cos(a),21.8+2.5*math.sin(a),.95),j*19,1.35+.3*math.sin(j*2.1))
+    base=splash.scale.copy()
+    for frame in (1,9,17,25,33,41,49):
+        pulse=math.sin((frame-1)*math.tau/48+j*1.7)
+        splash.scale=base*(1+.22*pulse);splash.keyframe_insert(data_path='scale',frame=frame)
+    splash.scale=base
+instance('SM_Rock',(96,-101,-1.5),15,4.2)
 instance('SM_VisitorCentre',(0,-51,2),0,1.65);instance('SM_Gate',(0,-105,2),0,1.8);instance('SM_Helipad',(-64,-54,2),0,1.5);instance('SM_Dock',(-13.5,-125,-1),0,1.15)
 for h in habitats:
-    p=[v/100 for v in h['position']];instance('SM_Enclosure',p,0,1.4)
-    instance('SM_'+h['species'],p,155,2.7)
+    p=[v/100 for v in h['position']]
+    if h['species']=='velociraptor':
+        instance('SM_RaptorPen',p,0,1.2)
+        for y in (-10.35,10.35):
+            for x in (-15.6,-5.2,5.2,15.6):instance('SM_RaptorBeacon',(p[0]+x*1.2,p[1]+y*1.2,p[2]+10.55*1.2),0,1.2)
+        for dx,dy,yaw in [(-6,-2,155),(6,3,220),(5,-6,120)]:instance('SM_velociraptor',(p[0]+dx,p[1]+dy,p[2]+.7),yaw,1.1)
+    else:
+        instance('SM_Enclosure',p,0,1.4)
+        instance('SM_'+h['species'],p,155,2.7)
+        if h['species']=='triceratops':instance('SM_DungPile',(p[0]+10,p[1]-7,surface(p[0]+10,p[1]-7)),0,1)
 # Composed trees frame each focal point. Large crowns are spaced like the reference.
 forest=[(78,50),(85,22),(83,-4),(72,-16),(82,-38),(65,-73),(66,-77),
 (39,-89),(20,-88),(23,-105),(-23,-102),(-37,-93),(-55,-84),(-73,-78),
@@ -558,6 +614,8 @@ begin();box('Ocean',(0,0,-3.8),(2000,2000,1),'#3595bd');parts.clear()
 # Lighting/camera for a real isometric art review.
 def aim(o,target):o.rotation_euler=(Vector(target)-o.location).to_track_quat('-Z','Y').to_euler()
 camd=bpy.data.cameras.new('Isometric review');cam=bpy.data.objects.new('Isometric review',camd);scene.collection.objects.link(cam);cam.location=(12,-280,235);aim(cam,(0,0,0));camd.type='ORTHO';camd.ortho_scale=285;scene.camera=cam
+barcamd=bpy.data.cameras.new('North beach • bar review');barcam=bpy.data.objects.new('North beach • bar review',barcamd);scene.collection.objects.link(barcam)
+barcam.location=(29,170,29);aim(barcam,(0,131,7));barcamd.type='ORTHO';barcamd.ortho_scale=43
 ld=bpy.data.lights.new('Large softbox sun','AREA');ld.energy=500000;ld.shape='DISK';ld.size=140
 lo=bpy.data.objects.new('Large softbox sun',ld);scene.collection.objects.link(lo);lo.location=(100,-130,230);aim(lo,(0,0,0))
 sun=bpy.data.lights.new('Warm key','SUN');sun.energy=2;sun.angle=.1;so=bpy.data.objects.new('Warm key',sun);scene.collection.objects.link(so);so.rotation_euler=(.4,.5,.4)

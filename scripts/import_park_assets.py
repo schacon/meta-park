@@ -50,7 +50,7 @@ unreal.MaterialEditingLibrary.delete_all_material_expressions(water)
 w_color=expression(water,unreal.MaterialExpressionVertexColor)
 w_time=expression(water,unreal.MaterialExpressionTime)
 w_world=expression(water,unreal.MaterialExpressionWorldPosition)
-mask='float chute=step(abs(P.x),650.0)*step(2100.0,P.y)*step(P.y,3400.0)*smoothstep(100.0,250.0,P.z); '
+mask='float chute=step(abs(P.x),1100.0)*step(2100.0,P.y)*step(P.y,3400.0)*smoothstep(100.0,250.0,P.z); '
 flow=custom(water,mask+'return C*(1.0+chute*(.055*sin(P.z*.025+T*6.0+P.x*.008)));',{'C':(w_color,''),'P':(w_world,''),'T':(w_time,'')})
 assert unreal.MaterialEditingLibrary.connect_material_property(flow,'',unreal.MaterialProperty.MP_BASE_COLOR)
 ripple=custom(water,mask+'float foam=step(abs(P.x),600.0)*step(1900.0,P.y)*step(P.y,2550.0)*step(P.z,140.0)*step(60.0,P.z); return chute*float3(9*sin(T*3.5+P.z*.016),4*cos(T*3.1+P.z*.013),0)+foam*float3(3*sin(T*2+P.x*.02),4*cos(T*2.2+P.y*.02),3*sin(T*3+P.x*.015));',{'P':(w_world,''),'T':(w_time,'')})
@@ -64,6 +64,19 @@ material.set_editor_property('used_with_instanced_static_meshes',True)
 material.set_editor_property('two_sided',True)
 unreal.MaterialEditingLibrary.recompile_material(material)
 unreal.EditorAssetLibrary.save_loaded_asset(material)
+# Red warning lenses blink without moving their supporting poles.
+beacon=unreal.load_asset('/Game/Models/Park/M_ParkBeacon')
+if not beacon:beacon=unreal.AssetToolsHelpers.get_asset_tools().create_asset('M_ParkBeacon','/Game/Models/Park',unreal.Material,unreal.MaterialFactoryNew())
+unreal.MaterialEditingLibrary.delete_all_material_expressions(beacon)
+bc=expression(beacon,unreal.MaterialExpressionVertexColor)
+bt=expression(beacon,unreal.MaterialExpressionTime)
+bp=expression(beacon,unreal.MaterialExpressionObjectPositionWS)
+blink=custom(beacon,'float phase=frac(T*.8+P.x*.00007); float pulse=1-smoothstep(.22,.30,phase); return C*Mask*(.12+8*pulse);',{'T':(bt,''),'P':(bp,''),'C':(bc,''),'Mask':(bc,'A')})
+assert unreal.MaterialEditingLibrary.connect_material_property(bc,'',unreal.MaterialProperty.MP_BASE_COLOR)
+assert unreal.MaterialEditingLibrary.connect_material_property(blink,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+unreal.MaterialEditingLibrary.recompile_material(beacon)
+unreal.EditorAssetLibrary.save_loaded_asset(beacon)
+exec(compile((root/'scripts/import_dinosaur_rigs.py').read_text(),str(root/'scripts/import_dinosaur_rigs.py'),'exec'))
 report=[]
 for entry in manifest['assets']:
     name=entry['name']
@@ -95,7 +108,7 @@ for entry in manifest['assets']:
     path='/Game/Models/Park/'+name
     mesh=unreal.load_asset(path)
     if not isinstance(mesh,unreal.StaticMesh):raise RuntimeError('Missing mesh '+path+' '+str(task.imported_object_paths))
-    for slot in range(len(mesh.static_materials)):mesh.set_material(slot,water if name=='SM_Water' else material)
+    for slot in range(len(mesh.static_materials)):mesh.set_material(slot,beacon if name=='SM_RaptorBeacon' else water if name in ('SM_Water','SM_WaterSplash') else material)
     unreal.EditorAssetLibrary.save_loaded_asset(mesh)
     box=mesh.get_bounding_box()
     report.append(dict(asset=name,min=str(box.min),max=str(box.max)))
