@@ -250,6 +250,7 @@ for side in (-1,1):
         tube('orange flame',[(x,y,z+.5),(x-.13,y,z+1.6),(x+.14,y,z+3.1)],[.48,.4,0],'#ff8d20',7)
         tube('gold flame',[(x,y-.21,z+.6),(x+.08,y-.18,z+1.6),(x-.08,y-.14,z+2.5)],[.32,.27,0],'#ffc94e',6)
         tube('bright flame heart',[(x,y-.36,z+.62),(x,y-.34,z+1.75)],[.2,0],'#ffe8a0',6)
+gate_frame_parts=list(parts);parts.clear()
 for side in (-1,1):
     x=side*3.45
     box('solid wooden gate leaf',(x,0,5.8),(6.8,1.15,11.6),'#89603a')
@@ -263,6 +264,11 @@ for side in (-1,1):
     beam('upper carved diagonal',(x+side*2.7,-.87,10.75),(x-side*2.7,-.87,6.35),.37,'#9a6d41',4)
     beam('lower carved diagonal',(x+side*2.7,-.87,.9),(x-side*2.7,-.87,5.25),.37,'#9a6d41',4)
     box('bronze door handle',(side*.42,-1.04,5.8),(.16,.2,.75),'#655139')
+    # Each leaf is exported around its outer hinge, ready for an inward swing.
+    for obj in parts:
+        for vertex in obj.data.vertices:vertex.co.x-=side*6.85
+    finish('SM_GateLeafLeft' if side<0 else 'SM_GateLeafRight')
+parts.extend(gate_frame_parts)
 outline=[(-7.2,12.4),(-7.2,17.3),(-4.4,17.9),(0,19),(4.4,17.9),(7.2,17.3),(7.2,12.4)]
 vs=[(x,-.72,z) for x,z in outline]+[(x,.72,z) for x,z in outline]
 mesh('arched park sign',vs,[tuple(reversed(range(7))),tuple(range(7,14))]+[(i,(i+1)%7,(i+1)%7+7,i+7) for i in range(7)],'#354348')
@@ -598,7 +604,9 @@ for j in range(10):
         splash.scale=base*(1+.22*pulse);splash.keyframe_insert(data_path='scale',frame=frame)
     splash.scale=base
 instance('SM_Rock',(96,-101,-1.5),15,4.2)
-instance('SM_VisitorCentre',(0,-51,2),0,1.65);instance('SM_Gate',(0,-105,2),0,1.8);instance('SM_Helipad',(-64,-54,2),0,1.5);instance('SM_Dock',(-13.5,-125,-1),0,1.15)
+instance('SM_VisitorCentre',(0,-51,2),0,1.65);instance('SM_Gate',(0,-105,2),0,1.8);
+for side,name in [(-1,'SM_GateLeafLeft'),(1,'SM_GateLeafRight')]:instance(name,(side*6.85*1.8,-105,2),0,1.8)
+instance('SM_Helipad',(-64,-54,2),0,1.5);instance('SM_Dock',(-13.5,-125,-1),0,1.15)
 for h in habitats:
     p=[v/100 for v in h['position']]
     if h['species']=='velociraptor':

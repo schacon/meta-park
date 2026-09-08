@@ -72,3 +72,7 @@ leg vertices. For a walking review capture:
 
 This captures a 16-second close view of the selected paddock at eight frames per
 second in `unreal/Saved/Screenshots/walk-3-*.png`. Use 1, 2, or 4 for the other pens.
+
+The main gate has separate `SM_GateLeafLeft` and `SM_GateLeafRight` meshes,
+with origins on their outer hinges. Their closed placements remain in the park
+manifest; Unreal animates an inward 100-degree swing for the gate presentation.

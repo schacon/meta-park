@@ -49,9 +49,19 @@
       "polygons": 102
     },
     {
+      "name": "SM_GateLeafLeft",
+      "objects": 13,
+      "polygons": 70
+    },
+    {
+      "name": "SM_GateLeafRight",
+      "objects": 13,
+      "polygons": 70
+    },
+    {
       "name": "SM_Gate",
-      "objects": 59,
-      "polygons": 43055
+      "objects": 33,
+      "polygons": 42915
     },
     {
       "name": "SM_Helipad",
@@ -304,6 +314,26 @@
       "asset": "SM_Gate",
       "position": [
         0,
+        -105,
+        2
+      ],
+      "yaw": 0,
+      "scale": 1.8
+    },
+    {
+      "asset": "SM_GateLeafLeft",
+      "position": [
+        -12.33,
+        -105,
+        2
+      ],
+      "yaw": 0,
+      "scale": 1.8
+    },
+    {
+      "asset": "SM_GateLeafRight",
+      "position": [
+        12.33,
         -105,
         2
       ],
