@@ -6179,15 +6179,15 @@
       "blocks": [
         {
           "kind": "li",
-          "text": "granularity (targets - file, line, byte?)"
+          "text": "granularity"
         },
         {
           "kind": "li",
-          "text": "mutability (mutable - locks, appendable - comments, immutable - authorship)"
+          "text": "mutability"
         },
         {
           "kind": "li",
-          "text": "exchange (local, exchanged, partially)"
+          "text": "exchange"
         }
       ],
       "models": [],
@@ -6255,15 +6255,65 @@
           "blocks": [
             {
               "kind": "li",
-              "text": "granularity (targets - file, line, byte?)"
+              "text": "granularity"
             },
             {
               "kind": "li",
-              "text": "mutability (mutable - locks, appendable - comments, immutable - authorship)"
+              "text": "mutability"
             },
             {
               "kind": "li",
-              "text": "exchange (local, exchanged, partially)"
+              "text": "exchange"
+            }
+          ],
+          "models": []
+        },
+        {
+          "id": "02-granularity",
+          "source": "slides/02/02-granularity.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "granularity",
+          "blocks": [
+            {
+              "kind": "p",
+              "text": "targets - file, line, byte?"
+            }
+          ],
+          "models": []
+        },
+        {
+          "id": "03-mutability",
+          "source": "slides/02/03-mutability.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "mutability",
+          "blocks": [
+            {
+              "kind": "p",
+              "text": "mutable - locks\nappendable - comments\nimmutable - authorship"
+            }
+          ],
+          "models": []
+        },
+        {
+          "id": "04-exchange",
+          "source": "slides/02/04-exchange.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "exchange",
+          "blocks": [
+            {
+              "kind": "li",
+              "text": "local"
+            },
+            {
+              "kind": "li",
+              "text": "exchanged"
+            },
+            {
+              "kind": "li",
+              "text": "partially exchanged"
             }
           ],
           "models": []
