@@ -21,19 +21,23 @@ void ASlideGameMode::TestStationContent() {
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-swipe.png"),true,false);
   HandleParkKey(EKeys::Right);
   if(!Check(PageIndex==1,TEXT("key repeat during swipe cannot skip a page")))return;
-  SmokeStep=3;
- } else if(SmokeStep==3&&PageSwipe==1) {
+  SmokeStep=3;Travel=0;
+ } else if(SmokeStep==3&&PageSwipe==1&&Travel>.8f) {
+  if(!Check(StationSignPage(0,PageIndex)==1,TEXT("next slide replaces the old slide across the entire sign")))return;
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-replaced.png"),true,false);
+  SmokeStep=30;Travel=0;
+ } else if(SmokeStep==30&&Travel>.2f) {
   HandleParkKey(EKeys::Left);SmokeStep=4;
  } else if(SmokeStep==4&&PageSwipe==1) {
-  if(!Check(PageIndex==0&&PageDirection==-1&&RevealedPage==1,TEXT("backward navigation retains both pages")))return;
+  if(!Check(PageIndex==0&&PageDirection==-1&&StationSignPage(0,PageIndex)==0,TEXT("backward navigation restores only the previous full-width slide")))return;
   HandleParkKey(EKeys::Right);SmokeStep=5;
  } else if(SmokeStep==5&&PageSwipe==1) {HandleParkKey(EKeys::Right);SmokeStep=6;}
  else if(SmokeStep==6&&Terminal.IsValid()&&Terminal->OutputReady()) {
-  if(!Check(PageIndex==2&&Terminal->Command()==TEXT("git meta get owner")&&Panels[0].Root->GetRootComponent()->IsVisible()&&RevealedPage==2&&Terminal->ScreenFillsViewport(.56f),TEXT("authored computer fills the foreground with preceding Markdown retained behind")))return;
+  if(!Check(PageIndex==2&&Terminal->Command()==TEXT("git meta get owner")&&Panels[0].Root->GetRootComponent()->IsVisible()&&StationSignPage(0,PageIndex)==1&&Terminal->ScreenFillsViewport(.56f),TEXT("authored computer fills the foreground with preceding Markdown retained behind")))return;
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-custom-computer.png"),true,false);
   HandleParkKey(EKeys::Right);SmokeStep=7;
  } else if(SmokeStep==7&&PageSwipe==1) {
-  if(!Check(PageIndex==3&&RevealedPage==3&&Terminal->IsRaised()&&Panels[0].Root->GetRootComponent()->IsVisible()&&MapPhase==EMapPhase::Slide,TEXT("all four revealed steps remain until group departure")))return;
+  if(!Check(PageIndex==3&&StationSignPage(0,PageIndex)==3&&Terminal->IsRaised()&&Panels[0].Root->GetRootComponent()->IsVisible()&&MapPhase==EMapPhase::Slide,TEXT("new Markdown replaces the sign after a native component")))return;
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-four-pages.png"),true,false);
   HandleParkKey(EKeys::Right);SmokeStep=8;
  } else if(SmokeStep==8&&MapPhase==EMapPhase::Overview&&Travel>.6f) {

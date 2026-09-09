@@ -25,7 +25,7 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
   auto Body=SNew(SVerticalBox);
   const FString Heading=bIsland?FString::Printf(TEXT("[%d] %s  /  %s     %02d / %02d"),StationIndex+1,*Station->GetObjectField(TEXT("card"))->GetStringField(TEXT("code")),*Label,Page+1,Steps.Num()):Step->GetStringField(TEXT("title"));
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.13,.61,.24)).Padding(12)
-   [SNew(STextBlock).Text_Lambda([this,StationIndex,Page,Heading,Station]{return FText::FromString(Index==StationIndex&&RevealedPage>0?FString::Printf(TEXT("[%d] %s  %02d/%02d"),StationIndex+1,*Station->GetObjectField(TEXT("card"))->GetStringField(TEXT("code")),Page+1,StationSteps[StationIndex].Num()):Heading);}).Font(FCoreStyle::GetDefaultFontStyle("Mono",24)).ColorAndOpacity(FLinearColor(.015,.025,.02))]];
+   [SNew(STextBlock).Text(FText::FromString(Heading)).Font(FCoreStyle::GetDefaultFontStyle("Mono",24)).ColorAndOpacity(FLinearColor(.015,.025,.02))]];
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(Step->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48*TypeScale)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
   auto TextBody=SNew(SVerticalBox);
   for(const auto& Value:Step->GetArrayField(TEXT("blocks"))) {
@@ -34,26 +34,27 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
    const bool IsHeading=Kind.StartsWith(TEXT("h")),Code=Kind==TEXT("pre");
    TextBody->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Text))
     .Font(FCoreStyle::GetDefaultFontStyle(Code?"Mono":IsHeading?"Bold":"Regular",(Code?26:IsHeading?30:32)*TypeScale))
-    .ColorAndOpacity(IsHeading?Accent:FLinearColor(.004,.004,.004)).WrapTextAt_Lambda([this,StationIndex,Page]{return PageTile(Page,Index==StationIndex?RevealedPage+1:1).Z-96;})];
+    .ColorAndOpacity(IsHeading?Accent:FLinearColor(.004,.004,.004)).WrapTextAt(1344)];
   }
   // Dense authored pages shrink inside the sign instead of running off its edge.
-  Body->AddSlot().FillHeight(1)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly).HAlign(HAlign_Left).VAlign(VAlign_Top)[SNew(SBox).WidthOverride_Lambda([this,StationIndex,Page]{return FOptionalSize(PageTile(Page,Index==StationIndex?RevealedPage+1:1).Z-96);})[TextBody]]];
+  Body->AddSlot().FillHeight(1)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly).HAlign(HAlign_Left).VAlign(VAlign_Top)[SNew(SBox).WidthOverride(1344)[TextBody]]];
   auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63)).Padding(48)[Body];
   FString Kind;Step->TryGetStringField(TEXT("kind"),Kind);
   const bool Component=Kind==TEXT("component");
   auto Tile=SNew(SBox)
-   .WidthOverride_Lambda([this,StationIndex,Page]{return FOptionalSize(PageTile(Page,Index==StationIndex?RevealedPage+1:1).Z);})
-   .HeightOverride_Lambda([this,StationIndex,Page]{return FOptionalSize(PageTile(Page,Index==StationIndex?RevealedPage+1:1).W);})[Content];
+   .WidthOverride(1440).HeightOverride(900)[Content];
   Tile->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,StationIndex,Page,Component]{
-   return !Component&&Page<=(Index==StationIndex?RevealedPage:0)?EVisibility::Visible:EVisibility::Hidden;
+   const int32 Current=StationSignPage(StationIndex,Index==StationIndex?PageIndex:0);
+   const bool Outgoing=Index==StationIndex&&PageSwipe<1&&Page==StationSignPage(StationIndex,PreviousPage);
+   return !Component&&(Page==Current||Outgoing)?EVisibility::Visible:EVisibility::Hidden;
   }));
   Tile->SetRenderTransform(TAttribute<TOptional<FSlateRenderTransform>>::CreateLambda([this,StationIndex,Page]()->TOptional<FSlateRenderTransform>{
-   const FVector4 Rect=PageTile(Page,Index==StationIndex?RevealedPage+1:1);
    float Offset=0;
-   if(Index==StationIndex&&Page>PreviousRevealedPage&&PageSwipe<1) {
-    const float Ease=PageSwipe*PageSwipe*(3-2*PageSwipe);Offset=(1-Ease)*1440;
+   if(Index==StationIndex&&PageSwipe<1) {
+    const float Ease=PageSwipe*PageSwipe*(3-2*PageSwipe);
+    Offset=(Page==StationSignPage(StationIndex,PageIndex)?1-Ease:-Ease)*1440*PageDirection;
    }
-   return FSlateRenderTransform(FVector2D(Rect.X+Offset,Rect.Y));
+   return FSlateRenderTransform(FVector2D(Offset,0));
   }));
   Pages->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top)[Tile];
  }
@@ -66,7 +67,7 @@ bool ASlideGameMode::IsComponentPage() const {
  return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||(*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine"));
 }
 void ASlideGameMode::ResetStationPage() {
- PageIndex=0;RevealedPage=0;PreviousRevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
+ PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
 bool ASlideGameMode::AdvancePage(int32 Direction) {
@@ -74,17 +75,19 @@ bool ASlideGameMode::AdvancePage(int32 Direction) {
  if(PageSwipe<1)return true;
  const int32 Next=PageIndex+Direction;
  if(!StationSteps.IsValidIndex(Index)||!StationSteps[Index].IsValidIndex(Next))return false;
- PreviousRevealedPage=RevealedPage;
  PreviousPage=PageIndex;PageIndex=Next;PageDirection=Direction;RevealedPage=FMath::Max(RevealedPage,Next);
- PageSwipe=RevealedPage>PreviousRevealedPage?0:1;
+ PageSwipe=StationSignPage(Index,PreviousPage)!=StationSignPage(Index,PageIndex)?0:1;
  ActiveComponentPage=INDEX_NONE;
  return true;
 }
-FVector4 ASlideGameMode::PageTile(int32 Page,int32 Count) const {
- const int32 Columns=Count<=3?Count:Count<=4?2:FMath::CeilToInt(FMath::Sqrt(float(Count)*1.6f));
- const int32 Rows=FMath::DivideAndRoundUp(Count,Columns);
- const float W=1440.f/Columns,H=900.f/Rows;
- return FVector4((Page%Columns)*W,(Page/Columns)*H,W,H);
+int32 ASlideGameMode::StationSignPage(int32 Station,int32 Page) const {
+ if(!StationSteps.IsValidIndex(Station))return INDEX_NONE;
+ // Keep the most recent Markdown slide behind native component demonstrations.
+ for(int32 Candidate=FMath::Min(Page,StationSteps[Station].Num()-1);Candidate>=0;Candidate--) {
+  FString Kind;StationSteps[Station][Candidate]->TryGetStringField(TEXT("kind"),Kind);
+  if(Kind!=TEXT("component"))return Candidate;
+ }
+ return INDEX_NONE;
 }
 void ASlideGameMode::TickStationPage(float Delta) {
  PageSwipe=FMath::Min(1.f,PageSwipe+Delta/.28f);

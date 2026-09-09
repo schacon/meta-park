@@ -109,11 +109,11 @@ private:
  EMapPhase MapPhase=EMapPhase::Overview;
  TArray<TArray<TSharedPtr<class FJsonObject>>> StationSteps;
  int32 PageIndex=0, PreviousPage=INDEX_NONE, PageDirection=1, ActiveComponentPage=INDEX_NONE;
- int32 RevealedPage=0, PreviousRevealedPage=0;
+ int32 RevealedPage=0;
  TMap<uint64,TSharedPtr<FParkTerminal>> PageTerminals;
  TSet<uint64> ActiveTerminals;
  TMap<uint64,float> ComponentStartTimes;
- FVector4 PageTile(int32 Page,int32 Count) const;
+ int32 StationSignPage(int32 Station,int32 Page) const;
  float PageSwipe=1;
  TSharedRef<SWidget> BuildStationContent(TSharedPtr<FJsonObject> Station,int32 StationIndex,const FString& Label,FLinearColor Accent);
  bool AdvancePage(int32 Direction);
