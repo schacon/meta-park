@@ -1,4 +1,5 @@
 import {build} from 'esbuild';
+import {loadCast} from './asciicast.mjs';
 import {islandLayout} from './island.mjs';
 import mdx from '@mdx-js/esbuild';
 import {mkdtemp, rm, readFile, readdir} from 'node:fs/promises';
@@ -123,7 +124,7 @@ async function readPage(input) {
 }
 const meaningful = nodes => nodes.filter(n => typeof n !== 'string' || n.trim());
 const element = n => typeof n === 'string' ? n : createElement(n.type,n.props,...n.children.map(element));
-export async function compileStations(directory, layoutFile) {
+export async function compileStations(directory, layoutFile, options = {}) {
   const layout = JSON.parse(await readFile(layoutFile,'utf8'));
   if (!Array.isArray(layout.cards) || !layout.cards.length) fail('Station layout needs cards');
   const stations = [];
@@ -141,7 +142,14 @@ export async function compileStations(directory, layoutFile) {
         if (!visible.length) fail('Page needs content');
         const standalone = visible.length===1 && ['computer','commandline','model','animate'].includes(visible[0].type);
         let component = null;
-        if (standalone && ['computer','commandline'].includes(visible[0].type)) {
+        if (standalone && visible[0].type==='commandline') {
+          if(meaningful(visible[0].children).length)fail('CommandLine uses a cast file instead of prompt/output children');
+          const {src,cast,speed,idleTimeLimit}=visible[0].props;
+          if(src&&cast)fail('CommandLine accepts either src or cast, not both');
+          const recording=src??cast;
+          component={type:'CommandLine',src:recording,cast:await loadCast(recording,{castDirectory:options.castDirectory,speed,idleTimeLimit})};
+        }
+        if (standalone && visible[0].type==='computer') {
           const children = meaningful(visible[0].children);
           if (children.length!==2 || children.filter(n=>n.type==='prompt').length!==1 || children.filter(n=>n.type==='output').length!==1)
             fail('Computer needs exactly one prompt and one output');

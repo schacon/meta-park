@@ -3,6 +3,7 @@
 #include "ParkViewportClient.h"
 #include "ParkCamera.h"
 #include "ParkTerminal.h"
+#include "ParkCastPlayer.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SceneComponent.h"
@@ -57,6 +58,7 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
 void ASlideGameMode::HandleParkKey(const FKey& Key) {
  if(bLocked){if(Key==EKeys::Enter)StartLogin();return;}
  if(DesktopMinimize>0&&DesktopMinimize<1)return;
+ if(bCommandDesktop&&Key==EKeys::SpaceBar){if(CastPlayer.IsValid())CastPlayer->TogglePlayback();return;}
  if(Key==EKeys::F){ToggleFreeFlight();return;}
  static const FKey Numbers[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight};
  static const FKey Numpad[]={EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight};
@@ -167,6 +169,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(FParse::Param(FCommandLine::Get(),TEXT("LoginTest"))){TestLogin();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("CastTest"))){TestCast();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("TerminalTest"))){TestTerminal();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FreeFlightTest"))){TestFreeFlight();return;}
  if(WalkReview>0) {

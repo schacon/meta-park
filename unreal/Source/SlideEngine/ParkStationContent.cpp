@@ -68,6 +68,7 @@ bool ASlideGameMode::IsComponentPage() const {
 }
 void ASlideGameMode::ResetStationPage() {
  PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
+ PageCasts.Empty();CastPlayer.Reset();
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
 bool ASlideGameMode::AdvancePage(int32 Direction) {

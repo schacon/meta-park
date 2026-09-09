@@ -5,15 +5,17 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "start": "npm run build && node scripts/unreal.mjs present",
     "test": "node --test",
     "unreal:build": "node scripts/unreal.mjs build",
     "unreal:prepare": "node scripts/unreal.mjs prepare",
-    "unreal:play": "node scripts/unreal.mjs play",
-    "unreal:package": "node scripts/unreal.mjs package",
+    "unreal:play": "npm run build && node scripts/unreal.mjs play",
+    "unreal:package": "npm run build && node scripts/unreal.mjs package",
     "unreal:import-assets": "node scripts/unreal.mjs import-assets"
   },
   "dependencies": {
     "@mdx-js/esbuild": "^3.1.1",
+    "@xterm/headless": "6.0.0",
     "esbuild": "^0.25.0",
     "react": "^19.0.0"
   }
