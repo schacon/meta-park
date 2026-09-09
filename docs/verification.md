@@ -159,3 +159,41 @@ The Mac standalone package builds successfully. Use
 to repeat the sequence test independently of the current authored content.
 The packaged 1440×900 terminal test also passes: arrow entry, incremental typing,
 backward retraction, replay, and cleanup on station departure.
+
+## Power and Security meters (2026-09-09)
+
+Both sidebar meters have ten solid green boxes with gray empty boxes and an
+integer percentage. Power counts every compiled MDX page, including native
+components and hidden stations; a page is counted once when its content opens.
+Security uses the configured session duration and the existing paused timer.
+Percentages round up so a meter does not read zero before it is exhausted.
+Logout restores both to 100%.
+
+Native `-ProgressTest` passes full/partial/empty state checks, subpage counting,
+repeat visits, configurable duration, timer pause, and logout reset. The 1440×900
+[partial progress view](screenshots/progress-partial.png) was visually reviewed.
+
+
+## Retained group content and live park controls (2026-09-09)
+
+Revealed Markdown pages, computer demos and CommandLine windows now remain in a
+shared, fitted layout until the station is left. Going backward retains the
+revealed set; re-entering a station clears it. Native sequence tests cover two,
+three and four revealed steps, unchanged camera placement, computer playback,
+backtracking and group cleanup. The authored three-step first station was
+visually checked with all its content visible. Speaker notes, N-key handling,
+and the slide-footer navigation hints are removed.
+
+The next unvisited map group has a blinking red joke status. Visited groups are
+green or gray; future groups are blue. Logout resets the sequence. The progress
+integration check verifies these transitions and pulse colors.
+
+Security changes the park banner below 50% to yellow Nominal, below 10% to
+orange Critical, and below 5% to red UTTER CHAOS. The Time submenu accepts elapsed
+minutes, including decimals, and updates the live counters and banner. Native
+checks cover the exact boundaries, invalid input, pause preservation, and typing
+34 minutes into the actual menu and clicking Apply. The Apply button and input
+use the desktop's light/green styling.
+
+The final Mac package builds successfully and passes the progress/status/Time
+menu integration check at 1440×900. Nine JavaScript compiler tests pass.

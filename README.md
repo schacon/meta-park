@@ -38,6 +38,9 @@ return to the overview and stay there. Press again to fly to the previous/next
 station, wrapping around the seven visible cards. Each visit starts at the first
 page. The initial forward press opens station one.
 Selecting a number, map card, or sidebar location flies directly to that destination via the overview.
+The next unvisited map station blinks red, future stations are blue, and visited
+stations turn green or gray. Status jokes follow each location, from “LEAF ME
+ALONE” to “FEED THE LAWYER” and “HOLD YOUR BUTTS.” Logout resets the sequence.
 Other cards disappear immediately during a zoom and pop back in during the final
 12% of the return to overview.
 Each area has a fixed, elevated camera angle and its own 0.8-second swooping
@@ -47,7 +50,17 @@ travel and retraction. The arrival pause is 0.12 seconds, card expansion takes
 0.24 seconds, and the loading prompt lasts 0.32 seconds.
 
 The top-aligned sidebar links to all seven slide locations and shows park status,
-the dinosaur population, visitor and staff countdowns, and the slide number. The footer reads
+the dinosaur population, visitor and staff countdowns, and the slide number.
+**Power** shows the percentage of MDX pages still unviewed, counting every station,
+subpage, interactive step, and the hidden bonus. Each page drains it once; going
+back or revisiting does not consume more. **Security** shows the percentage of
+session time remaining and follows the timer's start and pause controls. Both
+use ten solid green boxes, empty to gray, and reset to 100% on logout.
+Park status changes below 50% Security to yellow **Nominal**, below 10% to orange
+**Critical**, and below 5% to red **UTTER CHAOS**.
+Use **git-meta → Time…** to enter elapsed minutes for testing. Decimals are
+accepted from zero through the session length. Apply updates counters and status
+immediately, preserves pause, and starts the clock if it has not started yet. The footer reads
 “GIT FINDS A WAY.” The app starts at an SGI-style desktop with the Git-meta Park logo, a live clock,
 a black IRIX console, Toolchest menus, and a central workstation login.
 The `xclock` face has minute ticks and quarter-hour numerals; `[-]` at the far right collapses or
@@ -91,7 +104,6 @@ Click **git-meta → Exit** to exit.
 | Left / Page Up | Previous MDX page; at the beginning, overview, then previous station |
 | Esc / O | Return to the overview; cancel any queued destination |
 | Home | Open slide one |
-| N | Show current speaker notes for 20 seconds |
 | P | Pause or resume the countdown |
 | F | Toggle free flight; leaving returns to overview |
 | Drag in free flight | Look around |
@@ -109,9 +121,10 @@ without revealing the slide.
 
 In the first area, **Right** advances from the opening page to the MDX-authored
 computer demo. Its camera-facing 3D workstation rises, types the `<prompt>`, then
-prints `<output>`. **Left** lowers it and restores the preceding page; **Right**
-continues to the next file or returns to the overview. Re-entering the component
-restarts typing. These are demonstration graphics; no shell command is executed.
+prints `<output>`. The earlier page stays beside the computer; further pages
+and demos join the same group layout. **Left** revisits a page without removing
+revealed content; **Right** continues or returns to overview at the group end.
+Leaving the group hides all its content. Re-entering the group starts it fresh. These are demonstration graphics; no shell command is executed.
 
 At the main gate (**7**), the doors swing inward to reveal a stationary slide
 behind the gateway. Leaving the area closes them again, including interrupted
@@ -126,11 +139,12 @@ Run `npm run build`, then restart the game, or package again for a standalone ap
 An empty or missing station is a build error.
 
 Ordinary Markdown becomes a page on the existing physical sign. The first
-heading supplies the page title. Arrows swipe pages inside the frame in 0.28
-seconds without moving the camera. Dense text scales down to fit; pages are not
+heading supplies the page title. Arrows reveal new pages with a short swipe and
+arrange all revealed pages together inside the frame without moving the camera. Dense text scales down to fit; pages are not
 automatically split. Each sign shows its position within the station sequence.
 
-A single native component occupies its own step and hides the sign. Components
+A single native component occupies its own step. Computer models fit alongside
+the revealed pages, keeping earlier content in frame until the group ends. Components
 are available without imports. For example, `slides/01/02-example.mdx`:
 
 ```mdx
@@ -142,8 +156,9 @@ are available without imports. For example, `slides/01/02-example.mdx`:
 
 `Computer` requires one prompt and one output; both come from the file. `Model`
 and `Animate` also work as standalone scene steps, or alongside Markdown on a
-sign page. `<Notes>` supplies page-specific speaker notes without changing the
-page kind. Imported reusable components must expand to these native primitives.
+sign page. `CommandLine` displays a terminal window with the same `<prompt>` and
+`<output>` fields, without computer hardware. Imported reusable components must
+expand to these native primitives. Speaker notes and the N shortcut are removed.
 Unknown components and unsupported combinations fail with the source filename.
 To add a new interactive primitive, extend the registry/serializer in
 `src/compiler.mjs` and its native lifecycle in `ParkStationContent.cpp`.
@@ -153,7 +168,7 @@ still be compiled explicitly. Blank lines around Markdown inside components are
 significant MDX syntax.
 
 ```mdx
-import {Deck, Slide, Model, Animate, Notes} from '../../src/components.jsx'
+import {Deck, Slide, Model, Animate} from '../../src/components.jsx'
 
 <Deck title="My talk">
 
@@ -167,7 +182,6 @@ Markdown paragraphs, **emphasis**, lists and fenced code.
   <Model mesh="/Engine/BasicShapes/Cube.Cube" position={[0, 760, 0]} scale={[2, 2, 2]} />
 </Animate>
 
-<Notes>Only visible when the presenter presses N.</Notes>
 </Slide>
 
 </Deck>
