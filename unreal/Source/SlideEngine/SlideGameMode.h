@@ -31,6 +31,7 @@ private:
  TSharedPtr<FParkTerminal> Terminal;
 
  void TestTerminal();
+ void TestCast();
  void TestStationContent();
  void TestProgress();
  TSet<uint64> ViewedPages;
@@ -56,17 +57,15 @@ private:
  TSharedPtr<SWidget> DesktopHUD, LoginHUD;
  UPROPERTY() TObjectPtr<class UTexture2D> ParkSnapshot;
  FSlateBrush ParkSnapshotBrush;
- TSharedPtr<class SButton> MapDockButton;
+ TSharedPtr<class SButton> MapDockButton,CastPauseButton,CastReplayButton;
  bool bCommandDesktop=false;
  float DesktopMinimize=0;
  uint64 DesktopCommandKey=MAX_uint64;
- FString DesktopPrompt,DesktopOutput;
+ TSharedPtr<class FParkCastPlayer> CastPlayer;
+ TMap<uint64,TSharedPtr<class FParkCastPlayer>> PageCasts;
  void TickCommandDesktop(float Delta,TSharedPtr<class FJsonObject> Component);
  void CaptureParkWindow();
  void RestoreParkWindow();
- float CommandDesktopClock() const;
- FString DesktopCommand() const;
- bool DesktopOutputReady() const;
  TSharedRef<SWidget> BuildCommandTerminal();
  TSharedRef<SWidget> BuildParkDock();
  TSharedRef<SWidget> BuildMinimizeAnimation();

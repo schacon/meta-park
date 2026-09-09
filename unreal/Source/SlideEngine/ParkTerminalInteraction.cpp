@@ -1,5 +1,6 @@
 #include "SlideGameMode.h"
 #include "ParkTerminal.h"
+#include "ParkCastPlayer.h"
 #include "Camera/CameraActor.h"
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
@@ -25,11 +26,11 @@ void ASlideGameMode::TestTerminal() {
  else if(SmokeStep==50&&DesktopMinimize>.2f&&DesktopMinimize<.9f) {
   if(!Check(ParkSnapshot!=nullptr&&bCommandDesktop&&!bLocked&&PageIndex==2&&TimerElapsed>0,TEXT("map snapshot minimizes without logging out or resetting presentation")))return;
   Capture(TEXT("desktop-minimizing.png"));SmokeStep=51;
- } else if(SmokeStep==51&&DesktopMinimize==1&&DesktopCommand().Len()>=3) {
-  if(!Check(DesktopCommand().Len()<DesktopPrompt.Len()&&!DesktopOutputReady()&&LoginHUD->GetVisibility()==EVisibility::Visible&&DesktopHUD->GetVisibility()==EVisibility::Hidden,TEXT("desktop terminal types only after map reaches dock")))return;
+ } else if(SmokeStep==51&&DesktopMinimize==1&&CastPlayer.IsValid()&&CastPlayer->Time>.65f) {
+  if(!Check(CastPlayer->PlainText().Contains(TEXT("git"))&&!CastPlayer->PlainText().Contains(TEXT("OK"))&&LoginHUD->GetVisibility()==EVisibility::Visible&&DesktopHUD->GetVisibility()==EVisibility::Hidden,TEXT("cast starts after map reaches dock and replays incremental output")))return;
   Capture(TEXT("desktop-command-typing.png"));SmokeStep=52;
- } else if(SmokeStep==52&&DesktopOutputReady()) {
-  if(!Check(DesktopCommand()==TEXT("git meta set")&&DesktopOutput==TEXT("OK")&&RevealedPage==2&&Camera->GetActorLocation().Equals(ParkFocusEye(),1.f),TEXT("CommandLine uses MDX contents and preserves the scene")))return;
+ } else if(SmokeStep==52&&CastPlayer->Time>=CastPlayer->Duration) {
+  if(!Check(CastPlayer->PlainText().Contains(TEXT("git meta set"))&&CastPlayer->PlainText().Contains(TEXT("OK"))&&RevealedPage==2&&Camera->GetActorLocation().Equals(ParkFocusEye(),1.f),TEXT("CommandLine uses MDX contents and preserves the scene")))return;
   Capture(TEXT("desktop-command-ok.png"));SmokeStep=53;Travel=0;
  } else if(SmokeStep==53&&Travel>.3f) {
   MapDockButton->SimulateClick();SmokeStep=54;
@@ -40,7 +41,7 @@ void ASlideGameMode::TestTerminal() {
   if(!Check(LoginHUD->GetVisibility()==EVisibility::Collapsed&&DesktopHUD->GetVisibility()==EVisibility::Visible&&Terminal->IsRaised()&&Terminal->OutputReady(),TEXT("maximized map retains completed foreground computer")))return;
   HandleParkKey(EKeys::Right);SmokeStep=56;
  } else if(SmokeStep==56&&DesktopMinimize==1) {
-  if(!Check(DesktopOutputReady(),TEXT("revisiting CommandLine keeps its completed output")))return;
+  if(!Check(CastPlayer.IsValid()&&CastPlayer->Time==CastPlayer->Duration,TEXT("revisiting CommandLine keeps its completed recording")))return;
   FSlateApplication::Get().ProcessKeyDownEvent(FKeyEvent(EKeys::Right,FModifierKeysState(),0,false,0,0));
   FSlateApplication::Get().ProcessKeyUpEvent(FKeyEvent(EKeys::Right,FModifierKeysState(),0,false,0,0));SmokeStep=57;
  } else if(SmokeStep==57&&MapPhase==EMapPhase::Overview&&DesktopMinimize==0) {

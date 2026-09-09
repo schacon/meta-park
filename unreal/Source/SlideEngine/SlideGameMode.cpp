@@ -20,6 +20,7 @@
 #include "Components/TextRenderComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/FileHelper.h"
+#include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -61,8 +62,13 @@ void ASlideGameMode::BeginPlay() {
  }
  FString Text; TSharedPtr<FJsonObject> Deck;
  FString ManifestPath=FPaths::ProjectContentDir()/TEXT("Slides/deck.json");
- if(FParse::Param(FCommandLine::Get(),TEXT("SlideSmokeTest")))FParse::Value(FCommandLine::Get(),TEXT("SlideManifest="),ManifestPath);
- if (!FFileHelper::LoadFileToString(Text,*ManifestPath) ||
+ const bool ExternalManifest=FParse::Value(FCommandLine::Get(),TEXT("SlideManifest="),ManifestPath);
+ UE_LOG(LogTemp,Display,TEXT("Loading presentation: %s"),*ManifestPath);
+ // Explicit authoring manifests must bypass packaged content path remapping.
+ const bool Loaded=ExternalManifest
+  ?FFileHelper::LoadFileToString(Text,&FPlatformFileManager::Get().GetPlatformPhysical(),*ManifestPath)
+  :FFileHelper::LoadFileToString(Text,*ManifestPath);
+ if (!Loaded ||
      !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Deck) || !Deck.IsValid() || Deck->GetIntegerField(TEXT("version"))!=1) {
   UE_LOG(LogTemp,Error,TEXT("Missing or invalid Slides/deck.json. Run npm run build."));
   if(GEngine) GEngine->AddOnScreenDebugMessage(-1,120,FColor::Red,TEXT("Missing deck. Run npm run build, then restart.")); return;

@@ -167,6 +167,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(FParse::Param(FCommandLine::Get(),TEXT("LoginTest"))){TestLogin();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("CastTest"))){TestCast();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("TerminalTest"))){TestTerminal();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FreeFlightTest"))){TestFreeFlight();return;}
  if(WalkReview>0) {

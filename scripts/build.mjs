@@ -7,3 +7,6 @@ const deck = isDirectory ? await compileStations(input,layout) : await compileDe
 await mkdir('unreal/Content/Slides',{recursive:true});
 await writeFile('unreal/Content/Slides/deck.json',JSON.stringify(deck,null,2)+'\n');
 console.log(`Compiled ${deck.slides.length} slides: ${deck.title}`);
+for (const slide of deck.slides) for (const step of slide.steps ?? []) {
+ if (step.component?.type === 'CommandLine') console.log(`Recording: ${step.component.src} — ${step.component.cast.title}`);
+}

@@ -1,4 +1,6 @@
 #include "SlideGameMode.h"
+#include "ParkCastPlayer.h"
+#include "Widgets/Input/SSlider.h"
 #include "Dom/JsonObject.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/Texture2D.h"
@@ -49,7 +51,12 @@ void ASlideGameMode::TickCommandDesktop(float Delta,TSharedPtr<FJsonObject> Comp
  }
  if(Requested) {
   DesktopCommandKey=(uint64(Index)<<32)|uint32(PageIndex);
-  DesktopPrompt=Component->GetStringField(TEXT("prompt"));DesktopOutput=Component->GetStringField(TEXT("output"));
+  if(!PageCasts.Contains(DesktopCommandKey)) {
+   UE_LOG(LogTemp,Display,TEXT("Playing cast: %s"),*Component->GetStringField(TEXT("src")));
+   PageCasts.Add(DesktopCommandKey,MakeShared<FParkCastPlayer>(Component->GetObjectField(TEXT("cast"))));
+  }
+  CastPlayer=PageCasts[DesktopCommandKey];
+  if(DesktopMinimize==1)CastPlayer->Tick(Delta);
  }
  bCommandDesktop=Requested;
  DesktopMinimize=FMath::Clamp(DesktopMinimize+(Requested?1.f:-1.f)*Delta/MinimizeSeconds,0.f,1.f);
@@ -58,14 +65,6 @@ void ASlideGameMode::TickCommandDesktop(float Delta,TSharedPtr<FJsonObject> Comp
   FSlateApplication::Get().SetAllUserFocusToGameViewport();
  }
 }
-float ASlideGameMode::CommandDesktopClock() const {
- const float* Start=ComponentStartTimes.Find(DesktopCommandKey);
- return Start?FMath::Max(0.f,Elapsed-*Start-MinimizeSeconds):0.f;
-}
-FString ASlideGameMode::DesktopCommand() const {
- return DesktopPrompt.Left(FMath::Clamp(FMath::FloorToInt((CommandDesktopClock()-.15f)/.09f),0,DesktopPrompt.Len()));
-}
-bool ASlideGameMode::DesktopOutputReady() const{return CommandDesktopClock()>.15f+DesktopPrompt.Len()*.09f+.4f;}
 void ASlideGameMode::RestoreParkWindow() {
  if(bLocked||!bCommandDesktop||DesktopMinimize<1)return;
  // The dock returns to the preceding presentation step; arrows can also advance or leave the group.
@@ -79,17 +78,21 @@ TSharedRef<SWidget> ASlideGameMode::BuildCommandTerminal() {
    [SNew(SVerticalBox)
     +SVerticalBox::Slot().AutoHeight()[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(FLinearColor(.35,.42,.47)).Padding(FMargin(12,8))
      [SNew(SHorizontalBox)
-      +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(TEXT("Terminal — s.chacon@indigo-git"))).Font(TerminalFont(18)).ColorAndOpacity(FLinearColor(.95,.95,.88))]
+      +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(TEXT("Terminal — ")+(CastPlayer.IsValid()?CastPlayer->Title:TEXT("recording")));}).Font(TerminalFont(18)).ColorAndOpacity(FLinearColor(.95,.95,.88))]
       +SHorizontalBox::Slot().AutoWidth()[SNew(SButton).ButtonStyle(&WorkstationButton()).IsFocusable(false).ContentPadding(FMargin(8,0)).OnClicked_Lambda([this]{RestoreParkWindow();return FReply::Handled();})
        [SNew(STextBlock).Text(FText::FromString(TEXT("−"))).Font(TerminalFont(18)).ColorAndOpacity(FLinearColor::Black)]]]]
-    +SVerticalBox::Slot().FillHeight(1).Padding(3)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(FLinearColor(.002,.002,.002)).Padding(32)
-     [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly).HAlign(HAlign_Left).VAlign(VAlign_Top)
-      [SNew(SBox).WidthOverride_Lambda([this]{const float W=LoginHUD->GetCachedGeometry().GetLocalSize().X;return FOptionalSize(FMath::Max(240.f,(W>=1380?W-620:W*.88f)-80.f));})
-       [SNew(SVerticalBox)
-        +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,40)[SNew(STextBlock).Text(FText::FromString(TEXT("GITRIX 6.5.22   /   s.chacon\nSilicon Raptors, Inc.\n"))).Font(TerminalFont(20)).ColorAndOpacity(FLinearColor(.6,.65,.6))]
-        +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(TEXT("$ ")+DesktopCommand()+(FMath::Fmod(CommandDesktopClock(),.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font(TerminalFont(38)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.88,.95,.88))]
-        +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(DesktopOutputReady()?DesktopOutput:TEXT(""));}).Font(TerminalFont(38)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.2,.86,.35))]
-       ]]]]]];
+    +SVerticalBox::Slot().FillHeight(1).Padding(3)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor_Lambda([this]{return CastPlayer.IsValid()?CastPlayer->Background:FLinearColor::Black;}).Padding(20)
+     [MakeParkCastView([this]{return CastPlayer;})]]
+    +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().AutoWidth()[SAssignNew(CastPauseButton,SButton).ButtonStyle(&WorkstationButton()).IsFocusable(false).OnClicked_Lambda([this]{if(CastPlayer.IsValid()){if(CastPlayer->Time>=CastPlayer->Duration)CastPlayer->Restart();else CastPlayer->Paused=!CastPlayer->Paused;}return FReply::Handled();})
+      [SNew(STextBlock).Text_Lambda([this]{return FText::FromString(CastPlayer.IsValid()&&!CastPlayer->Paused&&CastPlayer->Time<CastPlayer->Duration?TEXT("Pause"):TEXT("Play"));}).Font(TerminalFont(15)).ColorAndOpacity(FLinearColor::Black)]]
+     +SHorizontalBox::Slot().AutoWidth().Padding(10,0)[SAssignNew(CastReplayButton,SButton).ButtonStyle(&WorkstationButton()).IsFocusable(false).OnClicked_Lambda([this]{if(CastPlayer.IsValid())CastPlayer->Restart();return FReply::Handled();})
+      [SNew(STextBlock).Text(FText::FromString(TEXT("Replay"))).Font(TerminalFont(15)).ColorAndOpacity(FLinearColor::Black)]]
+     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(10,0)[SNew(SSlider).IsFocusable(false)
+      .Value_Lambda([this]{return CastPlayer.IsValid()&&CastPlayer->Duration>0?CastPlayer->Time/CastPlayer->Duration:0.f;})
+      .OnValueChanged_Lambda([this](float Value){if(CastPlayer.IsValid())CastPlayer->Seek(Value*CastPlayer->Duration);})]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(CastPlayer.IsValid()?FString::Printf(TEXT("%02d:%02d / %02d:%02d"),int32(CastPlayer->Time)/60,int32(CastPlayer->Time)%60,int32(CastPlayer->Duration)/60,int32(CastPlayer->Duration)%60):TEXT(""));}).Font(TerminalFont(14)).ColorAndOpacity(FLinearColor::Black)]
+    ]]];
 }
 TSharedRef<SWidget> ASlideGameMode::BuildParkDock() {
  return SAssignNew(MapDockButton,SButton).ButtonStyle(&WorkstationButton()).IsFocusable(false).ContentPadding(4)

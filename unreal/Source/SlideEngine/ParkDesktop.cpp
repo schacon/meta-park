@@ -145,7 +145,7 @@ void ASlideGameMode::CreateDesktopHUD() {
 void ASlideGameMode::EndPlay(const EEndPlayReason::Type Reason) {
  if(DesktopHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(DesktopHUD.ToSharedRef());
  if(LoginHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(LoginHUD.ToSharedRef());
- MapDockButton.Reset();ParkSnapshotBrush.SetResourceObject(nullptr);ParkSnapshot=nullptr;TimeMenu.Reset();ElapsedTimeField.Reset();ApplyTimeButton.Reset();ParkMenu.Reset();LogoutButton.Reset();LoginButtonWidget.Reset();WorkstationField.Reset();LoginHUD.Reset();DesktopHUD.Reset(); Super::EndPlay(Reason);
+ CastPauseButton.Reset();CastReplayButton.Reset();MapDockButton.Reset();ParkSnapshotBrush.SetResourceObject(nullptr);ParkSnapshot=nullptr;TimeMenu.Reset();ElapsedTimeField.Reset();ApplyTimeButton.Reset();ParkMenu.Reset();LogoutButton.Reset();LoginButtonWidget.Reset();WorkstationField.Reset();LoginHUD.Reset();DesktopHUD.Reset(); Super::EndPlay(Reason);
 }
 
 FVector4 ASlideGameMode::ExpandedCardBounds() const {
