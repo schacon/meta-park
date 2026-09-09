@@ -41,24 +41,11 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
   auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63)).Padding(48)[Body];
   FString Kind;Step->TryGetStringField(TEXT("kind"),Kind);
   const bool Component=Kind==TEXT("component");
-  const TSharedPtr<FJsonObject>* NativeComponent;
-  const bool CommandLine=Step->TryGetObjectField(TEXT("component"),NativeComponent)&&(*NativeComponent)->GetStringField(TEXT("type"))==TEXT("CommandLine");
-  if(CommandLine) {
-   const FString Prompt=(*NativeComponent)->GetStringField(TEXT("prompt")),Output=(*NativeComponent)->GetStringField(TEXT("output"));
-   const uint64 Key=(uint64(StationIndex)<<32)|uint32(Page);
-   auto Clock=[this,Key]{const float* Start=ComponentStartTimes.Find(Key);return Start?FMath::Max(0.f,Elapsed-*Start):0.f;};
-   Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.008,.015,.012)).Padding(32)
-    [SNew(SVerticalBox)
-     +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[SNew(STextBlock).Text(FText::FromString(TEXT("indigo-git / terminal"))).Font(FCoreStyle::GetDefaultFontStyle("Mono",20)).ColorAndOpacity(FLinearColor(.15,.65,.3))]
-     +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[SNew(STextBlock).Text_Lambda([Prompt,Clock]{return FText::FromString(TEXT("$ ")+Prompt.Left(FMath::Clamp(FMath::FloorToInt((Clock()-.15f)/.09f),0,Prompt.Len()))+(FMath::Fmod(Clock(),.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font(FCoreStyle::GetDefaultFontStyle("Mono",32)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.88,.95,.88))]
-     +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([Prompt,Output,Clock]{return FText::FromString(Clock()>.15f+Prompt.Len()*.09f+.4f?Output:TEXT(""));}).Font(FCoreStyle::GetDefaultFontStyle("Mono",32)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.15,.8,.3))]
-    ];
-  }
   auto Tile=SNew(SBox)
    .WidthOverride_Lambda([this,StationIndex,Page]{return FOptionalSize(PageTile(Page,Index==StationIndex?RevealedPage+1:1).Z);})
    .HeightOverride_Lambda([this,StationIndex,Page]{return FOptionalSize(PageTile(Page,Index==StationIndex?RevealedPage+1:1).W);})[Content];
-  Tile->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,StationIndex,Page,Component,CommandLine]{
-   return (!Component||CommandLine)&&Page<=(Index==StationIndex?RevealedPage:0)?EVisibility::Visible:EVisibility::Hidden;
+  Tile->SetVisibility(TAttribute<EVisibility>::CreateLambda([this,StationIndex,Page,Component]{
+   return !Component&&Page<=(Index==StationIndex?RevealedPage:0)?EVisibility::Visible:EVisibility::Hidden;
   }));
   Tile->SetRenderTransform(TAttribute<TOptional<FSlateRenderTransform>>::CreateLambda([this,StationIndex,Page]()->TOptional<FSlateRenderTransform>{
    const FVector4 Rect=PageTile(Page,Index==StationIndex?RevealedPage+1:1);
@@ -119,25 +106,19 @@ void ASlideGameMode::TickStationPage(float Delta) {
    Terminal->Show((*Component)->GetStringField(TEXT("prompt")),(*Component)->GetStringField(TEXT("output")));ActiveTerminals.Add(Key);
   }
  }
- auto* PC=GetWorld()->GetFirstPlayerController();const auto* Player=PC->GetLocalPlayer();int32 W,H;PC->GetViewportSize(W,H);
+ // Native hardware stays large in the foreground; ordinary pages remain on the sign behind it.
  for(auto& Entry:PageTerminals) {
   const int32 Station=int32(Entry.Key>>32),Page=int32(uint32(Entry.Key));
   const bool Visible=!bFreeFlight&&Station==Index&&Page<=RevealedPage&&(Showing||MapPhase==EMapPhase::Retract);
-  FVector4 Region(0,0,1,1);
-  if(Visible&&RevealedPage>0) {
-   const FVector4 Rect=PageTile(Page,RevealedPage+1);FVector2D Min(1,1),Max(0,0);
-   for(float X:{float(Rect.X),float(Rect.X+Rect.Z)})for(float Y:{float(Rect.Y),float(Rect.Y+Rect.W)}) {
-    FVector2D Pixel;
-    if(PC->ProjectWorldLocationToScreen(Panels[Index].Root->GetActorTransform().TransformPosition(FVector(0,720-X,450-Y)),Pixel)) {
-     const FVector2D P=(Pixel/FVector2D(W,H)-Player->Origin)/Player->Size;
-     Min.X=FMath::Min(Min.X,P.X);Min.Y=FMath::Min(Min.Y,P.Y);Max.X=FMath::Max(Max.X,P.X);Max.Y=FMath::Max(Max.Y,P.Y);
-    }
-   }
-   Region=FVector4(Min.X,Min.Y,Max.X-Min.X,Max.Y-Min.Y);
-  }
   if(!Showing)Entry.Value->Hide();
-  Entry.Value->Update(Delta,Camera,Visible,Region,RevealedPage>0);
+  Entry.Value->Update(Delta,Camera,Visible);
  }
+ TSharedPtr<FJsonObject> DesktopComponent;
+ if(Showing&&StationSteps.IsValidIndex(Index)&&StationSteps[Index].IsValidIndex(PageIndex)) {
+  const TSharedPtr<FJsonObject>* Component;
+  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine"))DesktopComponent=*Component;
+ }
+ TickCommandDesktop(Delta,DesktopComponent);
 }
 
 int32 ASlideGameMode::PowerPercent() const {

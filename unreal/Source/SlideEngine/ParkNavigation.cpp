@@ -50,6 +50,7 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
 }
 void ASlideGameMode::HandleParkKey(const FKey& Key) {
  if(bLocked){if(Key==EKeys::Enter)StartLogin();return;}
+ if(DesktopMinimize>0&&DesktopMinimize<1)return;
  if(Key==EKeys::F){ToggleFreeFlight();return;}
  static const FKey Numbers[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight};
  static const FKey Numpad[]={EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight};

@@ -29,7 +29,7 @@ void ASlideGameMode::TestStationContent() {
   HandleParkKey(EKeys::Right);SmokeStep=5;
  } else if(SmokeStep==5&&PageSwipe==1) {HandleParkKey(EKeys::Right);SmokeStep=6;}
  else if(SmokeStep==6&&Terminal.IsValid()&&Terminal->OutputReady()) {
-  if(!Check(PageIndex==2&&Terminal->Command()==TEXT("git meta get owner")&&Panels[0].Root->GetRootComponent()->IsVisible()&&RevealedPage==2&&Terminal->ScreenFillsViewport(.05f),TEXT("authored computer and preceding Markdown stay in frame")))return;
+  if(!Check(PageIndex==2&&Terminal->Command()==TEXT("git meta get owner")&&Panels[0].Root->GetRootComponent()->IsVisible()&&RevealedPage==2&&Terminal->ScreenFillsViewport(.56f),TEXT("authored computer fills the foreground with preceding Markdown retained behind")))return;
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-custom-computer.png"),true,false);
   HandleParkKey(EKeys::Right);SmokeStep=7;
  } else if(SmokeStep==7&&PageSwipe==1) {

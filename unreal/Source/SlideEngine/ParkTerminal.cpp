@@ -40,9 +40,9 @@ FParkTerminal::FParkTerminal(UWorld* World) {
  Screen->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
   .BorderBackgroundColor(FLinearColor(.007,.015,.32)).Padding(52)
   [SNew(SVerticalBox)
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,76)[SNew(STextBlock).Text(FText::FromString(TEXT("git-meta / system terminal\nREADY"))).Font(Font(28)).ColorAndOpacity(FLinearColor(.66,.78,1))]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,38)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Command()+(FMath::Fmod(Clock,.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font_Lambda([this]{return FontForText(Prompt,82);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.91,.94,1))]
-   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(OutputReady()?Output:TEXT(""));}).Font_Lambda([this]{return FontForText(Output,96);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.72,1,.74))]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,76)[SNew(STextBlock).Text(FText::FromString(TEXT("git-meta / system terminal\nREADY"))).Font(Font(24)).ColorAndOpacity(FLinearColor(.66,.78,1))]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,38)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(TEXT("$ ")+Command()+(FMath::Fmod(Clock,.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font_Lambda([this]{return FontForText(TEXT("$ ")+Prompt,64);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.91,.94,1))]
+   +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(OutputReady()?Output:TEXT(""));}).Font_Lambda([this]{return FontForText(Output,72);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.72,1,.74))]
   ]);
  Model->SetActorHiddenInGame(true);
 }

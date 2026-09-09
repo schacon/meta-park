@@ -34,16 +34,17 @@
 // All other keys stay within Slate while the simulated login owns input.
 class SParkLoginRoot : public SCompoundWidget {
 public:
- SLATE_BEGIN_ARGS(SParkLoginRoot){} SLATE_EVENT(FSimpleDelegate,Login) SLATE_END_ARGS()
- FSimpleDelegate Login;
- void Construct(const FArguments& Args){Login=Args._Login;}
+ SLATE_BEGIN_ARGS(SParkLoginRoot){} SLATE_EVENT(FSimpleDelegate,Login) SLATE_ATTRIBUTE(bool,Locked) SLATE_EVENT(FOnKeyDown,PresentationKey) SLATE_END_ARGS()
+ FSimpleDelegate Login;TAttribute<bool> Locked;FOnKeyDown PresentationKey;
+ void Construct(const FArguments& Args){Login=Args._Login;Locked=Args._Locked;PresentationKey=Args._PresentationKey;}
  void SetContent(TSharedRef<SWidget> Content){ChildSlot[Content];}
  virtual bool SupportsKeyboardFocus() const override{return true;}
- virtual FReply OnPreviewKeyDown(const FGeometry&,const FKeyEvent& Event) override {
+ virtual FReply OnPreviewKeyDown(const FGeometry& Geometry,const FKeyEvent& Event) override {
+  if(!Locked.Get())return PresentationKey.IsBound()?PresentationKey.Execute(Geometry,Event):FReply::Unhandled();
   if(Event.GetKey()==EKeys::Enter){Login.ExecuteIfBound();return FReply::Handled();}
   return FReply::Unhandled();
  }
- virtual FReply OnKeyDown(const FGeometry&,const FKeyEvent&) override{return FReply::Handled();}
+ virtual FReply OnKeyDown(const FGeometry&,const FKeyEvent&) override{return Locked.Get()?FReply::Handled():FReply::Unhandled();}
 };
 
 class SParkDesktopClock : public SLeafWidget {
@@ -136,22 +137,24 @@ void ASlideGameMode::CreateLoginHUD() {
  auto Console=Window(TEXT("Console /dev/console"),SNew(SBox)
   .HeightOverride_Lambda([this]{return FOptionalSize(FMath::Clamp(LoginHUD.IsValid()?float(LoginHUD->GetCachedGeometry().GetLocalSize().Y)-450.f:380.f,240.f,380.f));})
   [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(FLinearColor(.002,.002,.002)).Padding(10)
-  [SNew(STextBlock).Text_Lambda([this]{return FText::FromString(TEXT("GITRIX 6.5.22 indigo-git tty1\nCopyright 1991–1997\nSilicon Raptors, Inc.\nAll Rights Reserved.\n\nReconfigure devices [OK]\nMount filesystems   [OK]\nStart services      [OK]\n\nindigo-git login: ")+LoginName()+(LoginTime>1.9f?TEXT("\nStarting session..."):(FMath::Fmod(Elapsed,1.f)<.5f?TEXT("_"):TEXT(" "))));}).Font(Font(14)).ColorAndOpacity(FLinearColor(.82,.84,.8))]]);
+  [SNew(STextBlock).Text_Lambda([this]{if(!bLocked)return FText::FromString(TEXT("GITRIX 6.5.22 indigo-git tty1\nSilicon Raptors, Inc.\n\nSession: s.chacon\nPark control minimized.\n\nAll systems nominal.\n\nindigo-git:~ $_"));return FText::FromString(TEXT("GITRIX 6.5.22 indigo-git tty1\nCopyright 1991–1997\nSilicon Raptors, Inc.\nAll Rights Reserved.\n\nReconfigure devices [OK]\nMount filesystems   [OK]\nStart services      [OK]\n\nindigo-git login: ")+LoginName()+(LoginTime>1.9f?TEXT("\nStarting session..."):(FMath::Fmod(Elapsed,1.f)<.5f?TEXT("_"):TEXT(" "))));}).Font(Font(14)).ColorAndOpacity(FLinearColor(.82,.84,.8))]]);
  auto Tools=SNew(SVerticalBox);
  for(const TCHAR* Title:{TEXT("Desktop"),TEXT("Selected"),TEXT("Find"),TEXT("System")}) {
   const FString Category(Title);
   Tools->AddSlot().AutoHeight()[SNew(SComboButton).HasDownArrow(false).ButtonStyle(&DesktopButton).ContentPadding(FMargin(6,6))
    .OnGetMenuContent_Lambda([this,Category,Brush,Ink,Gray,Font]{
     auto Items=SNew(SVerticalBox);TArray<FString> Choices;
-    if(Category==TEXT("Desktop"))Choices={TEXT("Park login"),TEXT("xclock"),TEXT("Console")};
-    else if(Category==TEXT("Find"))Choices={TEXT("Workstation")};
-    else if(Category==TEXT("System"))Choices={TEXT("Login"),TEXT("Exit")};
-    else Choices={TEXT("Park login")};
+    if(Category==TEXT("Desktop"))Choices={bLocked?TEXT("Park login"):TEXT("Park control"),TEXT("xclock"),TEXT("Console")};
+    else if(Category==TEXT("Find"))Choices={bLocked?TEXT("Workstation"):TEXT("Park control")};
+    else if(Category==TEXT("System"))Choices={bLocked?TEXT("Login"):TEXT("Logout"),TEXT("Exit")};
+    else Choices={bLocked?TEXT("Park login"):TEXT("Park control")};
     for(const FString& Choice:Choices)Items->AddSlot().AutoHeight()[SNew(SButton).ButtonStyle(&DesktopButton).ContentPadding(FMargin(14,8))
      .OnClicked_Lambda([this,Choice]{
       FSlateApplication::Get().DismissAllMenus();
       if(Choice==TEXT("Exit"))UKismetSystemLibrary::QuitGame(this,GetWorld()->GetFirstPlayerController(),EQuitPreference::Quit,false);
       else if(Choice==TEXT("Login"))StartLogin();
+      else if(Choice==TEXT("Logout"))LogoutToLogin();
+      else if(Choice==TEXT("Park control"))RestoreParkWindow();
       else {
        const FString Key=Choice==TEXT("Park login")||Choice==TEXT("Workstation")?TEXT("Login"):Choice==TEXT("Console")?TEXT("Console /dev/console"):Choice;
        MinimizedLoginWindows.Remove(Key);
@@ -166,7 +169,9 @@ void ASlideGameMode::CreateLoginHUD() {
     +SHorizontalBox::Slot().AutoWidth()[Label(TEXT("›"),17)]]];
  }
  auto Toolchest=Window(TEXT("Toolchest"),Tools);
- auto Root=SNew(SParkLoginRoot).Login(FSimpleDelegate::CreateLambda([this]{StartLogin();}));
+ auto Root=SNew(SParkLoginRoot).Login(FSimpleDelegate::CreateLambda([this]{StartLogin();}))
+  .Locked_Lambda([this]{return bLocked;})
+  .PresentationKey(FOnKeyDown::CreateLambda([this](const FGeometry&,const FKeyEvent& Event){if(!Event.IsRepeat())HandleParkKey(Event.GetKey());return FReply::Handled();}));
  Root->SetContent(SNew(SOverlay)
   +SOverlay::Slot()[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Teal).Padding(0)]
   +SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(24,30)[SNew(SBox).WidthOverride(256).Visibility_Lambda(AuxiliaryVisibility)[Clock]]
@@ -178,10 +183,16 @@ void ASlideGameMode::CreateLoginHUD() {
    [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(FMargin(18,8))[SNew(SHorizontalBox)
     +SHorizontalBox::Slot().FillWidth(1)[Label(TEXT("GITRIS Indigo-git  /  Park control"),15)]
     +SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([]{return FText::FromString(TEXT("Desk 1    ")+FDateTime::Now().ToString(TEXT("%H:%M")));}).Font(Font(15)).ColorAndOpacity(Ink)]]]]
-  +SOverlay::Slot().Padding(24,24,24,64)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
+  +SOverlay::Slot().Padding(24,24,24,64)[SNew(SScaleBox).Visibility_Lambda([this]{return bLocked?EVisibility::Visible:EVisibility::Collapsed;}).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
    [SNew(SBox).WidthOverride(660)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(3,3,10,10))
     [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(38)[Form]]]]]
-  +SOverlay::Slot()[Scanlines]);
+  +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(24,38,24,80)[SNew(SBox)
+   .WidthOverride_Lambda([this]{const float W=LoginHUD.IsValid()?LoginHUD->GetCachedGeometry().GetLocalSize().X:1600;return FOptionalSize(W>=1380?W-620:W*.88f);})
+   .HeightOverride_Lambda([this]{return FOptionalSize(FMath::Max(240.f,float(LoginHUD.IsValid()?LoginHUD->GetCachedGeometry().GetLocalSize().Y:900)-180.f));})
+   .Visibility_Lambda([this]{return !bLocked?EVisibility::Visible:EVisibility::Collapsed;})[BuildCommandTerminal()]]
+  +SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(24,0,24,80)[SNew(SBox).WidthOverride(192).Visibility_Lambda([this]{return !bLocked?EVisibility::Visible:EVisibility::Collapsed;})[BuildParkDock()]]
+  +SOverlay::Slot()[Scanlines]
+  +SOverlay::Slot()[BuildMinimizeAnimation()]);
  LoginHUD=Root;
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(LoginHUD.ToSharedRef(),100);
 }
@@ -206,6 +217,7 @@ void ASlideGameMode::StartLogin() {
  FSlateApplication::Get().SetKeyboardFocus(LoginHUD,EFocusCause::SetDirectly);
 }
 void ASlideGameMode::ResetPresentationSession() {
+ bCommandDesktop=false;DesktopMinimize=0;DesktopCommandKey=MAX_uint64;
  ResetStationPage();ViewedPages.Empty();VisitedStations.Empty();bEditingTime=false;TimeError.Empty();
  TimerElapsed=0;TimerDuration=WorkstationMinutes*60.f;bTimerStarted=false;bTimerPaused=false;bTourStarted=false;
  FRandomStream Random(FMath::Rand());
