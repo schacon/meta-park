@@ -151,7 +151,7 @@ void ASlideGameMode::BeginPlay() {
   const float Distance=S->GetNumberField(TEXT("cameraDistance"));
   const float CameraRise=bIsland ? 450.f : 0.f;
   Views.Add({Transform.TransformPosition(FVector(Distance,0,CameraRise)),FRotator(-FMath::RadiansToDegrees(FMath::Atan2(CameraRise,Distance)),Facing.Yaw+180,0),float(S->GetNumberField(TEXT("transition")))});
-  Notes.Add(S->GetStringField(TEXT("notes"))); Titles.Add(S->GetStringField(TEXT("title"))); HabitatNames.Add(HabitatLabel);
+  Titles.Add(S->GetStringField(TEXT("title"))); HabitatNames.Add(HabitatLabel);
   for(int32 Page=0;Page<StationSteps[I].Num();Page++)for(auto& MV:StationSteps[I][Page]->GetArrayField(TEXT("models"))) {
    auto M=MV->AsObject(); FVector P=Transform.TransformPosition(Vec(M,TEXT("position"))); FRotator R=(Facing.Quaternion()*Rot(Vec(M,TEXT("rotation"))).Quaternion()).Rotator();
    AActor* Model=nullptr; const FString Asset=M->GetStringField(TEXT("actor"));
@@ -279,7 +279,6 @@ void ASlideGameMode::Tick(float Delta) {
  }
  if(PC->WasInputKeyJustPressed(EKeys::P)) bTimerPaused=!bTimerPaused;
  if(PC->WasInputKeyJustPressed(EKeys::F)) { bFlying=!bFlying; bOverview=false; Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Perspective); SetMouseMode(bFlying); if(!bFlying) GoTo(Index); }
- if(PC->WasInputKeyJustPressed(EKeys::N)&&GEngine) GEngine->AddOnScreenDebugMessage(42,20,FColor::Cyan,Notes[Index].IsEmpty()?TEXT("No speaker notes for this slide."):Notes[Index]);
  }
  if(bFlying) {
   float X,Y; PC->GetInputMouseDelta(X,Y); auto R=Camera->GetActorRotation(); R.Yaw+=X*.15; R.Pitch=FMath::Clamp(R.Pitch-Y*.15,-85.f,85.f); Camera->SetActorRotation(R);

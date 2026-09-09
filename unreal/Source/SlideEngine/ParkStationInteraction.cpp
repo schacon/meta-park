@@ -25,15 +25,16 @@ void ASlideGameMode::TestStationContent() {
  } else if(SmokeStep==3&&PageSwipe==1) {
   HandleParkKey(EKeys::Left);SmokeStep=4;
  } else if(SmokeStep==4&&PageSwipe==1) {
-  if(!Check(PageIndex==0&&PageDirection==-1,TEXT("backward swipe restores preceding page")))return;
+  if(!Check(PageIndex==0&&PageDirection==-1&&RevealedPage==1,TEXT("backward navigation retains both pages")))return;
   HandleParkKey(EKeys::Right);SmokeStep=5;
  } else if(SmokeStep==5&&PageSwipe==1) {HandleParkKey(EKeys::Right);SmokeStep=6;}
  else if(SmokeStep==6&&Terminal.IsValid()&&Terminal->OutputReady()) {
-  if(!Check(PageIndex==2&&Terminal->Command()==TEXT("git meta get owner")&&!Panels[0].Root->GetRootComponent()->IsVisible(),TEXT("authored component prompt plays with physical sign hidden")))return;
+  if(!Check(PageIndex==2&&Terminal->Command()==TEXT("git meta get owner")&&Panels[0].Root->GetRootComponent()->IsVisible()&&RevealedPage==2&&Terminal->ScreenFillsViewport(.05f),TEXT("authored computer and preceding Markdown stay in frame")))return;
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-custom-computer.png"),true,false);
   HandleParkKey(EKeys::Right);SmokeStep=7;
- } else if(SmokeStep==7&&Terminal->IsHidden()) {
-  if(!Check(PageIndex==3&&Panels[0].Root->GetRootComponent()->IsVisible()&&MapPhase==EMapPhase::Slide,TEXT("next Markdown page restores sign as terminal retracts")))return;
+ } else if(SmokeStep==7&&PageSwipe==1) {
+  if(!Check(PageIndex==3&&RevealedPage==3&&Terminal->IsRaised()&&Panels[0].Root->GetRootComponent()->IsVisible()&&MapPhase==EMapPhase::Slide,TEXT("all four revealed steps remain until group departure")))return;
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/station-four-pages.png"),true,false);
   HandleParkKey(EKeys::Right);SmokeStep=8;
  } else if(SmokeStep==8&&MapPhase==EMapPhase::Overview&&Travel>.6f) {
   if(!Check(Index==0&&PendingIndex==-1,TEXT("end of station waits in overview")))return;

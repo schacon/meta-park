@@ -50,7 +50,7 @@ void FParkTerminal::Show(const FString& InPrompt,const FString& InOutput){Prompt
 FString FParkTerminal::Command() const {
  return Prompt.Left(FMath::Clamp(FMath::FloorToInt((Clock-.15f)/.09f),0,Prompt.Len()));
 }
-void FParkTerminal::Update(float Delta,ACameraActor* Camera,bool InFirstArea) {
+void FParkTerminal::Update(float Delta,ACameraActor* Camera,bool InFirstArea,FVector4 Region,bool WholeModel) {
  if(!Actor.IsValid())return;
  if(!InFirstArea){Raised=false;Reveal=0;Clock=0;Actor->SetActorHiddenInGame(true);return;}
  Reveal=FMath::Clamp(Reveal+(Raised?1.f:-1.f)*Delta/.5f,0.f,1.f);
@@ -59,14 +59,16 @@ void FParkTerminal::Update(float Delta,ACameraActor* Camera,bool InFirstArea) {
  auto* PC=Camera->GetWorld()->GetFirstPlayerController();auto* Player=PC->GetLocalPlayer();
  int32 W,H;PC->GetViewportSize(W,H);
  const float Aspect=(W*Player->Size.X)/FMath::Max(1.f,H*Player->Size.Y);
- const float TX=FMath::Tan(FMath::DegreesToRadians(Camera->GetCameraComponent()->FieldOfView*.5f))*.59f,TY=TX/Aspect;
+ const float CameraTX=FMath::Tan(FMath::DegreesToRadians(Camera->GetCameraComponent()->FieldOfView*.5f)),CameraTY=CameraTX/Aspect;
+ const float TX=CameraTX*Region.Z*(WholeModel?.82f:.59f),TY=CameraTY*Region.W*(WholeModel?.82f:.59f);
+ const FBox FitBounds=WholeModel?Bounds:DisplayBounds;const FVector Center=WholeModel?Bounds.GetCenter():DisplayCenter;
  constexpr float Distance=900;
  const FQuat LocalRotation=FRotator(0,-84,0).Quaternion();
  // Center and fit the display itself. The closer keyboard, tower, and mouse
  // intentionally extend beyond the viewport to keep attention on the command.
  float Scale=1000;
- for(float X:{float(DisplayBounds.Min.X),float(DisplayBounds.Max.X)})for(float Y:{float(DisplayBounds.Min.Y),float(DisplayBounds.Max.Y)})for(float Z:{float(DisplayBounds.Min.Z),float(DisplayBounds.Max.Z)}) {
-  const FVector P=LocalRotation.RotateVector(FVector(X,Y,Z)-DisplayCenter);
+ for(float X:{float(FitBounds.Min.X),float(FitBounds.Max.X)})for(float Y:{float(FitBounds.Min.Y),float(FitBounds.Max.Y)})for(float Z:{float(FitBounds.Min.Z),float(FitBounds.Max.Z)}) {
+  const FVector P=LocalRotation.RotateVector(FVector(X,Y,Z)-Center);
   for(FVector2D Pair:{FVector2D(FMath::Abs(P.Y),TX),FVector2D(FMath::Abs(P.Z),TY)}) {
    const float Denominator=Pair.X-P.X*Pair.Y;
    if(Denominator>0)Scale=FMath::Min(Scale,float(Distance*Pair.Y/Denominator));
@@ -75,9 +77,9 @@ void FParkTerminal::Update(float Delta,ACameraActor* Camera,bool InFirstArea) {
  const float Ease=Reveal*Reveal*(3-2*Reveal);
  const FQuat Rotation=Camera->GetActorQuat()*LocalRotation;
  const FVector Drop=Camera->GetActorUpVector()*((1-Ease)*(Distance*TY*2+Bounds.GetSize().Z*Scale));
- Actor->SetActorTransform(FTransform(Rotation,Camera->GetActorLocation()+Camera->GetActorForwardVector()*Distance-Rotation.RotateVector((DisplayCenter+FVector(-30,0,-35))*Scale)-Drop,FVector(Scale)));
+ Actor->SetActorTransform(FTransform(Rotation,Camera->GetActorLocation()+Camera->GetActorForwardVector()*Distance+Camera->GetActorRightVector()*(Distance*CameraTX*(2*Region.X+Region.Z-1))+Camera->GetActorUpVector()*(Distance*CameraTY*(1-2*Region.Y-Region.W))-Rotation.RotateVector((WholeModel?Center:DisplayCenter+FVector(-30,0,-35))*Scale)-Drop,FVector(Scale)));
 }
-bool FParkTerminal::ScreenFillsViewport() const {
+bool FParkTerminal::ScreenFillsViewport(float MinCoverage) const {
  if(!Actor.IsValid())return false;
  auto* PC=Actor->GetWorld()->GetFirstPlayerController();auto* Player=PC->GetLocalPlayer();int32 W,H;PC->GetViewportSize(W,H);
  FVector2D Min(W,H),Max(0,0);
@@ -88,5 +90,5 @@ bool FParkTerminal::ScreenFillsViewport() const {
   Max.X=FMath::Max(Max.X,P.X);Max.Y=FMath::Max(Max.Y,P.Y);
  }
  // At least one dimension should fill most of the usable viewport.
- return FMath::Max((Max.X-Min.X)/(W*Player->Size.X),(Max.Y-Min.Y)/(H*Player->Size.Y))>.56f;
+ return FMath::Max((Max.X-Min.X)/(W*Player->Size.X),(Max.Y-Min.Y)/(H*Player->Size.Y))>MinCoverage;
 }

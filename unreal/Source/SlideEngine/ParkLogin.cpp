@@ -206,7 +206,7 @@ void ASlideGameMode::StartLogin() {
  FSlateApplication::Get().SetKeyboardFocus(LoginHUD,EFocusCause::SetDirectly);
 }
 void ASlideGameMode::ResetPresentationSession() {
- ResetStationPage();
+ ResetStationPage();ViewedPages.Empty();VisitedStations.Empty();bEditingTime=false;TimeError.Empty();
  TimerElapsed=0;TimerDuration=WorkstationMinutes*60.f;bTimerStarted=false;bTimerPaused=false;bTourStarted=false;
  FRandomStream Random(FMath::Rand());
  VisitorDepartures.Build((WorkstationMinutes-5)*100,100,50,Random);
@@ -216,7 +216,7 @@ void ASlideGameMode::ResetPresentationSession() {
  CameraLook=MapCenter;CameraFrameWidth=OverviewFrameWidth;
  Camera->SetActorLocationAndRotation(MapEye,(MapCenter-MapEye).Rotation());
  Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(MapEye,MapCenter));
- if(Terminal.IsValid())Terminal->Update(0,Camera,false);
+ for(auto& Entry:PageTerminals)Entry.Value->Update(0,Camera,false);
  IslandScene::TickGate(1,false);
  for(auto& Panel:Panels) {
   Panel.Reveal=0;

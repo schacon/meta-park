@@ -44,7 +44,7 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
  MapLegDuration=Views[Index].Duration*(ZoomIn?1.f:.75f);
  MapPhase=ZoomIn?EMapPhase::ZoomIn:CardExpansion>0?EMapPhase::Retract:EMapPhase::ZoomOut;
  if(MapPhase==EMapPhase::Retract)MapLegDuration=.16f;
- if(!ZoomIn&&Terminal.IsValid()&&!Terminal->IsHidden()) {Terminal->Hide();MapPhase=EMapPhase::Retract;MapLegDuration=.5f;}
+ if(!ZoomIn)for(auto& Entry:PageTerminals)if(!Entry.Value->IsHidden()){Entry.Value->Hide();MapPhase=EMapPhase::Retract;MapLegDuration=.5f;}
  if(ZoomIn) { ResetStationPage(); bTourStarted=true; PendingIndex=-1; CardExpansion=0; }
  SetMouseMode(false);
 }
@@ -74,7 +74,6 @@ void ASlideGameMode::HandleParkKey(const FKey& Key) {
  else if(Key==EKeys::Escape||Key==EKeys::O)Overview();
  else if(Key==EKeys::Home)GoTo(0);
  else if(Key==EKeys::P)bTimerPaused=!bTimerPaused;
- else if(Key==EKeys::N&&GEngine)GEngine->AddOnScreenDebugMessage(42,20,FColor::Cyan,Notes[Index].IsEmpty()?TEXT("No speaker notes for this slide."):Notes[Index]);
 }
 void ASlideGameMode::TickParkNavigation(float Delta) {
  IslandScene::Animate(Elapsed);
@@ -91,10 +90,10 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
    if(auto* Viewport=Cast<UParkViewportClient>(Player->ViewportClient))Viewport->SceneOrigin=Player->Origin;
   }
  }
- if(!Smoke) {
+ if(!Smoke&&!bEditingTime) {
   const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,
    EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight,
-   EKeys::Right,EKeys::Left,EKeys::SpaceBar,EKeys::PageDown,EKeys::PageUp,EKeys::Escape,EKeys::O,EKeys::Home,EKeys::P,EKeys::N,EKeys::F};
+   EKeys::Right,EKeys::Left,EKeys::SpaceBar,EKeys::PageDown,EKeys::PageUp,EKeys::Escape,EKeys::O,EKeys::Home,EKeys::P,EKeys::F};
   for(const FKey& Key:Keys)if(PC->WasInputKeyJustPressed(Key))HandleParkKey(Key);
  }
  Travel+=Delta;
@@ -135,7 +134,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  }
  Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(Camera->GetActorLocation(),CameraLook));
  TickStationPage(Delta);
- if(Terminal.IsValid())Terminal->Update(Delta,Camera,!bFreeFlight&&(MapPhase==EMapPhase::Slide||MapPhase==EMapPhase::Retract));
+
  const bool AtGate=!bFreeFlight&&Index==GateSlide&&(MapPhase==EMapPhase::Arrived||MapPhase==EMapPhase::Loading||MapPhase==EMapPhase::Slide);
  IslandScene::TickGate(Delta,AtGate);
  for(const auto& Base:SignBases)if(Base.IsValid())Base->SetActorHiddenInGame(bFreeFlight);
@@ -145,9 +144,9 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   const float Rise=I==GateSlide?(GateVisible?1.f:0.f):(!bFreeFlight&&I==Index?CardExpansion:0);
   Panel.Reveal=Rise;
   Panel.Root->SetActorLocation(I==GateSlide?Panel.RaisedPosition:FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
-  Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f&&!(I==Index&&IsComponentPage()),true);
+  Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f&&!(I==Index&&RevealedPage==0&&IsComponentPage()),true);
   for(int32 M=0;M<Panel.Models.Num();M++)if(Panel.Models[M].IsValid()) {
-   const bool Visible=!bFreeFlight&&I==Index&&MapPhase==EMapPhase::Slide&&Panel.ModelSteps[M]==PageIndex;
+   const bool Visible=!bFreeFlight&&I==Index&&MapPhase==EMapPhase::Slide&&Panel.ModelSteps[M]<=RevealedPage;
    Panel.Models[M]->SetActorHiddenInGame(!Visible);
    Panel.Models[M]->GetRootComponent()->SetVisibility(Visible,true);
   }
@@ -157,6 +156,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   else M.Actor->SetActorRelativeLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
  }
  if(!Smoke)return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("ProgressTest"))){TestProgress();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("LoginTest"))){TestLogin();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
