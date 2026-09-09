@@ -197,3 +197,24 @@ use the desktop's light/green styling.
 
 The final Mac package builds successfully and passes the progress/status/Time
 menu integration check at 1440×900. Nine JavaScript compiler tests pass.
+
+
+## Foreground computer and workstation command desktop (2026-09-09)
+
+`Computer` again fills the foreground in front of the physical slide, with the
+keyboard and tower partially visible. `CommandLine` switches to the existing
+workstation desktop, replacing the login form with a large terminal. A snapshot
+of the complete map window shrinks into its dock thumbnail over 450 ms; returning
+expands it again. Clicking the thumbnail restores the preceding step. Arrow
+navigation, typed prompt/output, timer continuity, and actual logout remain distinct.
+
+The native terminal sequence passes at 1440×900 and 1024×768. It verifies screen
+coverage, incremental typing, completed output, dock animation, real Slate arrow
+input, return to overview, revisiting completed demos, and logout reset. The
+login regression suite and all nine compiler tests also pass. The final Mac
+package builds successfully and passes the same terminal sequence at 1440×900.
+
+Visually reviewed: [foreground computer](screenshots/terminal-ok.png),
+[desktop terminal](screenshots/desktop-command-ok.png),
+[minimizing the map](screenshots/desktop-minimizing.png), and
+[restoring it](screenshots/desktop-maximizing.png).

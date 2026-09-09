@@ -143,8 +143,8 @@ heading supplies the page title. Arrows reveal new pages with a short swipe and
 arrange all revealed pages together inside the frame without moving the camera. Dense text scales down to fit; pages are not
 automatically split. Each sign shows its position within the station sequence.
 
-A single native component occupies its own step. Computer models fit alongside
-the revealed pages, keeping earlier content in frame until the group ends. Components
+A single native component occupies its own step. Computer models rise large in
+front of the slide window, with earlier pages retained behind them. Components
 are available without imports. For example, `slides/01/02-example.mdx`:
 
 ```mdx
@@ -157,8 +157,11 @@ are available without imports. For example, `slides/01/02-example.mdx`:
 `Computer` requires one prompt and one output; both come from the file. `Model`
 and `Animate` also work as standalone scene steps, or alongside Markdown on a
 sign page. `CommandLine` displays a terminal window with the same `<prompt>` and
-`<output>` fields, without computer hardware. Imported reusable components must
-expand to these native primitives. Speaker notes and the N shortcut are removed.
+`<output>` fields on the workstation desktop. Park control shrinks into a dock
+thumbnail while the terminal replaces the login window; the clock, toolchest,
+and console remain. Arrows navigate as usual, and clicking the dock restores the
+preceding presentation step. The map maximizes again without resetting the timer.
+Imported reusable components must expand to these native primitives. Speaker notes and the N shortcut are removed.
 Unknown components and unsupported combinations fail with the source filename.
 To add a new interactive primitive, extend the registry/serializer in
 `src/compiler.mjs` and its native lifecycle in `ParkStationContent.cpp`.
