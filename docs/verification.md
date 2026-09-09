@@ -218,3 +218,18 @@ Visually reviewed: [foreground computer](screenshots/terminal-ok.png),
 [desktop terminal](screenshots/desktop-command-ok.png),
 [minimizing the map](screenshots/desktop-minimizing.png), and
 [restoring it](screenshots/desktop-maximizing.png).
+
+
+## One Markdown page per sign (2026-09-09)
+
+Station arrows now replace the current Markdown page with a full-width page and
+an updated station/page header. Forward and backward changes use a 280 ms swipe;
+the sign and camera stay fixed. Native components keep the latest Markdown page
+behind them. The four-step integration fixture passes replacement, backward
+navigation, native computer playback, group boundaries, and station reset.
+The settled [replacement slide](screenshots/station-replaced.png) was visually checked.
+
+The computer now displays a `$ ` prompt, with its default command font reduced
+from 82 to 64 and output font from 96 to 72. The READY/header text is also slightly
+smaller. The native computer fixture verifies authored typing/output and the
+updated presentation was visually reviewed.

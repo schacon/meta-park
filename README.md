@@ -139,12 +139,13 @@ Run `npm run build`, then restart the game, or package again for a standalone ap
 An empty or missing station is a build error.
 
 Ordinary Markdown becomes a page on the existing physical sign. The first
-heading supplies the page title. Arrows reveal new pages with a short swipe and
-arrange all revealed pages together inside the frame without moving the camera. Dense text scales down to fit; pages are not
-automatically split. Each sign shows its position within the station sequence.
+heading supplies the page title. Arrows replace the current page with a short
+forward or backward swipe, using the full sign without moving the camera. Dense
+text scales down to fit; pages are not automatically split. The header updates
+the station name and page number on each step.
 
 A single native component occupies its own step. Computer models rise large in
-front of the slide window, with earlier pages retained behind them. Components
+front of the slide window, with the latest Markdown slide retained behind them. Components
 are available without imports. For example, `slides/01/02-example.mdx`:
 
 ```mdx
