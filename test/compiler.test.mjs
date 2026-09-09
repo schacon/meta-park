@@ -15,7 +15,7 @@ test('example compiles seven visible slides and a hidden bonus and reusable anim
  assert.equal(out.slides[0].models[0].animation.kind,'spin');
  assert.match(out.slides[3].blocks.find(b=>b.kind==='pre').text,/git meta set commit:/);
  assert.equal(out.slides[6].cameraDistance,2050);
- assert.match(out.slides[6].notes,/README/);
+ assert.equal('notes' in out.slides[6],false);
 });
 test('default route is deterministic and overrides do not reorder slides',()=>{
  const tree=deck(slide('one'),slide('two'));

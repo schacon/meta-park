@@ -1,4 +1,4 @@
-import {Deck, Slide, Model, Animate, Notes} from '../../src/components.jsx'
+import {Deck, Slide, Model, Animate} from '../../src/components.jsx'
 import {MetadataOrbit, DataStore} from './components.jsx'
 
 <Deck title="Git metadata / Beyond the commit">
@@ -12,7 +12,6 @@ Code has history. Now give it context.
 A proposal and Rust reference implementation for flexible, scalable metadata that travels with Git.
 
 <MetadataOrbit />
-<Notes>Based on the sibling git-meta README. This is an overview of the proposal, not a replacement for its canonical spec.</Notes>
 </Slide>
 
 <Slide id="context" title="The context we lose" accent="#7b303e">
@@ -53,7 +52,6 @@ git meta set:add path:src/metrics owners schacon
 
 Keys can be deeply namespaced. Read a namespace to retrieve its subkeys.
 
-<Notes>These commands come from the README examples. Refer to git-meta/spec for current CLI semantics.</Notes>
 </Slide>
 
 <Slide id="storage" title="Local speed. Git transport." accent="#7b303e">
@@ -81,7 +79,6 @@ Separate keys become separate tree entries.
 - Explicit tombstones express deletion; absence does not.
 
 <MetadataOrbit />
-<Notes>The README labels spec/README.md canonical. This slide describes the README proposal rather than asserting current implementation conflict semantics.</Notes>
 </Slide>
 
 <Slide id="scale" title="Fetch what you need" accent="#563d72">
@@ -97,7 +94,6 @@ Public, corporate and personal metadata can use separate destinations. Higher-le
 The README reports about 500 MB of compressed transcript data versus less than 2 MB for its blobless example.
 
 <DataStore />
-<Notes>The size comparison is a benchmark reported by the README author, not a benchmark of this slideshow engine.</Notes>
 </Slide>
 
 <Slide id="beach-bar" title="Nobody cares." accent="#537b3a">
@@ -108,7 +104,6 @@ We have metadata here!
 
 Keep the useful context. Share it with the people who need it.
 
-<Notes>Hidden bonus stop. Press 8 to visit the beach bar behind the volcano. Replace this example with your own closing thought or questions.</Notes>
 </Slide>
 
 </Deck>

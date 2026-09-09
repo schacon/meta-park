@@ -62,10 +62,9 @@ export function makeManifest(tree, layout = {}) {
     if (!title || typeof title !== 'string') fail(`Slide ${id} needs a title`);
     if (!/^#[\da-f]{6}$/i.test(accent)) fail(`Invalid accent on ${id}`);
     ids.add(id);
-    const blocks = [], models = []; let notes = '';
+    const blocks = [], models = [];
     function visit(n, animation = null) {
       if (typeof n === 'string') { if (n.trim()) blocks.push({kind:'p', text:n.trim()}); return; }
-      if (n.type === 'notes') { notes += plain(n); return; }
       if (n.type === 'animate') {
         if (animation) fail('Nested Animate components are unsupported');
         const {kind = 'spin', speed = 25, amplitude = 35} = n.props;
@@ -94,7 +93,7 @@ export function makeManifest(tree, layout = {}) {
     }}:null;
     const angle = i * 0.48;
     const position = vector(override.position,habitat ? [habitat.position[0],habitat.position[1],habitat.position[2]+3200] : [Math.round(4200*Math.sin(angle)),Math.round(4200*(1-Math.cos(angle))),i*380],`${id}.position`);
-    return {id,title,accent,blocks,models,notes,position,card:nativeCard,habitat:habitat?.id??"",yaw: (()=>{const y=override.yaw??(island ? -90 : i*27.5); if(!Number.isFinite(y))fail('yaw must be finite'); return y;})(), cameraDistance:positive(override.cameraDistance,island ? 2050 : 1550,'cameraDistance'), transition:positive(override.transition,layout.transition??(island ? 5 : 2.2),'transition')};
+    return {id,title,accent,blocks,models,position,card:nativeCard,habitat:habitat?.id??"",yaw: (()=>{const y=override.yaw??(island ? -90 : i*27.5); if(!Number.isFinite(y))fail('yaw must be finite'); return y;})(), cameraDistance:positive(override.cameraDistance,island ? 2050 : 1550,'cameraDistance'), transition:positive(override.transition,layout.transition??(island ? 5 : 2.2),'transition')};
   });
   for (const id of Object.keys(layout.slides??{})) if (!ids.has(id)) fail(`Layout references unknown slide: ${id}`);
   return {version:1,title:root.props.title??'Presentation',durationSeconds:positive(layout.durationMinutes,20,'durationMinutes')*60,scene:island?.scene??'gallery',seed:island?.seed??0,habitats:island?.habitats??[],slides:result};
@@ -112,7 +111,7 @@ export async function compileDeck(input, layoutFile) {
 }
 
 // MDX pages use this native component registry without needing import statements.
-const components = Object.fromEntries(['Model','Animate','Notes','Computer'].map(name =>
+const components = Object.fromEntries(['Model','Animate','Computer','CommandLine'].map(name =>
   [name, props => createElement(name.toLowerCase(), props)]));
 async function readPage(input) {
   const temp = await mkdtemp(resolve('.slide-build-'));
@@ -138,22 +137,22 @@ export async function compileStations(directory, layoutFile) {
       const source = join(folder,name);
       try {
         const nodes = meaningful(await readPage(source));
-        const visible = nodes.filter(n=>n.type!=='notes');
+        const visible = nodes;
         if (!visible.length) fail('Page needs content');
-        const standalone = visible.length===1 && ['computer','model','animate'].includes(visible[0].type);
+        const standalone = visible.length===1 && ['computer','commandline','model','animate'].includes(visible[0].type);
         let component = null;
-        if (standalone && visible[0].type==='computer') {
+        if (standalone && ['computer','commandline'].includes(visible[0].type)) {
           const children = meaningful(visible[0].children);
           if (children.length!==2 || children.filter(n=>n.type==='prompt').length!==1 || children.filter(n=>n.type==='output').length!==1)
             fail('Computer needs exactly one prompt and one output');
-          component = {type:'Computer',prompt:plain(children.find(n=>n.type==='prompt')),output:plain(children.find(n=>n.type==='output'))};
+          component = {type:visible[0].type==='computer'?'Computer':'CommandLine',prompt:plain(children.find(n=>n.type==='prompt')),output:plain(children.find(n=>n.type==='output'))};
           if (!component.prompt.trim()) fail('Computer prompt cannot be empty');
         }
         const heading = visible.find(n=>['h1','h2','h3'].includes(n.type));
-        const title = heading ? plain(heading) : component ? 'Computer' : name.replace(/\.mdx$/i,'');
+        const title = heading ? plain(heading) : component ? component.type : name.replace(/\.mdx$/i,'');
         const body = nodes.filter(n=>n!==heading && !(component && n===visible[0]));
         const page = makeManifest(createElement('deck',{},createElement('slide',{id:card.slide,title},...body.map(element)))).slides[0];
-        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,blocks:page.blocks,models:page.models,notes:page.notes});
+        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,blocks:page.blocks,models:page.models});
       } catch (error) { throw new Error(`${source}: ${error.message}`,{cause:error}); }
     }
     stations.push({card,steps});

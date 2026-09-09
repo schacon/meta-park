@@ -17,6 +17,7 @@ const layout='examples/git-meta/layout.json';
 test('station pages preserve camera layout, extract titles and sort filenames numerically',async t=>{
  const dir=await fixture(t);
  await writeFile(join(dir,'01/10-later.mdx'),'## Later\n\nLast page');
+ await writeFile(join(dir,'02/02-terminal.mdx'),'<CommandLine><prompt>git meta list</prompt><output>three entries</output></CommandLine>');
  await writeFile(join(dir,'01/2-example.mdx'),'<Computer>\n<prompt>git meta get commit:HEAD owner</prompt>\n<output>s.chacon</output>\n</Computer>');
  const deck=await compileStations(dir,layout);
  assert.equal(deck.slides.length,8);
@@ -29,14 +30,15 @@ test('station pages preserve camera layout, extract titles and sort filenames nu
  assert.equal(station.steps[2].title,'Later');assert.equal(station.steps[2].kind,'slide');
  assert.deepEqual(station.card.view,JSON.parse(await readFile(layout)).cards[0].view);
  assert.equal(deck.slides[7].card.hidden,true);
+ assert.deepEqual(deck.slides[1].steps[1].component,{type:'CommandLine',prompt:'git meta list',output:'three entries'});
 });
-test('native scene components work alone or with Markdown and notes',async t=>{
+test('native scene components work alone or with Markdown',async t=>{
  const dir=await fixture(t);
- await writeFile(join(dir,'01/02-model.mdx'),'<Animate kind="bob"><Model /></Animate>\n\n<Notes>Watch it move.</Notes>');
+ await writeFile(join(dir,'01/02-model.mdx'),'<Animate kind="bob"><Model /></Animate>');
  await writeFile(join(dir,'01/03-mixed.mdx'),'# Models\n\nA rotating cube.\n\n<Animate><Model /></Animate>');
  const steps=(await compileStations(dir,layout)).slides[0].steps;
  assert.equal(steps[1].component.type,'Scene');assert.equal(steps[1].models[0].animation.kind,'bob');
- assert.equal(steps[1].notes,'Watch it move.');
+ assert.equal('notes' in steps[1],false);
  assert.equal(steps[2].kind,'slide');assert.equal(steps[2].models.length,1);
 });
 test('invalid native components and empty stations fail with an actionable source path',async t=>{
