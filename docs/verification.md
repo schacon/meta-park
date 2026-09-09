@@ -233,3 +233,39 @@ The computer now displays a `$ ` prompt, with its default command font reduced
 from 82 to 64 and output font from 96 to 72. The READY/header text is also slightly
 smaller. The native computer fixture verifies authored typing/output and the
 updated presentation was visually reviewed.
+
+
+## Local asciicast playback and gate screen flight (2026-09-09)
+
+CommandLine compiles local asciicast v2/v3 recordings with xterm's terminal
+interpreter into timed row patches. Native Slate draws the resulting colored
+cells, backgrounds, text styles, and cursor. Playback supports pause, replay,
+seeking, resize events, and repeat visits while preserving the existing dock
+minimize/restore transition. No terminal commands are executed.
+
+All 15 compiler tests pass, covering both timestamp formats, ANSI palettes and
+truecolor, cursor operations, alternate screens, split escape sequences, resize,
+local path validation, and MDX integration. The deterministic terminal integration
+fixture passes the full Computer → desktop recording → map → logout sequence.
+The packaged app passes playback, Pause/Replay button clicks, forward/backward
+seeking, and timer-preserving map restoration with the supplied Vim recording.
+[ANSI terminal playback](screenshots/cast-vim.png) was visually reviewed.
+
+The gate sign now waits behind the fully opening doors, flies through to its
+reading position, and returns before the doors close. Native checks pass arrival,
+clearance, fixed camera, interrupted navigation, Escape, and free-flight cleanup.
+[Gate reading view](screenshots/gate-open.png) was visually reviewed.
+
+`npm start` recompiles authored slides and casts and supplies an external manifest
+to the packaged app. This avoids a new Unreal package for content-only updates;
+directly opening the app retains the portable, embedded-deck behavior.
+
+
+The macOS refresh regression was reproduced and fixed: external project files
+are unreadable inside the packaged app sandbox. The launcher now stages the
+fresh manifest in the bundle's data container and the app reads explicit
+manifests through the physical filesystem. `npm start -- -SlideSmokeTest
+-CastTest -SlideTestWidth=1440 -SlideTestHeight=900 -stdout` passes all recording
+checks with the newly linked `casts/7821.cast`. The runtime log explicitly reports
+that filename, and its title, ANSI colors, 80×24 dimensions, and 34-second duration
+were visually checked in [the updated recording](screenshots/cast-7821.png).

@@ -15,7 +15,7 @@ npm test
 npm run unreal:build      # Compile the native editor module
 npm run unreal:prepare    # Create the entry map and materials (first run only)
 npm run unreal:import-assets # Import the checked-in Blender FBX kit
-npm run unreal:play       # Open the island overview
+npm run unreal:play       # Recompile current slides/casts, then launch with the editor
 ```
 
 To produce a standalone game:
@@ -26,6 +26,21 @@ npm run unreal:package    # Build, cook and archive into dist/
 ```
 
 Run `unreal:build` and `unreal:prepare` before the first package. The prepare step also creates the native material used by the retro landscape. Packaging targets the host platform. The packaged application loads the embedded deck and opens on the workstation login. No sibling repository, Node installation or editor is needed to run the packaged game.
+
+For quick content updates after packaging, quit the running presentation and run:
+
+```sh
+npm start
+```
+
+This recompiles `slides/` and local `casts/*.cast`, then launches the packaged
+native app with that fresh manifest. On macOS it stages the manifest inside the
+app sandbox, where the packaged process can read it. The build prints each cast
+filename and recording title. No Unreal rebuild or packaging is needed
+for MDX/cast changes. A running presentation holds its loaded deck in memory;
+restart it to use new content. Opening the `.app` directly uses its last packaged
+deck instead. `npm run unreal:package` also recompiles content automatically so
+standalone exports include the latest recordings.
 
 ## Park workstation
 
@@ -157,8 +172,22 @@ are available without imports. For example, `slides/01/02-example.mdx`:
 
 `Computer` requires one prompt and one output; both come from the file. `Model`
 and `Animate` also work as standalone scene steps, or alongside Markdown on a
-sign page. `CommandLine` displays a terminal window with the same `<prompt>` and
-`<output>` fields on the workstation desktop. Park control shrinks into a dock
+sign page. `CommandLine` replays a local asciicast file in the workstation terminal:
+
+```mdx
+<CommandLine cast="casts/7821.cast" />
+```
+
+Keep recordings in the project-root `./casts/` directory. The `cast` attribute
+accepts `casts/name.cast`, `./casts/name.cast`, or `name.cast`; `src` is an alias.
+Recordings are compiled into the deck for offline native playback. ANSI colors,
+cursor movement, screen clearing, alternate screens, and terminal resizing are
+interpreted with xterm. Both [asciicast v2](https://docs.asciinema.org/manual/asciicast/v2/)
+and [v3](https://docs.asciinema.org/manual/asciicast/v3/) timing are supported.
+Optional `speed={2}` and `idleTimeLimit={2}` accelerate playback or cap long pauses.
+The terminal provides Play/Pause, Replay, and a seek bar; returning to a recording
+within the same station resumes it. Leaving the station resets its recordings.
+`CommandLine` no longer takes prompt/output children; `Computer` still does. Park control shrinks into a dock
 thumbnail while the terminal replaces the login window; the clock, toolchest,
 and console remain. Arrows navigate as usual, and clicking the dock restores the
 preceding presentation step. The map maximizes again without resetting the timer.
