@@ -18,6 +18,12 @@
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 
+FVector ASlideGameMode::GateScreenPosition(float Progress) const {
+ const FVector Behind=Panels[GateSlide].RaisedPosition;
+ // Travel through the doorway, then settle nearer the fixed camera for reading.
+ const FVector Reading=FMath::Lerp(CameraStops[GateSlide],Behind,.4f)+FVector(0,0,260);
+ return FMath::Lerp(Behind,Reading,Progress);
+}
 float ASlideGameMode::ParkFocusWidth() const { return FocusFrameWidths[Index]; }
 FVector ASlideGameMode::ParkFocusEye() const { return CameraStops[Index]; }
 int32 ASlideGameMode::NextVisibleSlide(int32 Current,int32 Direction) const {
@@ -43,7 +49,7 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
  FromExpansion=CardExpansion; Travel=0; bFlying=false; bOverview=false;
  MapLegDuration=Views[Index].Duration*(ZoomIn?1.f:.75f);
  MapPhase=ZoomIn?EMapPhase::ZoomIn:CardExpansion>0?EMapPhase::Retract:EMapPhase::ZoomOut;
- if(MapPhase==EMapPhase::Retract)MapLegDuration=.16f;
+ if(MapPhase==EMapPhase::Retract)MapLegDuration=Index==GateSlide?.5f:.16f;
  if(!ZoomIn)for(auto& Entry:PageTerminals)if(!Entry.Value->IsHidden()){Entry.Value->Hide();MapPhase=EMapPhase::Retract;MapLegDuration=.5f;}
  if(ZoomIn) { ResetStationPage(); bTourStarted=true; PendingIndex=-1; CardExpansion=0; }
  SetMouseMode(false);
@@ -120,10 +126,10 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   }
  } else if(MapPhase==EMapPhase::Arrived&&Travel>=.12f&&WalkReview==0) {
   if(Index!=GateSlide){MapPhase=EMapPhase::Expand;Travel=0;}
-  else if(IslandScene::GateOpenFraction()>=1){MapPhase=EMapPhase::Slide;CardExpansion=1;Travel=0;bTimerStarted=true;}
+  else if(IslandScene::GateOpenFraction()>=1){MapPhase=EMapPhase::Expand;Travel=0;}
  } else if(MapPhase==EMapPhase::Expand) {
-  const float T=FMath::Clamp(Travel/.24f,0.f,1.f);CardExpansion=T*T*(3-2*T);
-  if(T>=1){MapPhase=EMapPhase::Loading;Travel=0;}
+  const float T=FMath::Clamp(Travel/(Index==GateSlide?.7f:.24f),0.f,1.f);CardExpansion=T*T*(3-2*T);
+  if(T>=1){MapPhase=Index==GateSlide?EMapPhase::Slide:EMapPhase::Loading;Travel=0;if(Index==GateSlide)bTimerStarted=true;}
  } else if(MapPhase==EMapPhase::Loading&&Travel>=.32f) {
   MapPhase=EMapPhase::Slide;Travel=0;bTimerStarted=true;
  } else if(MapPhase==EMapPhase::Retract) {
@@ -136,7 +142,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  Cast<AParkCamera>(Camera)->FrameScene(CameraFrameWidth,FVector::Distance(Camera->GetActorLocation(),CameraLook));
  TickStationPage(Delta);
 
- const bool AtGate=!bFreeFlight&&Index==GateSlide&&(MapPhase==EMapPhase::Arrived||MapPhase==EMapPhase::Loading||MapPhase==EMapPhase::Slide);
+ const bool AtGate=!bFreeFlight&&Index==GateSlide&&(MapPhase==EMapPhase::Arrived||MapPhase==EMapPhase::Expand||MapPhase==EMapPhase::Loading||MapPhase==EMapPhase::Slide||CardExpansion>0);
  IslandScene::TickGate(Delta,AtGate);
  for(const auto& Base:SignBases)if(Base.IsValid())Base->SetActorHiddenInGame(bFreeFlight);
  for(int32 I=0;I<Panels.Num();I++) {
@@ -144,7 +150,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   const bool GateVisible=I==GateSlide&&!bFreeFlight&&I==Index&&IslandScene::GateOpenFraction()>0;
   const float Rise=I==GateSlide?(GateVisible?1.f:0.f):(!bFreeFlight&&I==Index?CardExpansion:0);
   Panel.Reveal=Rise;
-  Panel.Root->SetActorLocation(I==GateSlide?Panel.RaisedPosition:FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
+  Panel.Root->SetActorLocation(I==GateSlide?GateScreenPosition(CardExpansion):FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
   Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f&&!(I==Index&&RevealedPage==0&&IsComponentPage()),true);
   for(int32 M=0;M<Panel.Models.Num();M++)if(Panel.Models[M].IsValid()) {
    const bool Visible=!bFreeFlight&&I==Index&&MapPhase==EMapPhase::Slide&&Panel.ModelSteps[M]<=RevealedPage;

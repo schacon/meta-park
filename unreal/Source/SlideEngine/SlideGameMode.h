@@ -27,6 +27,7 @@ private:
  TArray<FParkMapPin> MapPins;
  int32 GateSlide=INDEX_NONE;
  void TestGate();
+ FVector GateScreenPosition(float Progress) const;
  TSharedPtr<FParkTerminal> Terminal;
 
  void TestTerminal();
