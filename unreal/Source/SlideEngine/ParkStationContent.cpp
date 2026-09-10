@@ -1,6 +1,9 @@
 #include "SlideGameMode.h"
 #include "ParkTerminal.h"
 #include "ParkFSV.h"
+#include "ParkColdStorage.h"
+#include "ParkWoodSign.h"
+#include "ParkRaptors.h"
 #include "Dom/JsonObject.h"
 #include "Camera/CameraActor.h"
 #include "GameFramework/PlayerController.h"
@@ -75,12 +78,21 @@ bool ASlideGameMode::IsComponentPage() const {
 }
 void ASlideGameMode::ResetStationPage() {
  PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
+ PageColdStorage.Empty();ColdStorage.Reset();WoodSign.Reset();WoodSignKey=MAX_uint64;RaptorView.Reset();RaptorKey=MAX_uint64;
  PageCasts.Empty();CastPlayer.Reset();PageFSVs.Empty();FSV.Reset();
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
 bool ASlideGameMode::AdvancePage(int32 Direction,bool SkipComponent) {
  if(!SkipComponent&&bCommandDesktop&&bDesktopFSV&&FSV.IsValid()&&FSV->Advance(Direction)) {
   if(FSV->Selected>=0)ViewedFSVSystems.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(FSV->Selected));
+  return true;
+ }
+ if(!SkipComponent&&ColdStorage.IsValid()&&ColdStorage->Advance(Direction)) {
+  if(ColdStorage->Selected>=0)ViewedColdSpecimens.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(ColdStorage->Selected));
+  return true;
+ }
+ if(!SkipComponent&&RaptorView.IsValid()&&RaptorView->Advance(Direction)) {
+  if(RaptorView->Selected>=0)ViewedRaptors.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(RaptorView->Selected));
   return true;
  }
  // Ignore repeated presses during the short swipe so pages cannot be skipped accidentally.
@@ -134,14 +146,54 @@ void ASlideGameMode::TickStationPage(float Delta) {
   if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine")||(*Component)->GetStringField(TEXT("type"))==TEXT("FSV")))DesktopComponent=*Component;
  }
  TickCommandDesktop(Delta,DesktopComponent);
+ TSharedPtr<FJsonObject> Prop;
+ bool TitleOnly=false;
+ if(Showing&&StationSteps.IsValidIndex(Index)&&StationSteps[Index].IsValidIndex(PageIndex)) {
+  const auto Step=StationSteps[Index][PageIndex];Step->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
+  const TSharedPtr<FJsonObject>* C;if(Step->TryGetObjectField(TEXT("component"),C))Prop=*C;
+ }
+ const uint64 Key=(uint64(Index)<<32)|uint32(PageIndex);
+ const FString Type=Prop.IsValid()?Prop->GetStringField(TEXT("type")):TEXT("");
+ ColdStorage.Reset();
+ if(Type==TEXT("ColdStorage")) {
+  if(!PageColdStorage.Contains(Key))PageColdStorage.Add(Key,MakeShared<FParkColdStorage>(GetWorld(),Prop));
+  ColdStorage=PageColdStorage[Key];
+ }
+ for(auto& Entry:PageColdStorage)Entry.Value->Update(Delta,Camera,Showing&&ColdStorage==Entry.Value);
+ const bool Warning=Type==TEXT("RaptorWarning");
+ const int32 PreviousSign=StationSignPage(Index,PageIndex);
+ bool KeepDirection=false;
+ if(Type==TEXT("ColdStorage")&&PreviousSign>=0)StationSteps[Index][PreviousSign]->TryGetBoolField(TEXT("titleOnly"),KeepDirection);
+ const uint64 SignKey=(uint64(Index)<<32)|uint32(KeepDirection?PreviousSign:PageIndex);
+ if(TitleOnly||Warning||KeepDirection) {
+  if(WoodSignKey!=SignKey){WoodSign=MakeShared<FParkWoodSign>(GetWorld(),Warning?Prop->GetStringField(TEXT("title")):StationSteps[Index][KeepDirection?PreviousSign:PageIndex]->GetStringField(TEXT("title")),Warning);WoodSignKey=SignKey;}
+ } else {WoodSign.Reset();WoodSignKey=MAX_uint64;}
+ if(WoodSign.IsValid())WoodSign->Update(Elapsed,Camera,Index==GateSlide?GateScreenPosition(CardExpansion):Panels[Index].RaisedPosition,CameraStops[Index],CardExpansion);
+ if(Type==TEXT("Raptors")) {
+  if(RaptorKey!=Key){RaptorView=MakeShared<FParkRaptors>(GetWorld(),Prop,Camera,CameraLook,CameraFrameWidth);RaptorKey=Key;}
+  RaptorView->Update(Delta,Camera,CameraLook,CameraFrameWidth);
+ } else if(RaptorView.IsValid()) {
+  if(Showing)RaptorView->Restore(Camera,CameraLook,CameraFrameWidth);
+  RaptorView.Reset();RaptorKey=MAX_uint64;
+ }
+}
+bool ASlideGameMode::UsesPhysicalProp() const {
+ if(!StationSteps.IsValidIndex(Index)||!StationSteps[Index].IsValidIndex(PageIndex))return false;
+ const auto Step=StationSteps[Index][PageIndex];bool TitleOnly=false;
+ const int32 SignPage=StationSignPage(Index,PageIndex);if(SignPage>=0)StationSteps[Index][SignPage]->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
+ const TSharedPtr<FJsonObject>* C;
+ return TitleOnly||(Step->TryGetObjectField(TEXT("component"),C)&&((*C)->GetStringField(TEXT("type"))==TEXT("RaptorWarning")||(*C)->GetStringField(TEXT("type"))==TEXT("Raptors")));
+
 }
 
 int32 ASlideGameMode::PowerPercent() const {
  int32 Total=0;for(const auto& Steps:StationSteps)for(const auto& Step:Steps) {
   Total++;const TSharedPtr<FJsonObject>* Component;
   if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("FSV"))Total+=(*Component)->GetArrayField(TEXT("systems")).Num();
+  if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("ColdStorage"))Total+=4;
+  if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("Raptors"))Total+=4;
  }
- return Total>0?FMath::Clamp(FMath::CeilToInt(100.f*(Total-ViewedPages.Num()-ViewedFSVSystems.Num())/Total),0,100):100;
+ return Total>0?FMath::Clamp(FMath::CeilToInt(100.f*(Total-ViewedPages.Num()-ViewedFSVSystems.Num()-ViewedColdSpecimens.Num()-ViewedRaptors.Num())/Total),0,100):100;
 }
 int32 ASlideGameMode::SecurityPercent() const {
  return TimerDuration>0?FMath::Clamp(FMath::CeilToInt(100.f*(TimerDuration-TimerElapsed)/TimerDuration),0,100):100;

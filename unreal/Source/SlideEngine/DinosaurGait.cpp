@@ -8,7 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 namespace {
-FVector Vec(const TSharedPtr<FJsonObject>& O,const TCHAR* Key) {
+FVector RigVector(const TSharedPtr<FJsonObject>& O,const TCHAR* Key) {
  const auto& A=O->GetArrayField(Key);return FVector(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber())*100;
 }
 UStaticMesh* Mesh(const FString& Name) {
@@ -33,7 +33,7 @@ FDinosaurGait::FDinosaurGait(AStaticMeshActor* Actor,const FString& Species) {
   Stride=R->GetNumberField(TEXT("stride"))*100;Duty=R->GetNumberField(TEXT("duty"));Lift=R->GetNumberField(TEXT("lift"))*100;
   for(const auto& V:R->GetArrayField(TEXT("legs"))) {
    const auto L=V->AsObject();FLeg Leg;
-   Leg.Hip=Vec(L,TEXT("hip"));Leg.Knee=Vec(L,TEXT("knee"));Leg.Ankle=Vec(L,TEXT("ankle"));Leg.Pole=Vec(L,TEXT("pole")).GetSafeNormal();
+   Leg.Hip=RigVector(L,TEXT("hip"));Leg.Knee=RigVector(L,TEXT("knee"));Leg.Ankle=RigVector(L,TEXT("ankle"));Leg.Pole=RigVector(L,TEXT("pole")).GetSafeNormal();
    Leg.UpperLength=FVector::Distance(Leg.Hip,Leg.Knee)*Scale;Leg.LowerLength=FVector::Distance(Leg.Knee,Leg.Ankle)*Scale;
    Leg.Offset=L->GetNumberField(TEXT("offset"));
    Leg.Upper=Part(Actor,L->GetStringField(TEXT("upper")));Leg.Lower=Part(Actor,L->GetStringField(TEXT("lower")));Leg.Foot=Part(Actor,L->GetStringField(TEXT("foot")));

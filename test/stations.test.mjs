@@ -76,3 +76,17 @@ test('FSV serializes ordered systems and title-only detection requires exactly o
   await writeFile(file,mdx);await assert.rejects(compileStations(dir,layout),/02-viewer.mdx:.*FSV/);
  }
 });
+
+test('cold storage and raptor records compile authored data with physical station order',async t=>{
+ const dir=await fixture(t),cold=join(dir,'01/02-cold.mdx'),raptors=join(dir,'03/02-raptors.mdx');
+ await writeFile(cold,await readFile('examples/git-meta/cold-storage.mdx','utf8'));
+ await writeFile(join(dir,'03/01-intro.mdx'),'<RaptorWarning>Keep your hands inside the vehicle</RaptorWarning>');
+ await writeFile(raptors,(await readFile('examples/git-meta/raptors.mdx','utf8')).replace('<Raptor>','<Raptor workers={7}>'));
+ const deck=await compileStations(dir,layout),c=deck.slides[0].steps[1].component,r=deck.slides[2];
+ assert.equal(c.type,'ColdStorage');assert.equal(c.canisters.length,4);assert.equal(c.canisters[0].species,'granularity');assert.match(c.canisters[1].description,/millions of keys/);
+ assert.equal(r.card.code,'ENC-04');assert.deepEqual(r.steps[0].component,{type:'RaptorWarning',title:'Keep your hands inside the vehicle'});
+ assert.equal(r.steps[1].component.raptors.length,4);assert.equal(r.steps[1].component.raptors[0].workers,7);assert.equal(r.steps[1].component.raptors[0].problems.length,2);
+ for(const mdx of ['<ColdStorage />','<ColdStorage><canister><Species>Empty</Species></canister></ColdStorage>']){await writeFile(cold,mdx);await assert.rejects(compileStations(dir,layout),/02-cold.mdx:.*ColdStorage/);}
+ await rm(cold);
+ for(const mdx of ['<Raptors />','<Raptors><Raptor><Label>Empty</Label><Problems /></Raptor></Raptors>','<Raptors><Raptor workers={20}><Label>X</Label><Problems><Problem>X</Problem></Problems></Raptor></Raptors>']){await writeFile(raptors,mdx);await assert.rejects(compileStations(dir,layout),/02-raptors.mdx:.*Raptor/);}
+});

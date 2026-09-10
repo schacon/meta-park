@@ -220,7 +220,7 @@ void ASlideGameMode::StartLogin() {
 }
 void ASlideGameMode::ResetPresentationSession() {
  bCommandDesktop=false;DesktopMinimize=0;DesktopCommandKey=MAX_uint64;
- ResetStationPage();ViewedFSVSystems.Empty();ViewedPages.Empty();VisitedStations.Empty();bEditingTime=false;TimeError.Empty();
+ ResetStationPage();ViewedColdSpecimens.Empty();ViewedRaptors.Empty();ViewedFSVSystems.Empty();ViewedPages.Empty();VisitedStations.Empty();bEditingTime=false;TimeError.Empty();
  TimerElapsed=0;TimerDuration=WorkstationMinutes*60.f;bTimerStarted=false;bTimerPaused=false;bTourStarted=false;
  FRandomStream Random(FMath::Rand());
  VisitorDepartures.Build((WorkstationMinutes-5)*100,100,50,Random);

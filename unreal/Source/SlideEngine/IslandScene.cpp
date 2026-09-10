@@ -102,6 +102,9 @@ FVector Position(const TArray<TSharedPtr<FJsonValue>>& Values) {
  return FVector(Values[0]->AsNumber(),Values[1]->AsNumber(),Values[2]->AsNumber());
 }
 }
+TArray<FVector> IslandScene::RaptorPositions() {
+ TArray<FVector> Result;for(const auto& D:Wanderers)if(D.Raptor&&D.Actor.IsValid())Result.Add(D.Actor->GetActorTransform().TransformPosition(D.LocalCenter)+FVector(0,0,180));return Result;
+}
 void IslandScene::Animate(float Seconds) {
  for(const auto& D:Wanderers)if(D.Actor.IsValid()) {
   auto Pose=WanderPose(D,Seconds);
@@ -116,10 +119,10 @@ void IslandScene::Animate(float Seconds) {
 }
 bool IslandScene::ValidateWandering() {
  const FVector2D Fence[]={FVector2D(-2,-15),{-9,-14.5},{-14,-10.8},{-15,-3},{-13,7},{-8,13.5},{0,15},{10,13},{14.5,7},{14,-3},{10,-12},{2,-15}};
- bool Good=Wanderers.Num()==6;
+ bool Good=Wanderers.Num()==7;
  float MaxStep=0,MinClearance=MAX_flt,MinSeparation=MAX_flt;
  for(float Time=0;Time<=2100;Time+=2) {
-  TArray<FVector> Raptors;
+  TArray<FVector> Raptors;TArray<FTransform> RaptorPoses;TArray<FVector> RaptorExtents;
   for(const auto& D:Wanderers) {
    const FTransform Pose=WanderPose(D,Time);
    const FBox Bounds=D.BindBounds;
@@ -132,13 +135,24 @@ bool IslandScene::ValidateWandering() {
      MinClearance=FMath::Min(MinClearance,float(-(E.X*V.Y-E.Y*V.X)/E.Size()));
     }
    }
-   if(D.Raptor)Raptors.Add(Pose.TransformPosition(D.LocalCenter));
+   if(D.Raptor){Raptors.Add(Pose.TransformPosition(D.LocalCenter));RaptorPoses.Add(Pose);RaptorExtents.Add(D.BindBounds.GetExtent()*D.Scale);}
    // Preserve continuous motion even during the tightest turn. Double the
    // previous movement allowance to match the doubled route speed.
    Good&=FVector::Dist2D(Pose.GetLocation(),WanderPose(D,Time+.1f).GetLocation())<60;
    MaxStep=FMath::Max(MaxStep,float(FVector::Dist2D(Pose.GetLocation(),WanderPose(D,Time+.1f).GetLocation())));
   }
-  for(int32 I=0;I<Raptors.Num();I++)for(int32 J=I+1;J<Raptors.Num();J++){const float Distance=FVector::Dist2D(Raptors[I],Raptors[J]);Good&=Distance>1080;MinSeparation=FMath::Min(MinSeparation,Distance);}
+  for(int32 I=0;I<Raptors.Num();I++)for(int32 J=I+1;J<Raptors.Num();J++) {
+   const FVector A=RaptorPoses[I].GetUnitAxis(EAxis::X),B=RaptorPoses[I].GetUnitAxis(EAxis::Y),C=RaptorPoses[J].GetUnitAxis(EAxis::X),D=RaptorPoses[J].GetUnitAxis(EAxis::Y);
+   bool Separated=false;
+   // Separating-axis test uses the full rotated mesh bounds, including tails.
+   for(FVector Axis:{A,B,C,D}) {
+    const float R1=FMath::Abs(FVector::DotProduct(A,Axis))*RaptorExtents[I].X+FMath::Abs(FVector::DotProduct(B,Axis))*RaptorExtents[I].Y;
+    const float R2=FMath::Abs(FVector::DotProduct(C,Axis))*RaptorExtents[J].X+FMath::Abs(FVector::DotProduct(D,Axis))*RaptorExtents[J].Y;
+    Separated|=FMath::Abs(FVector::DotProduct(Raptors[I]-Raptors[J],Axis))>R1+R2+20;
+   }
+   if(!Separated&&Good)UE_LOG(LogTemp,Warning,TEXT("Raptor bounds overlap at %.0fs: %d and %d, extents %s"),Time,I,J,*RaptorExtents[I].ToString());
+   Good&=Separated;MinSeparation=FMath::Min(MinSeparation,float(FVector::Dist2D(Raptors[I],Raptors[J])));
+  }
  }
  for(const auto& D:Wanderers) {
   const float Rest=D.WalkDuration+2-D.ScheduleOffset;
@@ -212,13 +226,12 @@ IslandScene::FStats IslandScene::Build(UWorld* World,const TArray<TSharedPtr<FJs
    Asset(World,TEXT("SM_RaptorPen"),P,0,1.2f);
    for(float Y:{-10.35f,10.35f})for(float X:{-15.6f,-5.2f,5.2f,15.6f})Asset(World,TEXT("SM_RaptorBeacon"),P+FVector(X,Y,10.55f)*120,0,1.2f);
    Count+=8;
-   const FVector Offsets[]={FVector(-600,-200,70),FVector(600,300,70),FVector(500,-600,70)};
-   const float Yaws[]={155,220,120};
-   for(int32 J=0;J<3;J++) {
-    auto* Dino=Asset(World,TEXT("SM_velociraptor"),P+Offsets[J],Yaws[J],1.1f);
-    Wander(Dino,P+FVector((J-1)*1170,0,78),FVector2D(30,210),Seed+I*97+J*31,true,false,P);
+   for(int32 J=0;J<4;J++) {
+    const FVector Center=P+FVector(J%2?850:-850,J/2?580:-580,78);
+    auto* Dino=Asset(World,TEXT("SM_velociraptor"),Center,155,0.78f);
+    Wander(Dino,Center,FVector2D(35,55),Seed+I*97+J*31,true,false,P);
    }
-   Count+=4;Dinosaurs+=3;continue;
+   Count+=5;Dinosaurs+=4;continue;
   }
   Dinosaurs++;
   Asset(World,TEXT("SM_Enclosure"),P,0,1.4f);

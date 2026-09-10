@@ -153,7 +153,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   const float Rise=I==GateSlide?(GateVisible?1.f:0.f):(!bFreeFlight&&I==Index?CardExpansion:0);
   Panel.Reveal=Rise;
   Panel.Root->SetActorLocation(I==GateSlide?GateScreenPosition(CardExpansion):FMath::Lerp(SignAnchors[I]-FVector(0,0,500),Panel.RaisedPosition,Rise));
-  Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f&&!(I==Index&&RevealedPage==0&&IsComponentPage()),true);
+  Panel.Root->GetRootComponent()->SetVisibility(Rise>.001f&&!(I==Index&&(UsesPhysicalProp()||(RevealedPage==0&&IsComponentPage()))),true);
   for(int32 M=0;M<Panel.Models.Num();M++)if(Panel.Models[M].IsValid()) {
    const bool Visible=!bFreeFlight&&I==Index&&MapPhase==EMapPhase::Slide&&Panel.ModelSteps[M]<=RevealedPage;
    Panel.Models[M]->SetActorHiddenInGame(!Visible);
@@ -165,10 +165,12 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
   else M.Actor->SetActorRelativeLocation(M.Origin+FVector(0,0,FMath::Sin(Elapsed*M.Speed)*M.Amplitude));
  }
  if(!Smoke)return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("WanderTest"))){if(Elapsed>1)FPlatformMisc::RequestExitWithStatus(false,IslandScene::ValidateWandering()&&IslandScene::ValidateArticulatedGaits()?0:1);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("ProgressTest"))){TestProgress();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("LoginTest"))){TestLogin();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("NativePropsTest"))){TestNativeProps();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FSVTest"))){TestFSV();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("CastTest"))){TestCast();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("TerminalTest"))){TestTerminal();return;}

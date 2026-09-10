@@ -6,6 +6,7 @@ class AStaticMeshActor;
 namespace IslandScene {
  struct FStats { int32 Trees = 0, Dinosaurs = 0; };
  void Animate(float Seconds);
+ TArray<FVector> RaptorPositions();
  bool ValidateWandering();
  bool ValidateArticulatedGaits();
  void ResetGate();

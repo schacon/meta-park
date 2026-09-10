@@ -141,6 +141,7 @@ void ASlideGameMode::CreateDesktopHUD() {
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(DesktopHUD.ToSharedRef(),10); SetMouseMode(false);
 }
 void ASlideGameMode::EndPlay(const EEndPlayReason::Type Reason) {
+ ResetStationPage();
  if(DesktopHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(DesktopHUD.ToSharedRef());
  if(LoginHUD.IsValid() && GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(LoginHUD.ToSharedRef());
  CastPauseButton.Reset();CastReplayButton.Reset();MapDockButton.Reset();ParkSnapshotBrush.SetResourceObject(nullptr);ParkSnapshot=nullptr;TimeMenu.Reset();ElapsedTimeField.Reset();ApplyTimeButton.Reset();ParkMenu.Reset();LogoutButton.Reset();LoginButtonWidget.Reset();WorkstationField.Reset();LoginHUD.Reset();DesktopHUD.Reset(); Super::EndPlay(Reason);

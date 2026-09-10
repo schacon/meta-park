@@ -112,7 +112,7 @@ export async function compileDeck(input, layoutFile) {
 }
 
 // MDX pages use this native component registry without needing import statements.
-const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV'].map(name =>
+const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV','ColdStorage','Species','Description','RaptorWarning','Raptors','Raptor','Label','Problems','Problem'].map(name =>
   [name, props => createElement(name.toLowerCase(), props)]));
 async function readPage(input) {
   const temp = await mkdtemp(resolve('.slide-build-'));
@@ -140,8 +140,43 @@ export async function compileStations(directory, layoutFile, options = {}) {
         const nodes = meaningful(await readPage(source));
         const visible = nodes;
         if (!visible.length) fail('Page needs content');
-        const standalone = visible.length===1 && ['computer','commandline','fsv','model','animate'].includes(visible[0].type);
+        const standalone = visible.length===1 && ['computer','commandline','fsv','coldstorage','raptorwarning','raptors','model','animate'].includes(visible[0].type);
         let component = null;
+        if (standalone && visible[0].type==='coldstorage') {
+          const canisters=meaningful(visible[0].children).map(item=>{
+            if(item.type!=='canister')fail('ColdStorage only accepts canister children');
+            const fields=meaningful(item.children);
+            if(fields.length!==2||fields.filter(n=>n.type==='species').length!==1||fields.filter(n=>n.type==='description').length!==1)fail('Each ColdStorage canister needs one Species and one Description');
+            const species=plain(fields.find(n=>n.type==='species')).trim(),description=plain(fields.find(n=>n.type==='description')).trim();
+            if(!species||!description)fail('ColdStorage species and descriptions cannot be empty');
+            return {species,description};
+          });
+          if(canisters.length!==4)fail('ColdStorage needs exactly four canisters');
+          component={type:'ColdStorage',canisters};
+        }
+        if (standalone && visible[0].type==='raptorwarning') {
+          const title=plain(visible[0]).trim();
+          if(!title)fail('RaptorWarning needs warning text');
+          component={type:'RaptorWarning',title};
+        }
+        if (standalone && visible[0].type==='raptors') {
+          const raptors=meaningful(visible[0].children).map(item=>{
+            if(item.type!=='raptor')fail('Raptors only accepts Raptor children');
+            const fields=meaningful(item.children);
+            if(fields.length!==2||fields.filter(n=>n.type==='label').length!==1||fields.filter(n=>n.type==='problems').length!==1)fail('Each Raptor needs one Label and one Problems list');
+            const label=plain(fields.find(n=>n.type==='label')).trim();
+            const problems=meaningful(fields.find(n=>n.type==='problems').children).map(n=>{
+              if(n.type!=='problem'||!plain(n).trim())fail('Raptor Problems needs nonempty Problem children');
+              return plain(n).trim();
+            });
+            if(!label||!problems.length)fail('Each Raptor needs a label and at least one problem');
+            const workers=item.props.workers;
+            if(workers!==undefined&&(!Number.isInteger(workers)||workers<0||workers>8))fail('Raptor workers must be an integer from 0 to 8');
+            return {label,problems,...(workers!==undefined?{workers}:{})};
+          });
+          if(raptors.length!==4)fail('Raptors needs exactly four Raptor entries for the pen');
+          component={type:'Raptors',raptors};
+        }
         if (standalone && visible[0].type==='fsv') {
           const title=visible[0].props.title;
           if(typeof title!=='string'||!title.trim())fail('FSV needs a title');

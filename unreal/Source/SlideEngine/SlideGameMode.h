@@ -33,6 +33,16 @@ private:
  void TestTerminal();
  void TestCast();
  void TestFSV();
+ void TestNativeProps();
+ TSharedPtr<class FParkColdStorage> ColdStorage;
+ TMap<uint64,TSharedPtr<class FParkColdStorage>> PageColdStorage;
+ TSet<uint64> ViewedColdSpecimens;
+ TSharedPtr<class FParkWoodSign> WoodSign;
+ uint64 WoodSignKey=MAX_uint64;
+ TSharedPtr<class FParkRaptors> RaptorView;
+ uint64 RaptorKey=MAX_uint64;
+ TSet<uint64> ViewedRaptors;
+ bool UsesPhysicalProp() const;
  void TestStationContent();
  void TestProgress();
  TSet<uint64> ViewedPages;
