@@ -1,5 +1,6 @@
 #include "SlideGameMode.h"
 #include "ParkTerminal.h"
+#include "ParkFSV.h"
 #include "Dom/JsonObject.h"
 #include "Camera/CameraActor.h"
 #include "GameFramework/PlayerController.h"
@@ -24,6 +25,8 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
   const int32 TypeScale=HiddenSlides.Contains(StationIndex)?2:1;
   auto Body=SNew(SVerticalBox);
   const FString Heading=bIsland?FString::Printf(TEXT("[%d] %s  /  %s     %02d / %02d"),StationIndex+1,*Station->GetObjectField(TEXT("card"))->GetStringField(TEXT("code")),*Label,Page+1,Steps.Num()):Step->GetStringField(TEXT("title"));
+  bool TitleOnly=false;Step->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
+  if(!TitleOnly) {
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.13,.61,.24)).Padding(12)
    [SNew(STextBlock).Text(FText::FromString(Heading)).Font(FCoreStyle::GetDefaultFontStyle("Mono",24)).ColorAndOpacity(FLinearColor(.015,.025,.02))]];
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(Step->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48*TypeScale)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
@@ -38,6 +41,10 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
   }
   // Dense authored pages shrink inside the sign instead of running off its edge.
   Body->AddSlot().FillHeight(1)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly).HAlign(HAlign_Left).VAlign(VAlign_Top)[SNew(SBox).WidthOverride(1344)[TextBody]]];
+  } else {
+   Body->AddSlot().FillHeight(1).HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
+    [SNew(STextBlock).Text(FText::FromString(Step->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",160)).ColorAndOpacity(FLinearColor(.001,.001,.001)).WrapTextAt(1240).Justification(ETextJustify::Center)]];
+  }
   auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63)).Padding(48)[Body];
   FString Kind;Step->TryGetStringField(TEXT("kind"),Kind);
   const bool Component=Kind==TEXT("component");
@@ -64,14 +71,18 @@ bool ASlideGameMode::IsComponentPage() const {
  FString Kind;
  if(!StationSteps.IsValidIndex(Index)||!StationSteps[Index].IsValidIndex(PageIndex))return false;
  const auto Step=StationSteps[Index][PageIndex];const TSharedPtr<FJsonObject>* Component;
- return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||(*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine"));
+ return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||((*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("FSV")));
 }
 void ASlideGameMode::ResetStationPage() {
  PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
- PageCasts.Empty();CastPlayer.Reset();
+ PageCasts.Empty();CastPlayer.Reset();PageFSVs.Empty();FSV.Reset();
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
-bool ASlideGameMode::AdvancePage(int32 Direction) {
+bool ASlideGameMode::AdvancePage(int32 Direction,bool SkipComponent) {
+ if(!SkipComponent&&bCommandDesktop&&bDesktopFSV&&FSV.IsValid()&&FSV->Advance(Direction)) {
+  if(FSV->Selected>=0)ViewedFSVSystems.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(FSV->Selected));
+  return true;
+ }
  // Ignore repeated presses during the short swipe so pages cannot be skipped accidentally.
  if(PageSwipe<1)return true;
  const int32 Next=PageIndex+Direction;
@@ -120,14 +131,17 @@ void ASlideGameMode::TickStationPage(float Delta) {
  TSharedPtr<FJsonObject> DesktopComponent;
  if(Showing&&StationSteps.IsValidIndex(Index)&&StationSteps[Index].IsValidIndex(PageIndex)) {
   const TSharedPtr<FJsonObject>* Component;
-  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine"))DesktopComponent=*Component;
+  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine")||(*Component)->GetStringField(TEXT("type"))==TEXT("FSV")))DesktopComponent=*Component;
  }
  TickCommandDesktop(Delta,DesktopComponent);
 }
 
 int32 ASlideGameMode::PowerPercent() const {
- int32 Total=0;for(const auto& Steps:StationSteps)Total+=Steps.Num();
- return Total>0?FMath::Clamp(FMath::CeilToInt(100.f*(Total-ViewedPages.Num())/Total),0,100):100;
+ int32 Total=0;for(const auto& Steps:StationSteps)for(const auto& Step:Steps) {
+  Total++;const TSharedPtr<FJsonObject>* Component;
+  if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("FSV"))Total+=(*Component)->GetArrayField(TEXT("systems")).Num();
+ }
+ return Total>0?FMath::Clamp(FMath::CeilToInt(100.f*(Total-ViewedPages.Num()-ViewedFSVSystems.Num())/Total),0,100):100;
 }
 int32 ASlideGameMode::SecurityPercent() const {
  return TimerDuration>0?FMath::Clamp(FMath::CeilToInt(100.f*(TimerDuration-TimerElapsed)/TimerDuration),0,100):100;

@@ -130,10 +130,8 @@ void ASlideGameMode::CreateDesktopHUD() {
       })
       .ButtonContent()[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,4))
        [SNew(STextBlock).Text(FText::FromString(TEXT("git-meta"))).Font(Font(20)).ColorAndOpacity(FLinearColor(.94,.94,.9))]] ]
-     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(20,0)[SNew(SHorizontalBox)
-      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(TEXT("park visitor survival monitoring system"))).Font(Font(20)).ColorAndOpacity(Ink)]
-      +SHorizontalBox::Slot().FillWidth(1).HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(16,0)[SNew(STextBlock).Text(FText::FromString(TEXT("it's UNIX, I know this..."))).Font(SideFont(18)).Justification(ETextJustify::Center).ColorAndOpacity(FLinearColor(.025,.22,.055))]
-     ]
+     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(20,0)
+      [SNew(STextBlock).Text(FText::FromString(TEXT("park visitor survival monitoring system"))).Font(Font(20)).ColorAndOpacity(Ink)]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(12,0,24,0)
       [SNew(STextBlock).Text_Lambda([]{return FText::FromString(TEXT("v2.55.0 · ")+FDateTime::Now().ToString(TEXT("%H:%M")));}).Font(Font(18)).ColorAndOpacity(Ink)]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,5))

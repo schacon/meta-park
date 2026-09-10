@@ -112,7 +112,7 @@ export async function compileDeck(input, layoutFile) {
 }
 
 // MDX pages use this native component registry without needing import statements.
-const components = Object.fromEntries(['Model','Animate','Computer','CommandLine'].map(name =>
+const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV'].map(name =>
   [name, props => createElement(name.toLowerCase(), props)]));
 async function readPage(input) {
   const temp = await mkdtemp(resolve('.slide-build-'));
@@ -140,8 +140,22 @@ export async function compileStations(directory, layoutFile, options = {}) {
         const nodes = meaningful(await readPage(source));
         const visible = nodes;
         if (!visible.length) fail('Page needs content');
-        const standalone = visible.length===1 && ['computer','commandline','model','animate'].includes(visible[0].type);
+        const standalone = visible.length===1 && ['computer','commandline','fsv','model','animate'].includes(visible[0].type);
         let component = null;
+        if (standalone && visible[0].type==='fsv') {
+          const title=visible[0].props.title;
+          if(typeof title!=='string'||!title.trim())fail('FSV needs a title');
+          const systems=meaningful(visible[0].children).map(system=>{
+            if(system.type!=='system')fail('FSV only accepts system children');
+            const fields=meaningful(system.children);
+            if(fields.length!==2||fields.filter(n=>n.type==='label').length!==1||fields.filter(n=>n.type==='meta').length!==1)fail('Each FSV system needs one label and one meta description');
+            const label=plain(fields.find(n=>n.type==='label')),meta=plain(fields.find(n=>n.type==='meta'));
+            if(!label.trim()||!meta.trim())fail('FSV labels and meta descriptions cannot be empty');
+            return {label,meta};
+          });
+          if(!systems.length)fail('FSV needs at least one system');
+          component={type:'FSV',title,systems};
+        }
         if (standalone && visible[0].type==='commandline') {
           if(meaningful(visible[0].children).length)fail('CommandLine uses a cast file instead of prompt/output children');
           const {src,cast,speed,idleTimeLimit}=visible[0].props;
@@ -160,7 +174,7 @@ export async function compileStations(directory, layoutFile, options = {}) {
         const title = heading ? plain(heading) : component ? component.type : name.replace(/\.mdx$/i,'');
         const body = nodes.filter(n=>n!==heading && !(component && n===visible[0]));
         const page = makeManifest(createElement('deck',{},createElement('slide',{id:card.slide,title},...body.map(element)))).slides[0];
-        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,blocks:page.blocks,models:page.models});
+        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,...(visible.length===1&&visible[0].type==='h1'?{titleOnly:true}:{}),blocks:page.blocks,models:page.models});
       } catch (error) { throw new Error(`${source}: ${error.message}`,{cause:error}); }
     }
     stations.push({card,steps});

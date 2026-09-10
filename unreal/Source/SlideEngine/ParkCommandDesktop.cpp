@@ -1,5 +1,6 @@
 #include "SlideGameMode.h"
 #include "ParkCastPlayer.h"
+#include "ParkFSV.h"
 #include "Widgets/Input/SSlider.h"
 #include "Dom/JsonObject.h"
 #include "Engine/GameViewportClient.h"
@@ -51,12 +52,19 @@ void ASlideGameMode::TickCommandDesktop(float Delta,TSharedPtr<FJsonObject> Comp
  }
  if(Requested) {
   DesktopCommandKey=(uint64(Index)<<32)|uint32(PageIndex);
+  bDesktopFSV=Component->GetStringField(TEXT("type"))==TEXT("FSV");
+  if(bDesktopFSV) {
+   if(!PageFSVs.Contains(DesktopCommandKey))PageFSVs.Add(DesktopCommandKey,MakeShared<FParkFSV>(Component));
+   FSV=PageFSVs[DesktopCommandKey];
+   if(DesktopMinimize==1){FSV->Tick(Delta);if(FSV->Selected>=0)ViewedFSVSystems.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(FSV->Selected));}
+  } else {
   if(!PageCasts.Contains(DesktopCommandKey)) {
    UE_LOG(LogTemp,Display,TEXT("Playing cast: %s"),*Component->GetStringField(TEXT("src")));
    PageCasts.Add(DesktopCommandKey,MakeShared<FParkCastPlayer>(Component->GetObjectField(TEXT("cast"))));
   }
   CastPlayer=PageCasts[DesktopCommandKey];
   if(DesktopMinimize==1)CastPlayer->Tick(Delta);
+  }
  }
  bCommandDesktop=Requested;
  DesktopMinimize=FMath::Clamp(DesktopMinimize+(Requested?1.f:-1.f)*Delta/MinimizeSeconds,0.f,1.f);
@@ -68,7 +76,7 @@ void ASlideGameMode::TickCommandDesktop(float Delta,TSharedPtr<FJsonObject> Comp
 void ASlideGameMode::RestoreParkWindow() {
  if(bLocked||!bCommandDesktop||DesktopMinimize<1)return;
  // The dock returns to the preceding presentation step; arrows can also advance or leave the group.
- if(PageIndex>0)AdvancePage(-1);else Overview();
+ if(PageIndex>0)AdvancePage(-1,true);else Overview();
  FSlateApplication::Get().SetKeyboardFocus(LoginHUD);
 }
 TSharedRef<SWidget> ASlideGameMode::BuildCommandTerminal() {

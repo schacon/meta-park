@@ -56,8 +56,8 @@ void ASlideGameMode::TestGate() {
   if(!Check(Panels[GateSlide].Reveal==0,TEXT("leaving closes the doors and hides the sign")))return;
   FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/gate-closed-overview.png"),true,false);
   GoTo(GateSlide);SmokeStep=5;
- } else if(SmokeStep==5&&Open>.3f) {HandleParkKey(EKeys::One);SmokeStep=6;}
- else if(SmokeStep==6&&Index==0&&MapPhase==EMapPhase::Slide) {
+ } else if(SmokeStep==5&&Open>.3f) {HandleParkKey(EKeys::Two);SmokeStep=6;}
+ else if(SmokeStep==6&&Index==1&&MapPhase==EMapPhase::Slide) {
   if(!Check(Open==0,TEXT("number navigation also closes an interrupted opening")))return;
   GoTo(GateSlide);SmokeStep=7;
  } else if(SmokeStep==7&&Index==GateSlide&&MapPhase==EMapPhase::Slide) {HandleParkKey(EKeys::F);SmokeStep=8;}

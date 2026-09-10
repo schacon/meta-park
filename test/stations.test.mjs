@@ -24,7 +24,7 @@ test('station pages preserve camera layout, extract titles and sort filenames nu
  const deck=await compileStations(dir,layout,{castDirectory:join(dir,'casts')});
  assert.equal(deck.slides.length,8);
  const station=deck.slides[0];
- assert.equal(station.id,'opening');assert.equal(station.title,'Station 1');
+ assert.equal(station.card.code,'GATE');assert.equal(station.id,'scale');assert.equal(station.title,'Station 1');
  assert.deepEqual(station.steps.map(p=>p.id),['01-intro','2-example','10-later']);
  assert.deepEqual(station.steps[0].blocks,[{kind:'li',text:'First point'},{kind:'li',text:'Second point'}]);
  assert.deepEqual(station.steps[1].component,{type:'Computer',prompt:'git meta get commit:HEAD owner',output:'s.chacon'});
@@ -58,4 +58,21 @@ test('invalid native components and empty stations fail with an actionable sourc
  await assert.rejects(compileStations(dir,layout,{castDirectory:join(dir,'casts')}),/02-bad.mdx:.*Unknown/);
  await rm(file);await rm(join(dir,'01/01-intro.mdx'));
  await assert.rejects(compileStations(dir,layout,{castDirectory:join(dir,'casts')}),/01: station needs/);
+});
+
+test('FSV serializes ordered systems and title-only detection requires exactly one h1',async t=>{
+ const dir=await fixture(t),file=join(dir,'02/02-viewer.mdx');
+ await writeFile(join(dir,'02/01-intro.mdx'),'# New Metadata Use Cases');
+ await writeFile(file,'<FSV title="Systems"><system><label>trust</label><meta>identity, signoffs</meta></system><system><label>review</label><meta>comments</meta></system></FSV>');
+ const steps=(await compileStations(dir,layout)).slides[1].steps;
+ assert.equal(steps[0].titleOnly,true);
+ assert.deepEqual(steps[1].component,{type:'FSV',title:'Systems',systems:[{label:'trust',meta:'identity, signoffs'},{label:'review',meta:'comments'}]});
+ assert.equal(steps[1].kind,'component');assert.deepEqual(steps[1].blocks,[]);
+ await writeFile(file,'# Title\n\nSome body');
+ assert.equal((await compileStations(dir,layout)).slides[1].steps[1].titleOnly,undefined);
+ await writeFile(file,'## Heading two');
+ assert.equal((await compileStations(dir,layout)).slides[1].steps[1].titleOnly,undefined);
+ for(const mdx of ['<FSV />','<FSV title="Empty" />','<FSV title="Bad"><system><label>trust</label></system></FSV>']){
+  await writeFile(file,mdx);await assert.rejects(compileStations(dir,layout),/02-viewer.mdx:.*FSV/);
+ }
 });

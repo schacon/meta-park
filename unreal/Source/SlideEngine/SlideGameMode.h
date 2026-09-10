@@ -32,6 +32,7 @@ private:
 
  void TestTerminal();
  void TestCast();
+ void TestFSV();
  void TestStationContent();
  void TestProgress();
  TSet<uint64> ViewedPages;
@@ -58,7 +59,11 @@ private:
  UPROPERTY() TObjectPtr<class UTexture2D> ParkSnapshot;
  FSlateBrush ParkSnapshotBrush;
  TSharedPtr<class SButton> MapDockButton,CastPauseButton,CastReplayButton;
- bool bCommandDesktop=false;
+ bool bCommandDesktop=false,bDesktopFSV=false;
+ TSharedPtr<class FParkFSV> FSV;
+ TMap<uint64,TSharedPtr<class FParkFSV>> PageFSVs;
+ TSet<uint64> ViewedFSVSystems;
+ TSharedRef<SWidget> BuildFSVWindow();
  float DesktopMinimize=0;
  uint64 DesktopCommandKey=MAX_uint64;
  TSharedPtr<class FParkCastPlayer> CastPlayer;
@@ -116,7 +121,7 @@ private:
  int32 StationSignPage(int32 Station,int32 Page) const;
  float PageSwipe=1;
  TSharedRef<SWidget> BuildStationContent(TSharedPtr<FJsonObject> Station,int32 StationIndex,const FString& Label,FLinearColor Accent);
- bool AdvancePage(int32 Direction);
+ bool AdvancePage(int32 Direction,bool SkipComponent=false);
  bool IsComponentPage() const;
  void ResetStationPage();
  void TickStationPage(float Delta);
