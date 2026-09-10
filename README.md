@@ -141,7 +141,7 @@ and demos join the same group layout. **Left** revisits a page without removing
 revealed content; **Right** continues or returns to overview at the group end.
 Leaving the group hides all its content. Re-entering the group starts it fresh. These are demonstration graphics; no shell command is executed.
 
-At the main gate (**1**), the doors swing inward to reveal a stationary slide
+At the main gate (**4**), the doors swing inward to reveal a stationary slide
 behind the gateway. Leaving the area closes them again, including interrupted
 visits and switching to free flight.
 
@@ -296,12 +296,12 @@ Edit `examples/git-meta/layout.json`:
 
 | Key | Area | Content directory |
 | --- | --- | --- |
-| 1 | Main Gate | `slides/01/` |
+| 1 | Research Center | `slides/01/` |
 | 2 | Helipad | `slides/02/` |
 | 3 | Velociraptor pen | `slides/03/` |
-| 4 | T. rex | `slides/04/` |
+| 4 | Main Gate | `slides/04/` |
 | 5 | Triceratops | `slides/05/` |
-| 6 | Visitor Centre | `slides/06/` |
+| 6 | T. rex | `slides/06/` |
 | 7 | Brontosaurus | `slides/07/` |
 | 8 | Hidden beach bar | `slides/08/` |
 
@@ -442,3 +442,5 @@ fixture; it does not change the authored slides.
 Forward navigation continues from station 07 through the hidden beach bar at station 08. At the end, **Logout?** offers Yes (or Enter/Y) to minimize park control into a desktop Questions terminal, or No (or Escape/N) to stay. The presentation timer pauses during questions. The dock restores the final station; Escape returns to login and resets the session.
 
 ColdStorage canisters optionally accept `<Label>` for the description heading; `<Species>` remains the name printed on the vial.
+
+Station 01 opens at the Research Center with a physical employee badge using the first MDX page’s title and body. ColdStorage rises in front of the badge on the next step, dimming the scene behind the hardware and description until the demonstration closes. Station 04 presents the git-meta introduction at the Main Gate; station 06 presents exchange at the T. rex paddock.
