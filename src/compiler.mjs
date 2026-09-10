@@ -1,3 +1,4 @@
+import {serializeValues} from './serializer.mjs';
 import {build} from 'esbuild';
 import {loadCast} from './asciicast.mjs';
 import {islandLayout} from './island.mjs';
@@ -22,6 +23,7 @@ function expand(node) {
   if (node == null || typeof node === 'boolean') return [];
   if (Array.isArray(node)) return node.flatMap(expand);
   if (typeof node !== 'object') return [String(node)];
+  if (node.type===components.Value) return [{type:'value',props:{...node.props,key:node.key},children:expand(node.props.children)}];
   if (typeof node.type === 'function') return expand(node.type(node.props));
   if (typeof node.type === 'symbol') return expand(node.props.children);
   return [{type:node.type, props:node.props, children:expand(node.props.children)}];
@@ -112,7 +114,7 @@ export async function compileDeck(input, layoutFile) {
 }
 
 // MDX pages use this native component registry without needing import statements.
-const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV','ColdStorage','Species','Description','RaptorWarning','Raptors','Raptor','Label','Problems','Problem'].map(name =>
+const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV','Serializer','Value','ColdStorage','Species','Description','RaptorWarning','Raptors','Raptor','Label','Problems','Problem'].map(name =>
   [name, props => createElement(name.toLowerCase(), props)]));
 async function readPage(input) {
   const temp = await mkdtemp(resolve('.slide-build-'));
@@ -140,8 +142,15 @@ export async function compileStations(directory, layoutFile, options = {}) {
         const nodes = meaningful(await readPage(source));
         const visible = nodes;
         if (!visible.length) fail('Page needs content');
-        const standalone = visible.length===1 && ['computer','commandline','fsv','coldstorage','raptorwarning','raptors','model','animate'].includes(visible[0].type);
+        const standalone = visible.length===1 && ['computer','commandline','fsv','serializer','coldstorage','raptorwarning','raptors','model','animate'].includes(visible[0].type);
         let component = null;
+        if (standalone && visible[0].type==='serializer') {
+          const values=meaningful(visible[0].children).map(n=>{
+            if(n.type!=='value'||meaningful(n.children).length)fail('Serializer only accepts self-closing Value entries');
+            return n.props;
+          });
+          component=serializeValues(values,visible[0].props);
+        }
         if (standalone && visible[0].type==='coldstorage') {
           const canisters=meaningful(visible[0].children).map(item=>{
             if(item.type!=='canister')fail('ColdStorage only accepts canister children');

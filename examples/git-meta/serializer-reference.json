@@ -1,0 +1,181 @@
+{
+  "source": "/tmp/meta-demo",
+  "ref": "refs/meta/local/main",
+  "commits": [
+    {
+      "oid": "5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+      "message": "second commit",
+      "author": "Scott Chacon <schacon@gmail.com> 1789042124 +0200"
+    },
+    {
+      "oid": "bf96ae4e740924b255146910221f46b284ac2fac",
+      "message": "initial commit",
+      "author": "Scott Chacon <schacon@gmail.com> 1789042124 +0200"
+    }
+  ],
+  "rows": [
+    {
+      "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+      "key": "review:status",
+      "history": [
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128953,
+          "value": "\"approved\""
+        },
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042141516,
+          "value": "\"merged\""
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+      "key": "review:pr",
+      "history": [
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128959,
+          "value": "\"42\""
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "commit:bf96ae4e740924b255146910221f46b284ac2fac",
+      "key": "agent:model",
+      "history": [
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128964,
+          "value": "\"claude-opus-5\""
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "branch:main",
+      "key": "deploy:env",
+      "history": [
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128970,
+          "value": "\"production\""
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "path:main.rs",
+      "key": "owner",
+      "history": [
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128974,
+          "value": "\"schacon@gmail.com\""
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "project",
+      "key": "ci:provider",
+      "history": [
+        {
+          "operation": "set",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128981,
+          "value": "\"github-actions\""
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+      "key": "review:reviewers",
+      "history": [
+        {
+          "operation": "set_add",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128987,
+          "value": "[]"
+        },
+        {
+          "operation": "set_add",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128993,
+          "value": "[]"
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "path:main.rs",
+      "key": "tags",
+      "history": [
+        {
+          "operation": "set_add",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042128999,
+          "value": "[]"
+        }
+      ],
+      "entries": []
+    },
+    {
+      "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+      "key": "ci:runs",
+      "history": [
+        {
+          "operation": "push",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042129005,
+          "value": "[]"
+        },
+        {
+          "operation": "push",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042129013,
+          "value": "[]"
+        }
+      ],
+      "entries": [
+        {
+          "value": "build:passed",
+          "timestamp": 1789042129005
+        },
+        {
+          "value": "test:passed",
+          "timestamp": 1789042129013
+        }
+      ]
+    },
+    {
+      "target": "project",
+      "key": "changelog",
+      "history": [
+        {
+          "operation": "push",
+          "email": "schacon@gmail.com",
+          "timestamp": 1789042129018,
+          "value": "[]"
+        }
+      ],
+      "entries": [
+        {
+          "value": "0.1.0 initial release",
+          "timestamp": 1789042129018
+        }
+      ]
+    }
+  ],
+  "readme": "# Git Metadata Repository\n\nThis ref stores structured metadata for the project at:\n\n    /tmp/meta-demo-remote.git\n\nIt is managed by [git meta](https://git-meta.com/), which associates\nkey-value metadata with Git objects (commits, branches, paths, change-ids,\nand project-wide settings) and synchronises them across repositories using\nordinary Git transports.\n\n## How it works\n\nMetadata lives locally in a SQLite database (`.git/git-meta.sqlite`) and is\nserialized into Git trees and commits under `refs/meta/` for transport.\nThis remote stores the canonical history under `refs/meta/main`; the\n`main` branch you may see at the repository root is unrelated and only exists\nfor browsing.\n\nOther contributors do **not** clone this repository directly. Instead they\nconfigure it as a metadata remote on top of their existing checkout:\n\n```\ngit meta remote add /tmp/meta-demo-remote.git --name meta --namespace meta\ngit meta pull\n```\n\nAfter that, reading and writing metadata works against the project's normal\ncheckout:\n\n```\ngit meta get commit:HEAD\ngit meta set commit:HEAD review:status approved\ngit meta push\n```\n\n## Important notes\n\n- Metadata is exchanged on `refs/meta/main`, never on `refs/heads/main`.\n- Never push directly to `refs/meta/main` -- always go through\n  `git meta push`, which serializes local changes and resolves conflicts.\n- This README only lives in the very first commit on `refs/meta/main`;\n  later metadata commits replace the tip tree with the metadata layout.\n"
+}

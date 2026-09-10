@@ -75,11 +75,12 @@ bool ASlideGameMode::IsComponentPage() const {
  FString Kind;
  if(!StationSteps.IsValidIndex(Index)||!StationSteps[Index].IsValidIndex(PageIndex))return false;
  const auto Step=StationSteps[Index][PageIndex];const TSharedPtr<FJsonObject>* Component;
- return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||((*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("FSV")));
+ return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||((*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("FSV")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("Serializer")));
 }
 void ASlideGameMode::ResetStationPage() {
  PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
  PageColdStorage.Empty();ColdStorage.Reset();EmployeeBadge.Reset();WoodSign.Reset();WoodSignKey=MAX_uint64;RaptorView.Reset();RaptorKey=MAX_uint64;
+ PageSerializers.Empty();Serializer.Reset();
  PageCasts.Empty();CastPlayer.Reset();PageFSVs.Empty();FSV.Reset();
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
@@ -144,7 +145,7 @@ void ASlideGameMode::TickStationPage(float Delta) {
  TSharedPtr<FJsonObject> DesktopComponent;
  if(Showing&&StationSteps.IsValidIndex(Index)&&StationSteps[Index].IsValidIndex(PageIndex)) {
   const TSharedPtr<FJsonObject>* Component;
-  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine")||(*Component)->GetStringField(TEXT("type"))==TEXT("FSV")))DesktopComponent=*Component;
+  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine")||(*Component)->GetStringField(TEXT("type"))==TEXT("FSV")||(*Component)->GetStringField(TEXT("type"))==TEXT("Serializer")))DesktopComponent=*Component;
  }
  TickCommandDesktop(Delta,DesktopComponent);
  TSharedPtr<FJsonObject> Prop;

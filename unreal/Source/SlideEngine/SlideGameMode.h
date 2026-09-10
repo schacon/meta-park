@@ -33,6 +33,7 @@ private:
  void TestTerminal();
  void TestCast();
  void TestFSV();
+ void TestSerializer();
  void TestNativeProps();
  void TestEnding();
  TSharedPtr<class FParkColdStorage> ColdStorage;
@@ -71,7 +72,10 @@ private:
  UPROPERTY() TObjectPtr<class UTexture2D> ParkSnapshot;
  FSlateBrush ParkSnapshotBrush;
  TSharedPtr<class SButton> MapDockButton,CastPauseButton,CastReplayButton;
- bool bCommandDesktop=false,bDesktopFSV=false;
+ bool bCommandDesktop=false,bDesktopFSV=false,bDesktopSerializer=false;
+ TSharedPtr<class FParkSerializer> Serializer;
+ TMap<uint64,TSharedPtr<class FParkSerializer>> PageSerializers;
+ TSharedPtr<SWidget> SerializerView;
  bool bConfirmFinish=false,bQuestions=false,bTimerPausedBeforeQuestions=false;
  void ShowQuestions();
  TSharedRef<SWidget> BuildFinishPrompt();

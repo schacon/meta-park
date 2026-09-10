@@ -1,6 +1,7 @@
 #include "SlideGameMode.h"
 #include "ParkCastPlayer.h"
 #include "ParkFSV.h"
+#include "ParkSerializer.h"
 #include "Widgets/Input/SSlider.h"
 #include "Dom/JsonObject.h"
 #include "Engine/GameViewportClient.h"
@@ -62,7 +63,11 @@ void ASlideGameMode::TickCommandDesktop(float Delta,TSharedPtr<FJsonObject> Comp
  if(Requested&&!bQuestions) {
   DesktopCommandKey=(uint64(Index)<<32)|uint32(PageIndex);
   bDesktopFSV=Component->GetStringField(TEXT("type"))==TEXT("FSV");
-  if(bDesktopFSV) {
+  bDesktopSerializer=Component->GetStringField(TEXT("type"))==TEXT("Serializer");
+  if(bDesktopSerializer) {
+   if(!PageSerializers.Contains(DesktopCommandKey))PageSerializers.Add(DesktopCommandKey,MakeShared<FParkSerializer>(Component));
+   Serializer=PageSerializers[DesktopCommandKey];if(DesktopMinimize==1)Serializer->Tick(Delta);
+  } else if(bDesktopFSV) {
    if(!PageFSVs.Contains(DesktopCommandKey))PageFSVs.Add(DesktopCommandKey,MakeShared<FParkFSV>(Component));
    FSV=PageFSVs[DesktopCommandKey];
    if(DesktopMinimize==1){FSV->Tick(Delta);if(FSV->Selected>=0)ViewedFSVSystems.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(FSV->Selected));}
@@ -138,7 +143,7 @@ TSharedRef<SWidget> ASlideGameMode::BuildMinimizeAnimation() {
 }
 
 void ASlideGameMode::ShowQuestions() {
- bConfirmFinish=false;bQuestions=true;bDesktopFSV=false;CastPlayer.Reset();
+ bConfirmFinish=false;bQuestions=true;bDesktopFSV=false;bDesktopSerializer=false;CastPlayer.Reset();
  bTimerPausedBeforeQuestions=bTimerPaused;bTimerPaused=true;
 }
 TSharedRef<SWidget> ASlideGameMode::BuildFinishPrompt() {

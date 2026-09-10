@@ -1,4 +1,5 @@
 #include "SlideGameMode.h"
+#include "ParkSerializer.h"
 #include "IslandScene.h"
 #include "ParkCamera.h"
 #include "ParkTerminal.h"
@@ -169,6 +170,7 @@ void ASlideGameMode::CreateLoginHUD() {
     +SHorizontalBox::Slot().AutoWidth()[Label(TEXT("›"),17)]]];
  }
  auto Toolchest=Window(TEXT("Toolchest"),Tools);
+ SerializerView=MakeParkSerializerView([this]{return Serializer;},[this]{RestoreParkWindow();});
  auto Root=SNew(SParkLoginRoot).Login(FSimpleDelegate::CreateLambda([this]{StartLogin();}))
   .Locked_Lambda([this]{return bLocked;})
   .PresentationKey(FOnKeyDown::CreateLambda([this](const FGeometry&,const FKeyEvent& Event){if(!Event.IsRepeat())HandleParkKey(Event.GetKey());return FReply::Handled();}));
@@ -187,11 +189,13 @@ void ASlideGameMode::CreateLoginHUD() {
    [SNew(SBox).WidthOverride(660)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(3,3,10,10))
     [SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Gray).Padding(38)[Form]]]]]
   +SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(24,38,24,80)[SNew(SBox)
-   .WidthOverride_Lambda([this]{const float W=LoginHUD.IsValid()?LoginHUD->GetCachedGeometry().GetLocalSize().X:1600;return FOptionalSize((bDesktopFSV||bQuestions)?W*.84f:(W>=1380?W-620:W*.88f));})
+   .WidthOverride_Lambda([this]{const float W=LoginHUD.IsValid()?LoginHUD->GetCachedGeometry().GetLocalSize().X:1600;return FOptionalSize(bDesktopSerializer?W*.96f:(bDesktopFSV||bQuestions)?W*.84f:(W>=1380?W-620:W*.88f));})
    .HeightOverride_Lambda([this]{return FOptionalSize(FMath::Max(240.f,float(LoginHUD.IsValid()?LoginHUD->GetCachedGeometry().GetLocalSize().Y:900)-180.f));})
    .Visibility_Lambda([this]{return !bLocked?EVisibility::Visible:EVisibility::Collapsed;})[SNew(SOverlay)
-    +SOverlay::Slot()[SNew(SBox).Visibility_Lambda([this]{return bDesktopFSV?EVisibility::Collapsed:EVisibility::Visible;})[BuildCommandTerminal()]]
-    +SOverlay::Slot()[SNew(SBox).Visibility_Lambda([this]{return bDesktopFSV?EVisibility::Visible:EVisibility::Collapsed;})[BuildFSVWindow()]]]]
+    +SOverlay::Slot()[SNew(SBox).Visibility_Lambda([this]{return bDesktopFSV||bDesktopSerializer?EVisibility::Collapsed:EVisibility::Visible;})[BuildCommandTerminal()]]
+    +SOverlay::Slot()[SNew(SBox).Visibility_Lambda([this]{return bDesktopFSV?EVisibility::Visible:EVisibility::Collapsed;})[BuildFSVWindow()]]
+    +SOverlay::Slot()[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).Visibility_Lambda([this]{return bDesktopSerializer?EVisibility::Visible:EVisibility::Collapsed;})[SNew(SBox).WidthOverride(1800).HeightOverride(1000)[SerializerView.ToSharedRef()]]]]]
+
   +SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(24,0,24,80)[SNew(SBox).WidthOverride(192).Visibility_Lambda([this]{return !bLocked?EVisibility::Visible:EVisibility::Collapsed;})[BuildParkDock()]]
   +SOverlay::Slot()[Scanlines]
   +SOverlay::Slot()[BuildMinimizeAnimation()]
@@ -220,7 +224,7 @@ void ASlideGameMode::StartLogin() {
  FSlateApplication::Get().SetKeyboardFocus(LoginHUD,EFocusCause::SetDirectly);
 }
 void ASlideGameMode::ResetPresentationSession() {
- bConfirmFinish=false;bQuestions=false;bDesktopFSV=false;
+ bConfirmFinish=false;bQuestions=false;bDesktopFSV=false;bDesktopSerializer=false;
  bCommandDesktop=false;DesktopMinimize=0;DesktopCommandKey=MAX_uint64;
  ResetStationPage();ViewedColdSpecimens.Empty();ViewedRaptors.Empty();ViewedFSVSystems.Empty();ViewedPages.Empty();VisitedStations.Empty();bEditingTime=false;TimeError.Empty();
  TimerElapsed=0;TimerDuration=WorkstationMinutes*60.f;bTimerStarted=false;bTimerPaused=false;bTourStarted=false;
