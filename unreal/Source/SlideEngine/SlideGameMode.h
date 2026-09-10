@@ -38,6 +38,7 @@ private:
  TSharedPtr<class FParkColdStorage> ColdStorage;
  TMap<uint64,TSharedPtr<class FParkColdStorage>> PageColdStorage;
  TSet<uint64> ViewedColdSpecimens;
+ TSharedPtr<class FParkEmployeeBadge> EmployeeBadge;
  TSharedPtr<class FParkWoodSign> WoodSign;
  uint64 WoodSignKey=MAX_uint64;
  TSharedPtr<class FParkRaptors> RaptorView;

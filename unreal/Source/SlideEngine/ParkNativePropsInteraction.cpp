@@ -13,14 +13,14 @@ void ASlideGameMode::TestNativeProps() {
  auto Check=[](bool OK,const TCHAR* What){UE_LOG(LogTemp,Display,TEXT("NativePropsTest: %s=%s"),What,OK?TEXT("PASS"):TEXT("FAIL"));if(!OK)FPlatformMisc::RequestExitWithStatus(false,1);return OK;};
  auto Capture=[this](const TCHAR* Name){FTimerHandle Handle;const FString Path=FPaths::ProjectSavedDir()/TEXT("Screenshots")/Name;GetWorld()->GetTimerManager().SetTimer(Handle,[Path]{FScreenshotRequest::RequestScreenshot(Path,true,false);},.35f,false);};
  if(SmokeStep==0&&Elapsed>1) {
-  if(!Check(GateSlide==0&&MapPins[2].Code==TEXT("ENC-04"),TEXT("gate first and raptor pen third")))return;
+  if(!Check(GateSlide==3&&MapPins[0].Code==TEXT("RC")&&MapPins[2].Code==TEXT("ENC-04"),TEXT("research center first, gate fourth and raptor pen third")))return;
   GoTo(0);SmokeStep=1;
  } else if(SmokeStep==1&&MapPhase==EMapPhase::Slide) {
-  if(!Check(WoodSign.IsValid()&&UsesPhysicalProp(),TEXT("h1 is a physical wooden direction sign")))return;
-  Capture(TEXT("props-directions.png"));Travel=0;SmokeStep=2;
+  if(!Check(EmployeeBadge.IsValid()&&!WoodSign.IsValid()&&UsesPhysicalProp(),TEXT("opening slide is an employee badge")))return;
+  Capture(TEXT("props-employee-badge.png"));Travel=0;SmokeStep=2;
  } else if(SmokeStep==2&&Travel>.5f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=3;}
  else if(SmokeStep==3&&Travel>1&&ColdStorage.IsValid()) {
-  if(!Check(ColdStorage->Specimens.Num()==4&&ColdStorage->Selected==-1&&WoodSign.IsValid(),TEXT("cryogenic rack has four authored vials")))return;
+  if(!Check(ColdStorage->Specimens.Num()==4&&ColdStorage->Selected==-1&&EmployeeBadge.IsValid(),TEXT("cryogenic rack has four authored vials")))return;
   Capture(TEXT("props-cold-overview.png"));Travel=0;SmokeStep=4;
  } else if(SmokeStep==4&&Travel>.5f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=5;}
  else if(SmokeStep==5&&ColdStorage->Ready()) {

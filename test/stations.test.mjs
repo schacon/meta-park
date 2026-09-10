@@ -24,7 +24,7 @@ test('station pages preserve camera layout, extract titles and sort filenames nu
  const deck=await compileStations(dir,layout,{castDirectory:join(dir,'casts')});
  assert.equal(deck.slides.length,8);
  const station=deck.slides[0];
- assert.equal(station.card.code,'GATE');assert.equal(station.id,'scale');assert.equal(station.title,'Station 1');
+ assert.equal(station.card.code,'RC');assert.equal(station.id,'storage');assert.equal(station.title,'Station 1');
  assert.deepEqual(station.steps.map(p=>p.id),['01-intro','2-example','10-later']);
  assert.deepEqual(station.steps[0].blocks,[{kind:'li',text:'First point'},{kind:'li',text:'Second point'}]);
  assert.deepEqual(station.steps[1].component,{type:'Computer',prompt:'git meta get commit:HEAD owner',output:'s.chacon'});

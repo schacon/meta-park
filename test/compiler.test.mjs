@@ -61,7 +61,7 @@ test('every slide has one numbered destination, including all three facilities',
  const {readFile}=await import('node:fs/promises');
  const layout=JSON.parse(await readFile('examples/git-meta/layout.json','utf8'));
  const out=await compileDeck('examples/git-meta/deck.mdx','examples/git-meta/layout.json');
- assert.deepEqual(out.slides.map(s=>s.card.code),['ENC-01','ENC-02','ENC-03','ENC-04','VC','HELI','GATE','BAR']);
+ assert.deepEqual(out.slides.map(s=>s.card.code),['ENC-01','ENC-02','ENC-03','ENC-04','RC','HELI','GATE','BAR']);
  assert.equal(new Set(out.slides.map(s=>s.card.slide)).size,8);
  assert.equal(new Set(out.slides.map(s=>JSON.stringify(s.card.view.eye))).size,8);
  assert.equal(out.slides[7].card.hidden,true);

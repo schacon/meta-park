@@ -7,7 +7,7 @@ const dir=await mkdtemp(join(tmpdir(),'park-props-test-'));
 try {
  for(let i=1;i<=8;i++) {
   const folder=join(dir,String(i).padStart(2,'0'));await mkdir(folder);
-  await writeFile(join(folder,'01-intro.mdx'),i===3?'<RaptorWarning>Problems with existing solutions</RaptorWarning>':`# Station ${i}`);
+  await writeFile(join(folder,'01-intro.mdx'),i===1?'# Git Meta\n\nNew metadata approach for Git':i===3?'<RaptorWarning>Problems with existing solutions</RaptorWarning>':`# Station ${i}`);
  }
  await copyFile('examples/git-meta/cold-storage.mdx',join(dir,'01/02-cold-storage.mdx'));
  await copyFile('examples/git-meta/raptors.mdx',join(dir,'03/02-raptors.mdx'));

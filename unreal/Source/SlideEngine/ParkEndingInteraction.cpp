@@ -8,7 +8,7 @@ void ASlideGameMode::TestEnding() {
  auto Check=[](bool OK,const TCHAR* What){UE_LOG(LogTemp,Display,TEXT("EndingTest: %s=%s"),What,OK?TEXT("PASS"):TEXT("FAIL"));if(!OK)FPlatformMisc::RequestExitWithStatus(false,1);return OK;};
  auto Capture=[this](const TCHAR* Name){FTimerHandle Handle;const FString Path=FPaths::ProjectSavedDir()/TEXT("Screenshots")/Name;GetWorld()->GetTimerManager().SetTimer(Handle,[Path]{FScreenshotRequest::RequestScreenshot(Path,true,false);},.35f,false);};
  if(SmokeStep==0&&Elapsed>1){
-  if(!Check(MapPins[1].Code==TEXT("HELI")&&MapPins[6].Code==TEXT("ENC-01"),TEXT("helipad second and brontosaurus seventh")))return;
+  if(!Check(MapPins[0].Code==TEXT("RC")&&MapPins[1].Code==TEXT("HELI")&&GateSlide==3&&MapPins[5].Code==TEXT("ENC-02")&&MapPins[6].Code==TEXT("ENC-01"),TEXT("helipad second and brontosaurus seventh")))return;
   GoTo(6);SmokeStep=1;
  } else if(SmokeStep==1&&MapPhase==EMapPhase::Slide){HandleParkKey(EKeys::Right);SmokeStep=2;}
  else if(SmokeStep==2&&MapPhase==EMapPhase::Overview){

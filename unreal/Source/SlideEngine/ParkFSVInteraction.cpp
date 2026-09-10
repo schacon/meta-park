@@ -11,7 +11,7 @@ void ASlideGameMode::TestFSV() {
  auto Key=[](FKey K){FSlateApplication::Get().ProcessKeyDownEvent(FKeyEvent(K,FModifierKeysState(),0,false,0,0));FSlateApplication::Get().ProcessKeyUpEvent(FKeyEvent(K,FModifierKeysState(),0,false,0,0));};
  auto Capture=[](const TCHAR* Name){FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots")/Name,true,false);};
  if(SmokeStep==0&&Elapsed>1) {
-  if(!Check(GateSlide==0,TEXT("station 01 is the main gate")))return;GoTo(1);SmokeStep=1;
+  if(!Check(GateSlide==3,TEXT("station 04 is the main gate")))return;GoTo(1);SmokeStep=1;
  } else if(SmokeStep==1&&MapPhase==EMapPhase::Slide) {
   bool TitleOnly=false;StationSteps[Index][0]->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
   if(!Check(TitleOnly,TEXT("single h1 uses the full sign layout")))return;

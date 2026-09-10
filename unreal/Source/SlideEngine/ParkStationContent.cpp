@@ -3,6 +3,7 @@
 #include "ParkFSV.h"
 #include "ParkColdStorage.h"
 #include "ParkWoodSign.h"
+#include "ParkEmployeeBadge.h"
 #include "ParkRaptors.h"
 #include "Dom/JsonObject.h"
 #include "Camera/CameraActor.h"
@@ -78,7 +79,7 @@ bool ASlideGameMode::IsComponentPage() const {
 }
 void ASlideGameMode::ResetStationPage() {
  PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
- PageColdStorage.Empty();ColdStorage.Reset();WoodSign.Reset();WoodSignKey=MAX_uint64;RaptorView.Reset();RaptorKey=MAX_uint64;
+ PageColdStorage.Empty();ColdStorage.Reset();EmployeeBadge.Reset();WoodSign.Reset();WoodSignKey=MAX_uint64;RaptorView.Reset();RaptorKey=MAX_uint64;
  PageCasts.Empty();CastPlayer.Reset();PageFSVs.Empty();FSV.Reset();
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
@@ -164,8 +165,13 @@ void ASlideGameMode::TickStationPage(float Delta) {
  const int32 PreviousSign=StationSignPage(Index,PageIndex);
  bool KeepDirection=false;
  if(Type==TEXT("ColdStorage")&&PreviousSign>=0)StationSteps[Index][PreviousSign]->TryGetBoolField(TEXT("titleOnly"),KeepDirection);
+ const bool Badge=Showing&&Index==0&&PreviousSign==0;
+ if(Badge) {
+  if(!EmployeeBadge.IsValid())EmployeeBadge=MakeShared<FParkEmployeeBadge>(GetWorld(),StationSteps[0][0],LoginLogo);
+  EmployeeBadge->Update(Camera,Panels[Index].RaisedPosition);
+ } else EmployeeBadge.Reset();
  const uint64 SignKey=(uint64(Index)<<32)|uint32(KeepDirection?PreviousSign:PageIndex);
- if(TitleOnly||Warning||KeepDirection) {
+ if(!Badge&&(TitleOnly||Warning||KeepDirection)) {
   if(WoodSignKey!=SignKey){WoodSign=MakeShared<FParkWoodSign>(GetWorld(),Warning?Prop->GetStringField(TEXT("title")):StationSteps[Index][KeepDirection?PreviousSign:PageIndex]->GetStringField(TEXT("title")),Warning);WoodSignKey=SignKey;}
  } else {WoodSign.Reset();WoodSignKey=MAX_uint64;}
  if(WoodSign.IsValid())WoodSign->Update(Elapsed,Camera,Index==GateSlide?GateScreenPosition(CardExpansion):Panels[Index].RaisedPosition,CameraStops[Index],CardExpansion);
@@ -182,7 +188,7 @@ bool ASlideGameMode::UsesPhysicalProp() const {
  const auto Step=StationSteps[Index][PageIndex];bool TitleOnly=false;
  const int32 SignPage=StationSignPage(Index,PageIndex);if(SignPage>=0)StationSteps[Index][SignPage]->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
  const TSharedPtr<FJsonObject>* C;
- return TitleOnly||(Step->TryGetObjectField(TEXT("component"),C)&&((*C)->GetStringField(TEXT("type"))==TEXT("RaptorWarning")||(*C)->GetStringField(TEXT("type"))==TEXT("Raptors")));
+ return (Index==0&&SignPage==0)||TitleOnly||(Step->TryGetObjectField(TEXT("component"),C)&&((*C)->GetStringField(TEXT("type"))==TEXT("RaptorWarning")||(*C)->GetStringField(TEXT("type"))==TEXT("Raptors")));
 
 }
 
