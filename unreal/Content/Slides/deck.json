@@ -52,7 +52,7 @@
   ],
   "slides": [
     {
-      "id": "scale",
+      "id": "storage",
       "title": "Git Meta",
       "accent": "#563d72",
       "blocks": [
@@ -68,46 +68,45 @@
         3600
       ],
       "card": {
-        "slide": "scale",
-        "code": "GATE",
-        "label": "Main Gate",
-        "status": "LOCKED",
+        "slide": "storage",
+        "code": "RC",
+        "label": "Research Center",
+        "status": "OPEN",
         "position": [
           0,
-          -10500,
-          1250
+          -5100,
+          650
         ],
         "view": {
           "anchor": [
-            0,
-            -9600,
-            208
+            -660,
+            -7171.2,
+            208.00813522526084
           ],
           "eye": [
-            0,
-            -15800,
-            1450
+            -660,
+            -8700,
+            1650
           ],
-          "signYaw": -90,
-          "signHeight": 1042,
+          "signYaw": -83,
+          "signHeight": 1025.99,
           "path": [
             [
-              12000,
-              -30000,
-              22000
+              13000,
+              -25000,
+              26000
             ],
             [
-              1800,
-              -17000,
-              6900
+              -2460,
+              -12200,
+              6150
             ]
           ],
           "look": [
-            0,
-            -10500,
-            2150
-          ],
-          "frameWidth": 5800
+            -660,
+            -5760,
+            850
+          ]
         }
       },
       "habitat": "tyrannosaurus",
@@ -399,7 +398,7 @@
       ]
     },
     {
-      "id": "context",
+      "id": "scale",
       "title": "git-meta intro",
       "accent": "#563d72",
       "blocks": [
@@ -431,45 +430,46 @@
         3900
       ],
       "card": {
-        "slide": "context",
-        "code": "ENC-02",
-        "label": "T. rex",
-        "status": "FEED DUE",
+        "slide": "scale",
+        "code": "GATE",
+        "label": "Main Gate",
+        "status": "LOCKED",
         "position": [
-          -6000,
-          -400,
-          1000
+          0,
+          -10500,
+          1250
         ],
         "view": {
           "anchor": [
-            -6000,
-            -4170,
+            0,
+            -9600,
             208
           ],
           "eye": [
-            -6000,
-            -6200,
-            2300
+            0,
+            -15800,
+            1450
           ],
-          "signYaw": -83,
-          "signHeight": 1812,
+          "signYaw": -90,
+          "signHeight": 1042,
           "path": [
             [
-              -19000,
-              -24000,
-              32000
+              12000,
+              -30000,
+              22000
             ],
             [
-              -7800,
-              -9700,
-              6800
+              1800,
+              -17000,
+              6900
             ]
           ],
           "look": [
-            -6000,
-            -400,
-            1500
-          ]
+            0,
+            -10500,
+            2150
+          ],
+          "frameWidth": 5800
         }
       },
       "habitat": "brachiosaurus",
@@ -6586,7 +6586,7 @@
       ]
     },
     {
-      "id": "storage",
+      "id": "context",
       "title": "exchange",
       "accent": "#563d72",
       "blocks": [
@@ -6610,44 +6610,44 @@
         4150
       ],
       "card": {
-        "slide": "storage",
-        "code": "VC",
-        "label": "Visitor Centre",
-        "status": "OPEN",
+        "slide": "context",
+        "code": "ENC-02",
+        "label": "T. rex",
+        "status": "FEED DUE",
         "position": [
-          0,
-          -5100,
-          650
+          -6000,
+          -400,
+          1000
         ],
         "view": {
           "anchor": [
-            -660,
-            -7171.2,
-            208.00813522526084
+            -6000,
+            -4170,
+            208
           ],
           "eye": [
-            -660,
-            -8700,
-            1650
+            -6000,
+            -6200,
+            2300
           ],
           "signYaw": -83,
-          "signHeight": 1025.99,
+          "signHeight": 1812,
           "path": [
             [
-              13000,
-              -25000,
-              26000
+              -19000,
+              -24000,
+              32000
             ],
             [
-              -2460,
-              -12200,
-              6150
+              -7800,
+              -9700,
+              6800
             ]
           ],
           "look": [
-            -660,
-            -5760,
-            850
+            -6000,
+            -400,
+            1500
           ]
         }
       },
