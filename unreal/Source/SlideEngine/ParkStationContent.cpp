@@ -173,7 +173,7 @@ void ASlideGameMode::TickStationPage(float Delta) {
  } else EmployeeBadge.Reset();
  const uint64 SignKey=(uint64(Index)<<32)|uint32(KeepDirection?PreviousSign:PageIndex);
  if(!Badge&&(TitleOnly||Warning||KeepDirection)) {
-  if(WoodSignKey!=SignKey){WoodSign=MakeShared<FParkWoodSign>(GetWorld(),Warning?Prop->GetStringField(TEXT("title")):StationSteps[Index][KeepDirection?PreviousSign:PageIndex]->GetStringField(TEXT("title")),Warning);WoodSignKey=SignKey;}
+  if(WoodSignKey!=SignKey){WoodSign=MakeShared<FParkWoodSign>(GetWorld(),Warning?Prop->GetStringField(TEXT("title")):StationSteps[Index][KeepDirection?PreviousSign:PageIndex]->GetStringField(TEXT("title")),Warning,MapPins[Index].Code==TEXT("HELI"));WoodSignKey=SignKey;}
  } else {WoodSign.Reset();WoodSignKey=MAX_uint64;}
  if(WoodSign.IsValid())WoodSign->Update(Elapsed,Camera,Index==GateSlide?GateScreenPosition(CardExpansion):Panels[Index].RaisedPosition,CameraStops[Index],CardExpansion);
  if(Type==TEXT("Raptors")) {

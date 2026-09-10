@@ -156,7 +156,7 @@ An empty or missing station is a build error.
 Ordinary Markdown becomes a page on the existing physical sign. The first
 heading supplies the page title. A page containing only a single H1 becomes a
 physical wooden direction sign with large painted lettering, an arrow-shaped end,
-and supporting posts. The sign stays behind ColdStorage demonstrations. Arrows replace the current page with a short
+and supporting posts. At the helipad, it becomes a blue aviation placard with a helicopter pictogram and a level, front-facing camera. The sign stays behind ColdStorage demonstrations. Arrows replace the current page with a short
 forward or backward swipe, using the full sign without moving the camera. Dense
 text scales down to fit; pages are not automatically split. The header updates
 the station name and page number on each step.

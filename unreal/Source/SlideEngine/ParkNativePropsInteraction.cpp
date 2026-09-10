@@ -62,6 +62,13 @@ void ASlideGameMode::TestNativeProps() {
  } else if(SmokeStep==21&&MapPhase==EMapPhase::Overview) {
   if(!Check(!RaptorView.IsValid()&&!WoodSign.IsValid()&&!ColdStorage.IsValid(),TEXT("leaving station removes all native props")))return;
   if(!Check(IslandScene::ValidateWandering()&&IslandScene::ValidateArticulatedGaits(),TEXT("four raptors stay inside the pen without intersecting")))return;
+  GoTo(1);SmokeStep=22;
+ } else if(SmokeStep==22&&MapPhase==EMapPhase::Slide) {
+  if(!Check(WoodSign.IsValid()&&MapPins[1].Code==TEXT("HELI")&&FMath::Abs(Camera->GetActorRotation().Pitch)<1,TEXT("helipad sign has a level front-facing camera")))return;
+  Capture(TEXT("props-helipad-rising.png"));Travel=0;SmokeStep=23;
+ } else if(SmokeStep==23&&Travel>1.1f) {
+  Capture(TEXT("props-helipad-sign.png"));Travel=0;SmokeStep=24;
+ } else if(SmokeStep==24&&Travel>.6f) {
   ResetPresentationSession();
   if(!Check(ViewedRaptors.IsEmpty()&&ViewedColdSpecimens.IsEmpty()&&PowerPercent()==100,TEXT("logout resets component progress")))return;
   FPlatformMisc::RequestExit(false);
