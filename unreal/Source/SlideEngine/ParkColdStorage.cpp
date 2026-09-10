@@ -27,6 +27,10 @@ FParkColdStorage::FParkColdStorage(UWorld* World,TSharedPtr<FJsonObject> Compone
   M->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,*FString::Printf(TEXT("/Game/Models/Park/%s.%s"),Name,Name)));check(M->GetStaticMesh());
   M->SetCollisionEnabled(ECollisionEnabled::NoCollision);M->SetRelativeLocation(At);M->RegisterComponent();return M;
  };
+ // A depth-tested translucent scrim sits behind the demonstration hardware.
+ // It dims the park and retained badge without dimming the vial or its text.
+ Backdrop=NewObject<UWidgetComponent>(A);A->AddInstanceComponent(Backdrop);Backdrop->SetupAttachment(Root);Backdrop->SetWidgetSpace(EWidgetSpace::World);Backdrop->SetDrawSize(FVector2D(16,16));Backdrop->SetBlendMode(EWidgetBlendMode::Transparent);Backdrop->SetBackgroundColor(FLinearColor::Transparent);Backdrop->SetTwoSided(true);Backdrop->SetCollisionEnabled(ECollisionEnabled::NoCollision);Backdrop->SetCastShadow(false);Backdrop->SetMobility(EComponentMobility::Movable);Backdrop->RegisterComponent();
+ Backdrop->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor_Lambda([this]{return FLinearColor(0,0,0,.92f*Reveal*Reveal*(3-2*Reveal));}).Padding(0));
  auto* Body=Mesh(TEXT("SM_ColdBody"),Root,FVector(0,-165,-181));Body->SetRelativeScale3D(FVector(1,1,1.7));
  Rack=NewObject<USceneComponent>(A);A->AddInstanceComponent(Rack);Rack->SetupAttachment(Root);Rack->SetMobility(EComponentMobility::Movable);Rack->SetRelativeLocation(FVector(0,-165,252));Rack->RegisterComponent();
  Mesh(TEXT("SM_ColdRack"),Rack,FVector::ZeroVector);
@@ -91,4 +95,7 @@ void FParkColdStorage::Update(float Delta,ACameraActor* Camera,bool Visible) {
  const FVector Center(0,25,285);
  const FVector Position=Camera->GetActorLocation()+Camera->GetActorForwardVector()*Distance-Rotation.RotateVector(Center*Scale)-Camera->GetActorUpVector()*((1-Ease)*1100*TY);
  Actor->SetActorTransform(FTransform(Rotation,Position,FVector(Scale)));
+ const float BackdropDistance=Distance+200*Scale;
+ Backdrop->SetWorldLocationAndRotation(Camera->GetActorLocation()+Camera->GetActorForwardVector()*BackdropDistance,Rotation*FRotator(0,180,0).Quaternion());
+ Backdrop->SetWorldScale3D(FVector(1,BackdropDistance*TX*2.1f/16,BackdropDistance*TY*2.1f/16));
 }

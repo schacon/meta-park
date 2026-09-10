@@ -10,6 +10,7 @@ struct FColdSpecimen {FString Species,Description,Label;};
 class FParkColdStorage {
  TWeakObjectPtr<AActor> Actor;
  USceneComponent* Rack=nullptr;
+ class UWidgetComponent* Backdrop=nullptr;
  UStaticMeshComponent* Lid=nullptr;
  TArray<USceneComponent*> Vials;
  float Reveal=0,Angle=0;
