@@ -34,6 +34,7 @@ private:
  void TestCast();
  void TestFSV();
  void TestNativeProps();
+ void TestEnding();
  TSharedPtr<class FParkColdStorage> ColdStorage;
  TMap<uint64,TSharedPtr<class FParkColdStorage>> PageColdStorage;
  TSet<uint64> ViewedColdSpecimens;
@@ -70,6 +71,9 @@ private:
  FSlateBrush ParkSnapshotBrush;
  TSharedPtr<class SButton> MapDockButton,CastPauseButton,CastReplayButton;
  bool bCommandDesktop=false,bDesktopFSV=false;
+ bool bConfirmFinish=false,bQuestions=false,bTimerPausedBeforeQuestions=false;
+ void ShowQuestions();
+ TSharedRef<SWidget> BuildFinishPrompt();
  TSharedPtr<class FParkFSV> FSV;
  TMap<uint64,TSharedPtr<class FParkFSV>> PageFSVs;
  TSet<uint64> ViewedFSVSystems;

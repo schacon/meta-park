@@ -137,7 +137,8 @@ void ASlideGameMode::CreateDesktopHUD() {
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SBorder).BorderImage(Brush).BorderBackgroundColor(Ink).Padding(FMargin(10,5))
       [SNew(STextBlock).Text(FText::FromString(TEXT("s.chacon"))).Font(Font(18)).ColorAndOpacity(FLinearColor(.94,.94,.9))]]
     ]]]]
- +SOverlay::Slot()[Scanlines];
+ +SOverlay::Slot()[Scanlines]
+ +SOverlay::Slot()[BuildFinishPrompt()];
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(DesktopHUD.ToSharedRef(),10); SetMouseMode(false);
 }
 void ASlideGameMode::EndPlay(const EEndPlayReason::Type Reason) {

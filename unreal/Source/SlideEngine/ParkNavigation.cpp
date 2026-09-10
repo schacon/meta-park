@@ -28,6 +28,7 @@ FVector ASlideGameMode::GateScreenPosition(float Progress) const {
 float ASlideGameMode::ParkFocusWidth() const { return FocusFrameWidths[Index]; }
 FVector ASlideGameMode::ParkFocusEye() const { return CameraStops[Index]; }
 int32 ASlideGameMode::NextVisibleSlide(int32 Current,int32 Direction) const {
+ if(Direction>0&&Current==Views.Num()-2&&HiddenSlides.Contains(Current+1))return Current+1;
  for(int32 Step=0;Step<Views.Num();Step++) {
   Current=(Current+Direction+Views.Num())%Views.Num();
   if(!HiddenSlides.Contains(Current))return Current;
@@ -57,6 +58,8 @@ void ASlideGameMode::BeginMapLeg(bool ZoomIn) {
 }
 void ASlideGameMode::HandleParkKey(const FKey& Key) {
  if(bLocked){if(Key==EKeys::Enter)StartLogin();return;}
+ if(bConfirmFinish){if(Key==EKeys::Enter||Key==EKeys::Y)ShowQuestions();else if(Key==EKeys::Escape||Key==EKeys::N)bConfirmFinish=false;return;}
+ if(bQuestions){if(Key==EKeys::Escape)LogoutToLogin();return;}
  if(DesktopMinimize>0&&DesktopMinimize<1)return;
  if(bCommandDesktop&&!bDesktopFSV&&Key==EKeys::SpaceBar){if(CastPlayer.IsValid())CastPlayer->TogglePlayback();return;}
  if(Key==EKeys::F){ToggleFreeFlight();return;}
@@ -73,6 +76,7 @@ void ASlideGameMode::HandleParkKey(const FKey& Key) {
  const bool Backward=Key==EKeys::Left||Key==EKeys::PageUp;
  if(Forward||Backward) {
   if(MapPhase==EMapPhase::Slide&&AdvancePage(Forward?1:-1))return;
+  if(Forward&&Current==Views.Num()-1&&(MapPhase==EMapPhase::Slide||MapPhase==EMapPhase::Overview)){bConfirmFinish=true;SetMouseMode(false);return;}
   const int32 Next=Forward?(!bTourStarted?0:NextVisibleSlide(Current,1)):NextVisibleSlide(Current,-1);
   if(MapPhase==EMapPhase::Overview)GoTo(Next);
   // A second explicit press during the return can choose the next stop,
@@ -102,7 +106,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(!Smoke&&!bEditingTime) {
   const FKey Keys[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight,
    EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight,
-   EKeys::Right,EKeys::Left,EKeys::SpaceBar,EKeys::PageDown,EKeys::PageUp,EKeys::Escape,EKeys::O,EKeys::Home,EKeys::P,EKeys::F};
+   EKeys::Right,EKeys::Left,EKeys::SpaceBar,EKeys::PageDown,EKeys::PageUp,EKeys::Escape,EKeys::O,EKeys::Home,EKeys::P,EKeys::F,EKeys::Enter,EKeys::Y,EKeys::N};
   for(const FKey& Key:Keys)if(PC->WasInputKeyJustPressed(Key))HandleParkKey(Key);
  }
  Travel+=Delta;
@@ -170,6 +174,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(FParse::Param(FCommandLine::Get(),TEXT("LoginTest"))){TestLogin();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("GateTest"))){TestGate();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("EndingTest"))){TestEnding();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("NativePropsTest"))){TestNativeProps();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FSVTest"))){TestFSV();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("CastTest"))){TestCast();return;}
@@ -307,7 +312,7 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  else if(SmokeStep==12&&Travel>.2f){HandleParkKey(EKeys::Eight);SmokeStep=13;}
  else if(SmokeStep==13&&MapPhase==EMapPhase::Slide&&Travel>.8f) {
   bool Good=Index==7&&HiddenSlides.Contains(7)&&MapPins.Num()==7&&CardExpansion==1&&Panels[7].Reveal==1;
-  Good&=NextVisibleSlide(6,1)==0&&NextVisibleSlide(0,-1)==6;
+  Good&=NextVisibleSlide(6,1)==7&&NextVisibleSlide(0,-1)==6;
   Good&=Camera->GetActorLocation().Equals(CameraStops[7],1.f);
   const FVector2D Size=DesktopHUD->GetCachedGeometry().GetLocalSize();int32 W,H;PC->GetViewportSize(W,H);
   for(float Y:{-740.f,740.f})for(float Z:{-470.f,470.f}) {
