@@ -52,41 +52,13 @@
   ],
   "slides": [
     {
-      "id": "opening",
-      "title": "The Problem",
+      "id": "scale",
+      "title": "Git Meta",
       "accent": "#563d72",
       "blocks": [
         {
-          "kind": "h2",
-          "text": "New Metadata Use Cases"
-        },
-        {
-          "kind": "li",
-          "text": "trust (identity)"
-        },
-        {
-          "kind": "li",
-          "text": "provenance (prompts)"
-        },
-        {
-          "kind": "li",
-          "text": "review (signoffs)"
-        },
-        {
-          "kind": "li",
-          "text": "versions (evolog)"
-        },
-        {
-          "kind": "li",
-          "text": "licensing"
-        },
-        {
-          "kind": "li",
-          "text": "testing"
-        },
-        {
-          "kind": "li",
-          "text": "binary (hints, locks)"
+          "kind": "p",
+          "text": "New metadata format for Git projects"
         }
       ],
       "models": [],
@@ -94,6 +66,113 @@
         -6000,
         -400,
         3600
+      ],
+      "card": {
+        "slide": "scale",
+        "code": "GATE",
+        "label": "Main Gate",
+        "status": "LOCKED",
+        "position": [
+          0,
+          -10500,
+          1250
+        ],
+        "view": {
+          "anchor": [
+            0,
+            -9600,
+            208
+          ],
+          "eye": [
+            0,
+            -15800,
+            1450
+          ],
+          "signYaw": -90,
+          "signHeight": 1042,
+          "path": [
+            [
+              12000,
+              -30000,
+              22000
+            ],
+            [
+              1800,
+              -17000,
+              6900
+            ]
+          ],
+          "look": [
+            0,
+            -10500,
+            2150
+          ],
+          "frameWidth": 5800
+        }
+      },
+      "habitat": "tyrannosaurus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 0.8,
+      "source": "slides/01/01-overview.mdx",
+      "kind": "slide",
+      "component": null,
+      "steps": [
+        {
+          "id": "01-overview",
+          "source": "slides/01/01-overview.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "Git Meta",
+          "blocks": [
+            {
+              "kind": "p",
+              "text": "New metadata format for Git projects"
+            }
+          ],
+          "models": []
+        },
+        {
+          "id": "02-cold-storage",
+          "source": "slides/01/02-cold-storage.mdx",
+          "kind": "component",
+          "component": {
+            "type": "ColdStorage",
+            "canisters": [
+              {
+                "species": "granularity",
+                "description": "more fine grained metadata targets (branches, paths, etc)"
+              },
+              {
+                "species": "performance",
+                "description": "fast query and mutation for local metadata, scaling to millions of keys"
+              },
+              {
+                "species": "exchange",
+                "description": "exchange metadata using existing Git protocols"
+              },
+              {
+                "species": "merging",
+                "description": "CRDT-like merge behavior"
+              }
+            ]
+          },
+          "title": "ColdStorage",
+          "blocks": [],
+          "models": []
+        }
+      ]
+    },
+    {
+      "id": "opening",
+      "title": "New Metadata Use Cases",
+      "accent": "#563d72",
+      "blocks": [],
+      "models": [],
+      "position": [
+        4900,
+        -4300,
+        4150
       ],
       "card": {
         "slide": "opening",
@@ -137,72 +216,303 @@
           ]
         }
       },
-      "habitat": "tyrannosaurus",
+      "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 0.8,
-      "source": "slides/01/01-problem.mdx",
+      "source": "slides/02/01-new-use-cases.mdx",
+      "kind": "slide",
+      "component": null,
+      "titleOnly": true,
+      "steps": [
+        {
+          "id": "01-new-use-cases",
+          "source": "slides/02/01-new-use-cases.mdx",
+          "kind": "slide",
+          "component": null,
+          "title": "New Metadata Use Cases",
+          "titleOnly": true,
+          "blocks": [],
+          "models": []
+        },
+        {
+          "id": "02-use-case-list",
+          "source": "slides/02/02-use-case-list.mdx",
+          "kind": "component",
+          "component": {
+            "type": "FSV",
+            "title": "New Metadata Use Cases",
+            "systems": [
+              {
+                "label": "trust",
+                "meta": "identity, signoffs, attestations"
+              },
+              {
+                "label": "provenance",
+                "meta": "generated code, prompts, transcripts"
+              },
+              {
+                "label": "review",
+                "meta": "comments, signoffs, discussions"
+              },
+              {
+                "label": "versions",
+                "meta": "evolog, history, lineage"
+              },
+              {
+                "label": "licensing",
+                "meta": "terms, restrictions, obligations"
+              },
+              {
+                "label": "testing",
+                "meta": "results, coverage, attestations"
+              },
+              {
+                "label": "binary",
+                "meta": "hints, locks, ownership"
+              }
+            ]
+          },
+          "title": "FSV",
+          "blocks": [],
+          "models": []
+        }
+      ]
+    },
+    {
+      "id": "authoring",
+      "title": "RaptorWarning",
+      "accent": "#563d72",
+      "blocks": [],
+      "models": [],
+      "position": [
+        -5700,
+        4800,
+        4100
+      ],
+      "card": {
+        "slide": "authoring",
+        "code": "ENC-04",
+        "label": "Velociraptor pen",
+        "status": "OK",
+        "position": [
+          -5700,
+          4800,
+          1500
+        ],
+        "view": {
+          "anchor": [
+            -5700,
+            1160,
+            408
+          ],
+          "eye": [
+            -5700,
+            -800,
+            2900
+          ],
+          "signYaw": -83,
+          "signHeight": 2177,
+          "path": [
+            [
+              -20000,
+              -14000,
+              40000
+            ],
+            [
+              -7500,
+              -4300,
+              7400
+            ]
+          ],
+          "look": [
+            -5700,
+            4800,
+            1550
+          ]
+        }
+      },
+      "habitat": "velociraptor",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 0.8,
+      "source": "slides/03/01-problems.mdx",
+      "kind": "component",
+      "component": {
+        "type": "RaptorWarning",
+        "title": "Problems with existing solutions"
+      },
+      "steps": [
+        {
+          "id": "01-problems",
+          "source": "slides/03/01-problems.mdx",
+          "kind": "component",
+          "component": {
+            "type": "RaptorWarning",
+            "title": "Problems with existing solutions"
+          },
+          "title": "RaptorWarning",
+          "blocks": [],
+          "models": []
+        },
+        {
+          "id": "02-existing",
+          "source": "slides/03/02-existing.mdx",
+          "kind": "component",
+          "component": {
+            "type": "Raptors",
+            "raptors": [
+              {
+                "label": "commit message / trailers",
+                "problems": [
+                  "limited control over metadata granularity and mutability",
+                  "poor support for many independently addressable fields on the same\nobject"
+                ]
+              },
+              {
+                "label": "commit headers",
+                "problems": [
+                  "limited control over metadata granularity and mutability",
+                  "poor scaling characteristics for very large metadata sets"
+                ]
+              },
+              {
+                "label": "CODEOWNERS type files",
+                "problems": [
+                  "file pollution when metadata has to live in the working tree",
+                  "poor support for many independently addressable fields on the same\nobject"
+                ]
+              },
+              {
+                "label": "git notes",
+                "problems": [
+                  "awkward merge behavior for structured data",
+                  "poor scaling characteristics for very large metadata sets"
+                ]
+              }
+            ]
+          },
+          "title": "Raptors",
+          "blocks": [],
+          "models": []
+        }
+      ]
+    },
+    {
+      "id": "context",
+      "title": "git-meta intro",
+      "accent": "#563d72",
+      "blocks": [
+        {
+          "kind": "p",
+          "text": "a git notes-like key value system, but much more flexible."
+        },
+        {
+          "kind": "li",
+          "text": "fine-grained targets"
+        },
+        {
+          "kind": "li",
+          "text": "namespaced keys"
+        },
+        {
+          "kind": "li",
+          "text": "crdt-shaped data types"
+        },
+        {
+          "kind": "p",
+          "text": "getting and setting example"
+        }
+      ],
+      "models": [],
+      "position": [
+        5400,
+        2300,
+        3900
+      ],
+      "card": {
+        "slide": "context",
+        "code": "ENC-02",
+        "label": "T. rex",
+        "status": "FEED DUE",
+        "position": [
+          -6000,
+          -400,
+          1000
+        ],
+        "view": {
+          "anchor": [
+            -6000,
+            -4170,
+            208
+          ],
+          "eye": [
+            -6000,
+            -6200,
+            2300
+          ],
+          "signYaw": -83,
+          "signHeight": 1812,
+          "path": [
+            [
+              -19000,
+              -24000,
+              32000
+            ],
+            [
+              -7800,
+              -9700,
+              6800
+            ]
+          ],
+          "look": [
+            -6000,
+            -400,
+            1500
+          ]
+        }
+      },
+      "habitat": "brachiosaurus",
+      "yaw": -90,
+      "cameraDistance": 2050,
+      "transition": 0.8,
+      "source": "slides/04/01-intro.mdx",
       "kind": "slide",
       "component": null,
       "steps": [
         {
-          "id": "01-problem",
-          "source": "slides/01/01-problem.mdx",
+          "id": "01-intro",
+          "source": "slides/04/01-intro.mdx",
           "kind": "slide",
           "component": null,
-          "title": "The Problem",
+          "title": "git-meta intro",
           "blocks": [
             {
-              "kind": "h2",
-              "text": "New Metadata Use Cases"
+              "kind": "p",
+              "text": "a git notes-like key value system, but much more flexible."
             },
             {
               "kind": "li",
-              "text": "trust (identity)"
+              "text": "fine-grained targets"
             },
             {
               "kind": "li",
-              "text": "provenance (prompts)"
+              "text": "namespaced keys"
             },
             {
               "kind": "li",
-              "text": "review (signoffs)"
+              "text": "crdt-shaped data types"
             },
             {
-              "kind": "li",
-              "text": "versions (evolog)"
-            },
-            {
-              "kind": "li",
-              "text": "licensing"
-            },
-            {
-              "kind": "li",
-              "text": "testing"
-            },
-            {
-              "kind": "li",
-              "text": "binary (hints, locks)"
+              "kind": "p",
+              "text": "getting and setting example"
             }
           ],
           "models": []
         },
         {
-          "id": "02-example",
-          "source": "slides/01/02-example.mdx",
-          "kind": "component",
-          "component": {
-            "type": "Computer",
-            "prompt": "git meta set",
-            "output": "OK"
-          },
-          "title": "Computer",
-          "blocks": [],
-          "models": []
-        },
-        {
           "id": "03-command-line",
-          "source": "slides/01/03-command-line.mdx",
+          "source": "slides/04/03-command-line.mdx",
           "kind": "component",
           "component": {
             "type": "CommandLine",
@@ -6173,184 +6483,24 @@
       ]
     },
     {
-      "id": "context",
-      "title": "Metadata Properties",
-      "accent": "#563d72",
-      "blocks": [
-        {
-          "kind": "li",
-          "text": "granularity"
-        },
-        {
-          "kind": "li",
-          "text": "mutability"
-        },
-        {
-          "kind": "li",
-          "text": "exchange"
-        }
-      ],
-      "models": [],
-      "position": [
-        4900,
-        -4300,
-        4150
-      ],
-      "card": {
-        "slide": "context",
-        "code": "ENC-02",
-        "label": "T. rex",
-        "status": "FEED DUE",
-        "position": [
-          -6000,
-          -400,
-          1000
-        ],
-        "view": {
-          "anchor": [
-            -6000,
-            -4170,
-            208
-          ],
-          "eye": [
-            -6000,
-            -6200,
-            2300
-          ],
-          "signYaw": -83,
-          "signHeight": 1812,
-          "path": [
-            [
-              -19000,
-              -24000,
-              32000
-            ],
-            [
-              -7800,
-              -9700,
-              6800
-            ]
-          ],
-          "look": [
-            -6000,
-            -400,
-            1500
-          ]
-        }
-      },
-      "habitat": "triceratops",
-      "yaw": -90,
-      "cameraDistance": 2050,
-      "transition": 0.8,
-      "source": "slides/02/01-properties.mdx",
-      "kind": "slide",
-      "component": null,
-      "steps": [
-        {
-          "id": "01-properties",
-          "source": "slides/02/01-properties.mdx",
-          "kind": "slide",
-          "component": null,
-          "title": "Metadata Properties",
-          "blocks": [
-            {
-              "kind": "li",
-              "text": "granularity"
-            },
-            {
-              "kind": "li",
-              "text": "mutability"
-            },
-            {
-              "kind": "li",
-              "text": "exchange"
-            }
-          ],
-          "models": []
-        },
-        {
-          "id": "02-granularity",
-          "source": "slides/02/02-granularity.mdx",
-          "kind": "slide",
-          "component": null,
-          "title": "granularity",
-          "blocks": [
-            {
-              "kind": "p",
-              "text": "targets - file, line, byte?"
-            }
-          ],
-          "models": []
-        },
-        {
-          "id": "03-mutability",
-          "source": "slides/02/03-mutability.mdx",
-          "kind": "slide",
-          "component": null,
-          "title": "mutability",
-          "blocks": [
-            {
-              "kind": "p",
-              "text": "mutable - locks\nappendable - comments\nimmutable - authorship"
-            }
-          ],
-          "models": []
-        },
-        {
-          "id": "04-exchange",
-          "source": "slides/02/04-exchange.mdx",
-          "kind": "slide",
-          "component": null,
-          "title": "exchange",
-          "blocks": [
-            {
-              "kind": "li",
-              "text": "local"
-            },
-            {
-              "kind": "li",
-              "text": "exchanged"
-            },
-            {
-              "kind": "li",
-              "text": "partially exchanged"
-            }
-          ],
-          "models": []
-        }
-      ]
-    },
-    {
       "id": "targets",
-      "title": "3. Problems with existing solutions",
+      "title": "storage",
       "accent": "#563d72",
       "blocks": [
         {
-          "kind": "p",
-          "text": "commit headers,\nCODEOWNERS type files,\ncommit message trailers,\ngit notes"
+          "kind": "li",
+          "text": "sqlite, serialize, materialize"
         },
         {
           "kind": "li",
-          "text": "fixed targets"
-        },
-        {
-          "kind": "li",
-          "text": "fixed fields"
-        },
-        {
-          "kind": "li",
-          "text": "pollution"
-        },
-        {
-          "kind": "li",
-          "text": "size, scalability"
+          "text": "sync"
         }
       ],
       "models": [],
       "position": [
-        -5700,
-        4800,
-        4100
+        -6000,
+        -400,
+        3600
       ],
       "card": {
         "slide": "targets",
@@ -6394,179 +6544,70 @@
           ]
         }
       },
-      "habitat": "velociraptor",
+      "habitat": "tyrannosaurus",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 0.8,
-      "source": "slides/03/01-problems.mdx",
+      "source": "slides/05/01-storage.mdx",
       "kind": "slide",
       "component": null,
       "steps": [
         {
-          "id": "01-problems",
-          "source": "slides/03/01-problems.mdx",
+          "id": "01-storage",
+          "source": "slides/05/01-storage.mdx",
           "kind": "slide",
           "component": null,
-          "title": "3. Problems with existing solutions",
+          "title": "storage",
           "blocks": [
             {
-              "kind": "p",
-              "text": "commit headers,\nCODEOWNERS type files,\ncommit message trailers,\ngit notes"
+              "kind": "li",
+              "text": "sqlite, serialize, materialize"
             },
             {
               "kind": "li",
-              "text": "fixed targets"
-            },
-            {
-              "kind": "li",
-              "text": "fixed fields"
-            },
-            {
-              "kind": "li",
-              "text": "pollution"
-            },
-            {
-              "kind": "li",
-              "text": "size, scalability"
+              "text": "sync"
             }
           ],
           "models": []
-        }
-      ]
-    },
-    {
-      "id": "authoring",
-      "title": "git-meta intro",
-      "accent": "#563d72",
-      "blocks": [
-        {
-          "kind": "p",
-          "text": "a git notes-like key value system, but much more flexible."
         },
         {
-          "kind": "li",
-          "text": "fine-grained targets"
-        },
-        {
-          "kind": "li",
-          "text": "namespaced keys"
-        },
-        {
-          "kind": "li",
-          "text": "crdt-shaped data types"
-        },
-        {
-          "kind": "p",
-          "text": "getting and setting example"
-        }
-      ],
-      "models": [],
-      "position": [
-        5400,
-        2300,
-        3900
-      ],
-      "card": {
-        "slide": "authoring",
-        "code": "ENC-04",
-        "label": "Velociraptor pen",
-        "status": "OK",
-        "position": [
-          -5700,
-          4800,
-          1500
-        ],
-        "view": {
-          "anchor": [
-            -5700,
-            1160,
-            408
-          ],
-          "eye": [
-            -5700,
-            -800,
-            2900
-          ],
-          "signYaw": -83,
-          "signHeight": 2177,
-          "path": [
-            [
-              -20000,
-              -14000,
-              40000
-            ],
-            [
-              -7500,
-              -4300,
-              7400
-            ]
-          ],
-          "look": [
-            -5700,
-            4800,
-            1550
-          ]
-        }
-      },
-      "habitat": "brachiosaurus",
-      "yaw": -90,
-      "cameraDistance": 2050,
-      "transition": 0.8,
-      "source": "slides/04/01-intro.mdx",
-      "kind": "slide",
-      "component": null,
-      "steps": [
-        {
-          "id": "01-intro",
-          "source": "slides/04/01-intro.mdx",
-          "kind": "slide",
-          "component": null,
-          "title": "git-meta intro",
-          "blocks": [
-            {
-              "kind": "p",
-              "text": "a git notes-like key value system, but much more flexible."
-            },
-            {
-              "kind": "li",
-              "text": "fine-grained targets"
-            },
-            {
-              "kind": "li",
-              "text": "namespaced keys"
-            },
-            {
-              "kind": "li",
-              "text": "crdt-shaped data types"
-            },
-            {
-              "kind": "p",
-              "text": "getting and setting example"
-            }
-          ],
+          "id": "02-example",
+          "source": "slides/05/02-example.mdx",
+          "kind": "component",
+          "component": {
+            "type": "Computer",
+            "prompt": "git meta set",
+            "output": "OK"
+          },
+          "title": "Computer",
+          "blocks": [],
           "models": []
         }
       ]
     },
     {
       "id": "storage",
-      "title": "storage",
+      "title": "exchange",
       "accent": "#563d72",
       "blocks": [
         {
           "kind": "li",
-          "text": "sqlite, serialize, materialize"
+          "text": "tree storage"
         },
         {
           "kind": "li",
-          "text": "sync"
+          "text": "ff-only"
+        },
+        {
+          "kind": "li",
+          "text": "filters / local"
         }
       ],
       "models": [],
       "position": [
-        -6000,
-        -400,
-        3600
+        4900,
+        -4300,
+        4150
       ],
       "card": {
         "slide": "storage",
@@ -6610,28 +6651,32 @@
           ]
         }
       },
-      "habitat": "tyrannosaurus",
+      "habitat": "triceratops",
       "yaw": -90,
       "cameraDistance": 2050,
       "transition": 0.8,
-      "source": "slides/05/01-storage.mdx",
+      "source": "slides/06/01-exchange.mdx",
       "kind": "slide",
       "component": null,
       "steps": [
         {
-          "id": "01-storage",
-          "source": "slides/05/01-storage.mdx",
+          "id": "01-exchange",
+          "source": "slides/06/01-exchange.mdx",
           "kind": "slide",
           "component": null,
-          "title": "storage",
+          "title": "exchange",
           "blocks": [
             {
               "kind": "li",
-              "text": "sqlite, serialize, materialize"
+              "text": "tree storage"
             },
             {
               "kind": "li",
-              "text": "sync"
+              "text": "ff-only"
+            },
+            {
+              "kind": "li",
+              "text": "filters / local"
             }
           ],
           "models": []
@@ -6640,27 +6685,27 @@
     },
     {
       "id": "merging",
-      "title": "exchange",
+      "title": "scaling",
       "accent": "#563d72",
       "blocks": [
         {
           "kind": "li",
-          "text": "tree storage"
+          "text": "partial/shallow/promisors"
         },
         {
           "kind": "li",
-          "text": "ff-only"
+          "text": "pruning"
         },
         {
           "kind": "li",
-          "text": "filters / local"
+          "text": "speed tests"
         }
       ],
       "models": [],
       "position": [
-        4900,
-        -4300,
-        4150
+        -5700,
+        4800,
+        4100
       ],
       "card": {
         "slide": "merging",
@@ -6702,105 +6747,6 @@
             -5400,
             465
           ]
-        }
-      },
-      "habitat": "triceratops",
-      "yaw": -90,
-      "cameraDistance": 2050,
-      "transition": 0.8,
-      "source": "slides/06/01-exchange.mdx",
-      "kind": "slide",
-      "component": null,
-      "steps": [
-        {
-          "id": "01-exchange",
-          "source": "slides/06/01-exchange.mdx",
-          "kind": "slide",
-          "component": null,
-          "title": "exchange",
-          "blocks": [
-            {
-              "kind": "li",
-              "text": "tree storage"
-            },
-            {
-              "kind": "li",
-              "text": "ff-only"
-            },
-            {
-              "kind": "li",
-              "text": "filters / local"
-            }
-          ],
-          "models": []
-        }
-      ]
-    },
-    {
-      "id": "scale",
-      "title": "scaling",
-      "accent": "#563d72",
-      "blocks": [
-        {
-          "kind": "li",
-          "text": "partial/shallow/promisors"
-        },
-        {
-          "kind": "li",
-          "text": "pruning"
-        },
-        {
-          "kind": "li",
-          "text": "speed tests"
-        }
-      ],
-      "models": [],
-      "position": [
-        -5700,
-        4800,
-        4100
-      ],
-      "card": {
-        "slide": "scale",
-        "code": "GATE",
-        "label": "Main Gate",
-        "status": "LOCKED",
-        "position": [
-          0,
-          -10500,
-          1250
-        ],
-        "view": {
-          "anchor": [
-            0,
-            -9600,
-            208
-          ],
-          "eye": [
-            0,
-            -15800,
-            1450
-          ],
-          "signYaw": -90,
-          "signHeight": 1042,
-          "path": [
-            [
-              12000,
-              -30000,
-              22000
-            ],
-            [
-              1800,
-              -17000,
-              6900
-            ]
-          ],
-          "look": [
-            0,
-            -10500,
-            2150
-          ],
-          "frameWidth": 5800
         }
       },
       "habitat": "velociraptor",
