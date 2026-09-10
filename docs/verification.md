@@ -305,3 +305,42 @@ Visually reviewed: [full title](screenshots/fsv-title-only.png),
 [all systems](screenshots/fsv-overview.png),
 [selected tower and spotlight](screenshots/fsv-trust.png), and
 [the compact window](screenshots/fsv-compact.png).
+
+## Native park props and raptor incident files (2026-09-10)
+
+Station 03 now maps to ENC-04, the Velociraptor pen. H1-only pages use a physical
+wooden direction sign; RaptorWarning uses a hanging, swaying wooden sign with
+claw marks. Both retain their large lettering. The preceding Markdown or
+wooden sign stays visible behind ColdStorage.
+
+ColdStorage imports four separate Blender meshes for the flask, lid, rack and
+vial. Each arrow step returns the previous vial, rotates the rack, extracts the
+next vial, and enlarges and angles it sideways for reading. The flask continues
+below the camera frame. Four authored Species/Description pairs drive its data.
+
+Raptors flies overhead, tracks four articulated walking animals with larger,
+level, offset labels, and highlights the selected animal. Each selection flips
+a sheet on a physical clipboard displaying that raptor's Label/Problems and a
+crossed-out worker tally. Left reverses selections. Leaving and logout remove
+props and reset progress.
+
+Validation:
+- All 17 JavaScript tests pass, including native component schema errors and
+  station ordering.
+- Native editor build and macOS packaging succeed, including the clean unity
+  build after committing (the rig vector helper has a distinct name to avoid
+  colliding with the deck vector helper).
+- `node scripts/check-native-props.mjs -SlideTestWidth=1440 -SlideTestHeight=900`
+  passes the complete interaction sequence.
+- `node scripts/check-native-props.mjs --packaged -SlideTestWidth=1024 -SlideTestHeight=768`
+  passes the same sequence in the packaged application.
+- A 35-minute route simulation verifies full rotated raptor bounds remain
+  separated and inside the pen. Articulated gait checks pass for all seven
+  modeled dinosaurs, including grounded feet and stationary rests.
+- Visual review covers the warning sign, retained gate sign, extracted vial,
+  enlarged moving labels, clipboard typography, and the page flip. Screenshots
+  wait for widget rendering and temporal antialiasing to settle after changes.
+
+![Cold storage close-up](screenshots/cold-storage-closeup.png)
+![Raptor warning sign](screenshots/raptor-warning.png)
+![Raptor incident clipboard](screenshots/raptor-clipboard.png)

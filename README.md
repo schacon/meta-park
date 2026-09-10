@@ -155,7 +155,8 @@ An empty or missing station is a build error.
 
 Ordinary Markdown becomes a page on the existing physical sign. The first
 heading supplies the page title. A page containing only a single H1 becomes a
-large centered title filling the sign, without the usual station header. Arrows replace the current page with a short
+physical wooden direction sign with large painted lettering, an arrow-shaped end,
+and supporting posts. The sign stays behind ColdStorage demonstrations. Arrows replace the current page with a short
 forward or backward swipe, using the full sign without moving the camera. Dense
 text scales down to fit; pages are not automatically split. The header updates
 the station name and page number on each step.
@@ -297,9 +298,9 @@ Edit `examples/git-meta/layout.json`:
 | --- | --- | --- |
 | 1 | Main Gate | `slides/01/` |
 | 2 | Brontosaurus | `slides/02/` |
-| 3 | T. rex | `slides/03/` |
-| 4 | Triceratops | `slides/04/` |
-| 5 | Velociraptor pen | `slides/05/` |
+| 3 | Velociraptor pen | `slides/03/` |
+| 4 | T. rex | `slides/04/` |
+| 5 | Triceratops | `slides/05/` |
 | 6 | Visitor Centre | `slides/06/` |
 | 7 | Helipad | `slides/07/` |
 | 8 | Hidden beach bar | `slides/08/` |
@@ -387,3 +388,53 @@ need their own build and runtime verification.
 ![Bird's-eye view](docs/screenshots/overview.png)
 
 See [verification notes](docs/verification.md) for tested behavior and limits.
+
+## Cryogenic storage and raptor records
+
+`<ColdStorage>` displays a modeled vacuum flask with four separately animated
+vials. Supply exactly four `<canister>` children, each containing a `<Species>`
+and `<Description>`. See [cold-storage.mdx](examples/git-meta/cold-storage.mdx).
+Right returns the previous vial, rotates the rack, then extracts the next vial,
+enlarges and tilts it sideways for reading, and reveals its description. Left reverses the sequence. After the fourth vial,
+Right advances to the next MDX page or returns to the island overview.
+
+Station 03 is the Raptor Pen. Its warning page can be authored as:
+
+```mdx
+<RaptorWarning>Problems with existing solutions</RaptorWarning>
+```
+
+This replaces the screen with a gently swinging wooden sign with claw marks.
+The following `<Raptors>` page flies over the enclosure and labels the four
+walking animals. Each Right press selects another raptor and flips the keeper's
+clipboard to that animal's incident record. Left steps backward. The current
+animal has a moving ground highlight; the clipboard includes crossed-out worker
+figures as a fictional casualty tally.
+
+```mdx
+<Raptors>
+  <Raptor workers={2}>
+    <Label>git notes</Label>
+    <Problems>
+      <Problem>Awkward merge behavior for structured data</Problem>
+      <Problem>Poor scaling for very large metadata sets</Problem>
+    </Problems>
+  </Raptor>
+  {/* Add three more Raptor records. */}
+</Raptors>
+```
+
+Supply exactly four records. `workers` is optional (0–8); defaults are 2, 4, 3,
+and 6 in authored order. The complete example is
+[raptors.mdx](examples/git-meta/raptors.mdx). Vial and raptor selections count
+as individual steps in Power, and logout resets their progress.
+
+The cryogenic source model is `assets/blender/cold-storage.blend`. Recreate it
+with Blender's Python runner using `scripts/model_cold_storage.py`, then run
+`scripts/import_cold_storage.py` through Unreal's `-ExecutePythonScript` option.
+`scripts/import_prop_materials.py` rebuilds the unlit lettering materials.
+The wooden signs and clipboard are native procedural assemblies, so their text
+and proportions follow the MDX without exporting another Blender model.
+
+Run `node scripts/check-native-props.mjs` for the isolated native interaction
+fixture; it does not change the authored slides.
