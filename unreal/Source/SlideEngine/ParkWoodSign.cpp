@@ -2,6 +2,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetComponent.h"
@@ -14,7 +15,7 @@
 #include "Styling/CoreStyle.h"
 
 FParkWoodSign::FParkWoodSign(UWorld* World,const FString& Title,bool IsWarning):Warning(IsWarning) {
- auto* A=World->SpawnActor<AActor>();Actor=A;
+ auto* A=World->SpawnActor<AActor>();Actor=A;A->SetActorHiddenInGame(true);
  auto* Root=NewObject<USceneComponent>(A);A->AddInstanceComponent(Root);A->SetRootComponent(Root);Root->SetMobility(EComponentMobility::Movable);Root->RegisterComponent();
  auto Material=[&](UPrimitiveComponent* C,FColor Color){auto* M=UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Models/M_IslandLit.M_IslandLit")),C);M->SetVectorParameterValue(TEXT("Tint"),FLinearColor::FromSRGBColor(Color));return M;};
  auto Box=[&](USceneComponent* Parent,FVector P,FVector Size,FColor Color,FRotator Rotation=FRotator::ZeroRotator){
@@ -55,8 +56,20 @@ FParkWoodSign::FParkWoodSign(UWorld* World,const FString& Title,bool IsWarning):
 FParkWoodSign::~FParkWoodSign(){if(Actor.IsValid())Actor->Destroy();}
 void FParkWoodSign::Update(float Seconds,ACameraActor* Camera,FVector Position,FVector Eye,float Reveal) {
  if(!Actor.IsValid())return;
- // Stand upright in the park instead of tilting a screen toward the lens.
- Actor->SetActorLocationAndRotation(Position,FRotator(0,(Eye-Position).Rotation().Yaw,0));
+ // Start the complete warning sign outside the left edge, including its post.
+ // Use its own clock because the slide panel can already be fully expanded.
+ const FRotator Facing(0,(Eye-Position).Rotation().Yaw,0);
+ if(Warning) {
+  if(Reveal<=0)EntranceStart=-1;
+  else if(EntranceStart<0)EntranceStart=Seconds;
+  const float Progress=EntranceStart<0?0:FMath::Clamp((Seconds-EntranceStart)/.85f,0.f,1.f);
+  const float Ease=1-FMath::Pow(1-Progress,3.f);
+  const FVector ToSign=Position-Camera->GetActorLocation(),Right=Camera->GetActorRightVector();
+  const float HalfWidth=FMath::Max(1.f,FVector::DotProduct(ToSign,Camera->GetActorForwardVector()))*FMath::Tan(FMath::DegreesToRadians(Camera->GetCameraComponent()->FieldOfView*.5f));
+  Position-=Right*(HalfWidth+FVector::DotProduct(ToSign,Right)+1100.f)*(1-Ease);
+ }
+ // Keep the final upright orientation throughout the entrance.
+ Actor->SetActorLocationAndRotation(Position,Facing);
  Actor->SetActorScale3D(FVector(.92f));Actor->SetActorHiddenInGame(Reveal<=0);
  Board->SetRelativeRotation(FRotator(Warning?FMath::Sin(Seconds*.9f)*1.2f:0,0,Warning?FMath::Sin(Seconds*1.35f)*2.f:0));
 }

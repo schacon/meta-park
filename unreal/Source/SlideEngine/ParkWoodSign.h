@@ -5,6 +5,7 @@ class FParkWoodSign {
  TWeakObjectPtr<AActor> Actor;
  USceneComponent* Board=nullptr;
  bool Warning=false;
+ float EntranceStart=-1;
 public:
  FParkWoodSign(UWorld*,const FString& Title,bool IsWarning);
  ~FParkWoodSign();
