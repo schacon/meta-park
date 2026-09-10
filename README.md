@@ -154,14 +154,15 @@ Run `npm run build`, then restart the game, or package again for a standalone ap
 An empty or missing station is a build error.
 
 Ordinary Markdown becomes a page on the existing physical sign. The first
-heading supplies the page title. Arrows replace the current page with a short
+heading supplies the page title. A page containing only a single H1 becomes a
+large centered title filling the sign, without the usual station header. Arrows replace the current page with a short
 forward or backward swipe, using the full sign without moving the camera. Dense
 text scales down to fit; pages are not automatically split. The header updates
 the station name and page number on each step.
 
 A single native component occupies its own step. Computer models rise large in
 front of the slide window, with the latest Markdown slide retained behind them. Components
-are available without imports. For example, `slides/01/02-example.mdx`:
+are available without imports. For example, `slides/04/02-example.mdx`:
 
 ```mdx
 <Computer>
@@ -196,6 +197,31 @@ Imported reusable components must expand to these native primitives. Speaker not
 Unknown components and unsupported combinations fail with the source filename.
 To add a new interactive primitive, extend the registry/serializer in
 `src/compiler.mjs` and its native lifecycle in `ParkStationContent.cpp`.
+
+`FSV` uses the same minimize-to-desktop transition to open an SGI-style filesystem
+viewer. Its window title and ordered systems come directly from the MDX:
+
+```mdx
+<FSV title="New Metadata Use Cases">
+  <system>
+    <label>trust</label>
+    <meta>identity, signoffs, attestations</meta>
+  </system>
+  <system>
+    <label>provenance</label>
+    <meta>generated code, prompts, transcripts</meta>
+  </system>
+</FSV>
+```
+
+The initial view shows all systems as labeled blue blocks. Right selects each
+system in order: its block rises into a tower, a pale spotlight surrounds it,
+and its metadata appears alongside. Left reverses the sequence. Click a block
+to select it directly, or `/systems` for the flat overview. After the last
+system, Right advances the presentation; Left before the first selection goes
+to the preceding slide. The dock and minimize button restore the prior slide
+immediately. Each system counts toward Power progress. A full example lives in
+`examples/git-meta/fsv.mdx`.
 
 The legacy single-file example remains in `examples/git-meta/deck.mdx` and can
 still be compiled explicitly. Blank lines around Markdown inside components are
@@ -269,13 +295,13 @@ Edit `examples/git-meta/layout.json`:
 
 | Key | Area | Content directory |
 | --- | --- | --- |
-| 1 | Brontosaurus | `slides/01/` |
-| 2 | T. rex | `slides/02/` |
-| 3 | Triceratops | `slides/03/` |
-| 4 | Velociraptor pen | `slides/04/` |
-| 5 | Visitor Centre | `slides/05/` |
-| 6 | Helipad | `slides/06/` |
-| 7 | Main Gate | `slides/07/` |
+| 1 | Main Gate | `slides/01/` |
+| 2 | Brontosaurus | `slides/02/` |
+| 3 | T. rex | `slides/03/` |
+| 4 | Triceratops | `slides/04/` |
+| 5 | Velociraptor pen | `slides/05/` |
+| 6 | Visitor Centre | `slides/06/` |
+| 7 | Helipad | `slides/07/` |
 | 8 | Hidden beach bar | `slides/08/` |
 
 North is world +Y. The overview uses a distant perspective camera; each authored stop faces a physical

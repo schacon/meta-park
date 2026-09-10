@@ -273,3 +273,35 @@ were visually checked in [the updated recording](screenshots/cast-7821.png).
 CommandLine keyboard playback also passes through real Slate key events in the
 packaged app: Space pauses, resumes at the same position, ignores held-key
 repeats, and restarts a completed cast without advancing the station page.
+
+
+## Gate-first stations, title cards, and FSV (2026-09-10)
+
+Station 01 now targets the main gate; the previous areas follow in order and the
+hidden bar remains station 08. Funny map statuses follow their matching areas.
+The existing gate interaction suite passes opening, sign flight, departure,
+interrupted number navigation, and free-flight cleanup after the reorder.
+
+A lone H1 becomes a large, centered title without the normal station header.
+The compiler preserves normal heading/body layouts for other pages and validates
+FSV titles and ordered system label/meta pairs. All 16 compiler tests pass.
+
+FSV minimizes park control into the dock, opens an SGI-style desktop window,
+and renders labeled blue blocks on rose platforms with cyan connections. Right
+raises each system into a tower; a pale spotlight pool and faint overhead beam
+highlight the selection, with its authored metadata connected alongside. Left
+steps back, and the component boundaries restore the slide or island. Mouse
+selection and the flat overview control are available; internal selections count
+toward Power. Leaving a station or logging out resets its FSV state.
+
+`node scripts/check-fsv.mjs -SlideTestWidth=1440 -SlideTestHeight=900` passes the
+isolated seven-system interaction fixture. The packaged app also passes its
+FSV sequence at 1024×768, including desktop transitions, metadata, tower
+animation, forward/backward boundaries, and timer continuity. The final Mac
+package builds successfully. Run UI interaction tests sequentially so their
+windows do not compete for keyboard focus.
+
+Visually reviewed: [full title](screenshots/fsv-title-only.png),
+[all systems](screenshots/fsv-overview.png),
+[selected tower and spotlight](screenshots/fsv-trust.png), and
+[the compact window](screenshots/fsv-compact.png).
