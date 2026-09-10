@@ -11,7 +11,8 @@ class FParkRaptors {
  FVector OriginalEye,OriginalLook;
  FQuat OriginalRotation;
  float OriginalWidth=0,Flight=0,Flip=1;
- int32 Displayed=INDEX_NONE;
+ int32 Displayed=INDEX_NONE,PreviousDisplayed=INDEX_NONE;
+ TSharedRef<class SWidget> BuildRecord(TFunction<int32()> Record);
 public:
  TArray<FRaptorIssues> Raptors;
  int32 Selected=INDEX_NONE;

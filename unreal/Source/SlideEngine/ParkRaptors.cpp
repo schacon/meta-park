@@ -14,6 +14,7 @@
 #include "Components/PointLightComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Widgets/SLeafWidget.h"
+#include "Widgets/SOverlay.h"
 #include "Rendering/DrawElements.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -59,33 +60,45 @@ FParkRaptors::FParkRaptors(UWorld* World,TSharedPtr<FJsonObject> Component,ACame
  Clipboard=Node(Root);
  Box(Clipboard,FVector(0,0,0),FVector(20,480,610),FColor(109,66,29));
  for(int32 I=0;I<3;I++)Box(Clipboard,FVector(-13-I*2,I*2,-I*2),FVector(2,438,564),FColor(218,209,175),true);
- Paper=Node(Clipboard);Paper->SetRelativeLocation(FVector(-21,0,282));
+ auto* UnderPage=Widget(Clipboard,FVector(-21,0,0),FVector2D(700,900),.626f);UnderPage->SetRelativeRotation(FRotator(0,180,0));
+ UnderPage->SetSlateWidget(BuildRecord([this]{return Displayed;}));
+ Paper=Node(Clipboard);Paper->SetRelativeLocation(FVector(-27,0,282));
+ Box(Paper,FVector(2,0,-282),FVector(2,438,563),FColor(235,230,214),true);
  auto* Page=Widget(Paper,FVector(0,0,-282),FVector2D(700,900),.626f);Page->SetRelativeRotation(FRotator(0,180,0));
- auto Text=[&](TAttribute<FText> Value,int32 Size,FLinearColor Color){return SNew(STextBlock).Text(Value).Font(FCoreStyle::GetDefaultFontStyle("Mono",Size)).ColorAndOpacity(Color).AutoWrapText(true);};
- const FLinearColor Ink(.025,.018,.01),Red(.38,.02,.01);
- Page->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.91,.85,.66)).Padding(FMargin(40,60,40,28))
-  [SNew(SVerticalBox)
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[Text(FText::FromString(TEXT("INGEN / ANIMAL CONTROL\nCONFIDENTIAL INCIDENT RECORD")),20,Red)]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,22)[Text(TAttribute<FText>::CreateLambda([this]{return FText::FromString(Displayed<0?TEXT("RAPTOR PEN"):FString::Printf(TEXT("SPECIMEN %02d / 04"),Displayed+1));}),22,Ink)]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Label());}).Font(FCoreStyle::GetDefaultFontStyle("Bold",38)).AutoWrapText(true).ColorAndOpacity(Ink)]
-   +SVerticalBox::Slot().FillHeight(1)[Text(TAttribute<FText>::CreateLambda([this]{return FText::FromString(Problems());}),25,Ink)]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,16,0,8)[Text(FText::FromString(TEXT("STAFF LOST / FIELD TALLY")),19,Red)]
-   +SVerticalBox::Slot().AutoHeight()[SNew(SWorkerTally).Count_Lambda([this]{return Workers();})]
-  ]);
+ Page->SetSlateWidget(BuildRecord([this]{return PreviousDisplayed;}));
+ Paper->SetVisibility(false,true);
  Box(Clipboard,FVector(-29,0,284),FVector(16,155,56),FColor(128,139,126));
  Box(Clipboard,FVector(-39,0,298),FVector(12,72,40),FColor(77,85,77));
  for(int32 I=0;I<40;I++) {float R=I*2*PI/40;auto* B=Box(Root,FVector::ZeroVector,FVector(13,58,6),FColor(255,214,89),true);B->SetRelativeRotation(FRotator(0,FMath::RadiansToDegrees(R),0));Ring.Add(B);}
  Spotlight=NewObject<UPointLightComponent>(A);A->AddInstanceComponent(Spotlight);Spotlight->SetupAttachment(Root);Spotlight->SetMobility(EComponentMobility::Movable);Spotlight->SetIntensity(18000);Spotlight->SetAttenuationRadius(1100);Spotlight->SetLightColor(FLinearColor(1,.83,.36));Spotlight->SetCastShadows(false);Spotlight->RegisterComponent();
 }
+TSharedRef<SWidget> FParkRaptors::BuildRecord(TFunction<int32()> Record) {
+ const FLinearColor Ink(.025,.018,.01),Red(.38,.02,.01);
+ auto Text=[&](TAttribute<FText> Value,int32 Size,FLinearColor Color){return SNew(STextBlock).Text(Value).Font(FCoreStyle::GetDefaultFontStyle("Mono",Size)).ColorAndOpacity(Color).AutoWrapText(true);};
+ return SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.91,.85,.66)).Padding(FMargin(40,60,40,28))
+  [SNew(SOverlay)
+   +SOverlay::Slot()[SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center).Visibility_Lambda([Record]{return Record()<0?EVisibility::Visible:EVisibility::Collapsed;})
+    [SNew(STextBlock).Text(FText::FromString(TEXT("Incident Reports"))).Font(FCoreStyle::GetDefaultFontStyle("Bold",90)).WrapTextAt(600).Justification(ETextJustify::Center).ColorAndOpacity(Ink)]]
+   +SOverlay::Slot()[SNew(SVerticalBox).Visibility_Lambda([Record]{return Record()>=0?EVisibility::Visible:EVisibility::Collapsed;})
+    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[Text(FText::FromString(TEXT("INGEN / ANIMAL CONTROL\nCONFIDENTIAL INCIDENT RECORD")),20,Red)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,22)[Text(TAttribute<FText>::CreateLambda([Record]{return FText::FromString(FString::Printf(TEXT("SPECIMEN %02d / 04"),Record()+1));}),22,Ink)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[SNew(STextBlock).Text_Lambda([this,Record]{return FText::FromString(Record()<0?TEXT(""):Raptors[Record()].Label);}).Font(FCoreStyle::GetDefaultFontStyle("Bold",38)).AutoWrapText(true).ColorAndOpacity(Ink)]
+    +SVerticalBox::Slot().FillHeight(1)[Text(TAttribute<FText>::CreateLambda([this,Record]{FString S;if(Record()>=0)for(const auto& P:Raptors[Record()].Problems)S+=TEXT("• ")+P+TEXT("\n\n");return FText::FromString(S);}),25,Ink)]
+    +SVerticalBox::Slot().AutoHeight().Padding(0,16,0,8)[Text(FText::FromString(TEXT("STAFF LOST / FIELD TALLY")),19,Red)]
+    +SVerticalBox::Slot().AutoHeight()[SNew(SWorkerTally).Count_Lambda([this,Record]{return Record()<0?0:Raptors[Record()].Workers;})]
+   ]
+  ];
+}
 FParkRaptors::~FParkRaptors(){if(Actor.IsValid())Actor->Destroy();}
 bool FParkRaptors::Advance(int32 Direction) {
  if(!Ready())return true;
  int32 Next=Selected+Direction;if(Next<INDEX_NONE||Next>=Raptors.Num())return false;
- Selected=Next;Flip=0;return true;
+ PreviousDisplayed=Displayed;Selected=Next;Displayed=Next;Flip=0;
+ Paper->SetRelativeRotation(FRotator::ZeroRotator);Paper->SetVisibility(true,true);return true;
 }
-FString FParkRaptors::Label()const{return Displayed<0?TEXT("Known repeat offenders"):Raptors[Displayed].Label;}
+FString FParkRaptors::Label()const{return Displayed<0?TEXT("Incident Reports"):Raptors[Displayed].Label;}
 FString FParkRaptors::Problems()const {
- if(Displayed<0)return TEXT("Four residents. Four incident files.\n\nAdvance to inspect each specimen's record.");
+ if(Displayed<0)return TEXT("");
  FString S;for(const auto& P:Raptors[Displayed].Problems)S+=TEXT("• ")+P+TEXT("\n\n");return S;
 }
 int32 FParkRaptors::Workers()const{return Displayed<0?0:Raptors[Displayed].Workers;}
@@ -97,9 +110,11 @@ void FParkRaptors::Update(float Delta,ACameraActor* Camera,FVector& Look,float& 
  Look=FMath::Lerp(OriginalLook,Target,Ease);Width=FMath::Lerp(OriginalWidth,7400.f,Ease);
  const FVector Position=FMath::Lerp(OriginalEye,Eye,Ease)+FVector(0,0,FMath::Sin(PI*Ease)*700);
  Camera->SetActorLocationAndRotation(Position,(Look-Position).Rotation());Cast<AParkCamera>(Camera)->FrameScene(Width,FVector::Distance(Position,Look));
- Flip=FMath::Min(1.f,Flip+Delta/.65f);if(Flip>=.5f)Displayed=Selected;
- // Flip upward about the metal clip, swap sheets edge-on, then settle flat.
- Paper->SetRelativeRotation(FRotator(-FMath::Sin(PI*Flip)*95.f,0,0));
+ Flip=FMath::Min(1.f,Flip+Delta/.65f);
+ // The outgoing sheet travels only upward; the next record is already underneath.
+ const float PageEase=Flip*Flip*(3-2*Flip);
+ Paper->SetRelativeRotation(FRotator(-180.f*PageEase,0,0));
+ Paper->SetVisibility(Flip<1,true);
  const auto Points=IslandScene::RaptorPositions();
  for(int32 I=0;I<Labels.Num();I++)if(Points.IsValidIndex(I)) {
   const FVector P=Points[I]+Camera->GetActorUpVector()*340+FVector(0,0,260);Labels[I]->SetWorldLocationAndRotation(P,Camera->GetActorQuat()*FRotator(0,180,0).Quaternion());

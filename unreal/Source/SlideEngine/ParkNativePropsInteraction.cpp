@@ -42,7 +42,7 @@ void ASlideGameMode::TestNativeProps() {
   Capture(TEXT("props-raptor-warning.png"));Travel=0;SmokeStep=12;
  } else if(SmokeStep==12&&Travel>.5f){HandleParkKey(EKeys::Right);SmokeStep=13;}
  else if(SmokeStep==13&&RaptorView.IsValid()&&RaptorView->Ready()) {
-  if(!Check(Camera->GetActorLocation().Z>9000&&RaptorView->Selected==-1,TEXT("Raptors flies overhead and opens keeper clipboard")))return;
+  if(!Check(Camera->GetActorLocation().Z>9000&&RaptorView->Selected==-1&&RaptorView->Label()==TEXT("Incident Reports")&&RaptorView->Problems().IsEmpty()&&RaptorView->Workers()==0,TEXT("Raptors flies overhead and opens keeper clipboard")))return;
   Capture(TEXT("props-raptors-overview.png"));Travel=0;SmokeStep=14;
  } else if(SmokeStep==14&&Travel>.5f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=15;}
  else if(SmokeStep==15&&RaptorView->Ready()) {
