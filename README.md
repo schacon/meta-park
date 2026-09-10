@@ -130,7 +130,7 @@ Free flight hides all slide signs and map labels. Number keys and sidebar locati
 
 The north beach extends behind the volcano, with a thatched bar, two seated
 visitors, umbrellas, stools, bottles and palms. Its eighth stop is hidden from
-the map, sidebar and normal forward/back route; press **8** to discover it. The
+the map and sidebar; the forward route reaches it after station 07, or press **8** to visit directly. The
 example bonus slide rises behind the bar. In free flight, **8** visits the scene
 without revealing the slide.
 
@@ -141,7 +141,7 @@ and demos join the same group layout. **Left** revisits a page without removing
 revealed content; **Right** continues or returns to overview at the group end.
 Leaving the group hides all its content. Re-entering the group starts it fresh. These are demonstration graphics; no shell command is executed.
 
-At the main gate (**7**), the doors swing inward to reveal a stationary slide
+At the main gate (**1**), the doors swing inward to reveal a stationary slide
 behind the gateway. Leaving the area closes them again, including interrupted
 visits and switching to free flight.
 
@@ -297,12 +297,12 @@ Edit `examples/git-meta/layout.json`:
 | Key | Area | Content directory |
 | --- | --- | --- |
 | 1 | Main Gate | `slides/01/` |
-| 2 | Brontosaurus | `slides/02/` |
+| 2 | Helipad | `slides/02/` |
 | 3 | Velociraptor pen | `slides/03/` |
 | 4 | T. rex | `slides/04/` |
 | 5 | Triceratops | `slides/05/` |
 | 6 | Visitor Centre | `slides/06/` |
-| 7 | Helipad | `slides/07/` |
+| 7 | Brontosaurus | `slides/07/` |
 | 8 | Hidden beach bar | `slides/08/` |
 
 North is world +Y. The overview uses a distant perspective camera; each authored stop faces a physical
@@ -438,3 +438,7 @@ and proportions follow the MDX without exporting another Blender model.
 
 Run `node scripts/check-native-props.mjs` for the isolated native interaction
 fixture; it does not change the authored slides.
+
+Forward navigation continues from station 07 through the hidden beach bar at station 08. At the end, **Logout?** offers Yes (or Enter/Y) to minimize park control into a desktop Questions terminal, or No (or Escape/N) to stay. The presentation timer pauses during questions. The dock restores the final station; Escape returns to login and resets the session.
+
+ColdStorage canisters optionally accept `<Label>` for the description heading; `<Species>` remains the name printed on the vial.
