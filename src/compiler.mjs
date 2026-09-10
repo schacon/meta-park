@@ -146,10 +146,12 @@ export async function compileStations(directory, layoutFile, options = {}) {
           const canisters=meaningful(visible[0].children).map(item=>{
             if(item.type!=='canister')fail('ColdStorage only accepts canister children');
             const fields=meaningful(item.children);
-            if(fields.length!==2||fields.filter(n=>n.type==='species').length!==1||fields.filter(n=>n.type==='description').length!==1)fail('Each ColdStorage canister needs one Species and one Description');
+            if(fields.some(n=>!['species','description','label'].includes(n.type))||fields.filter(n=>n.type==='label').length>1||fields.filter(n=>n.type==='species').length!==1||fields.filter(n=>n.type==='description').length!==1)fail('Each ColdStorage canister needs one Species and one Description');
             const species=plain(fields.find(n=>n.type==='species')).trim(),description=plain(fields.find(n=>n.type==='description')).trim();
             if(!species||!description)fail('ColdStorage species and descriptions cannot be empty');
-            return {species,description};
+            const labelNode=fields.find(n=>n.type==='label'),label=labelNode?plain(labelNode).trim():null;
+            if(labelNode&&!label)fail('ColdStorage labels cannot be empty');
+            return {species,description,...(label?{label}:{})};
           });
           if(canisters.length!==4)fail('ColdStorage needs exactly four canisters');
           component={type:'ColdStorage',canisters};

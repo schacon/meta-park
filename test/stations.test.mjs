@@ -86,6 +86,12 @@ test('cold storage and raptor records compile authored data with physical statio
  assert.equal(c.type,'ColdStorage');assert.equal(c.canisters.length,4);assert.equal(c.canisters[0].species,'granularity');assert.match(c.canisters[1].description,/millions of keys/);
  assert.equal(r.card.code,'ENC-04');assert.deepEqual(r.steps[0].component,{type:'RaptorWarning',title:'Keep your hands inside the vehicle'});
  assert.equal(r.steps[1].component.raptors.length,4);assert.equal(r.steps[1].component.raptors[0].workers,7);assert.equal(r.steps[1].component.raptors[0].problems.length,2);
+ const originalCold=await readFile(cold,'utf8');
+ await writeFile(cold,originalCold.replace('<Species>granularity</Species>','<Label>granularity</Label><Species>Granulosaurus</Species>'));
+ const labeled=(await compileStations(dir,layout)).slides[0].steps[1].component.canisters[0];
+ assert.equal(labeled.label,'granularity');assert.equal(labeled.species,'Granulosaurus');
+ await writeFile(cold,originalCold.replace('<Species>granularity</Species>','<Label> </Label><Species>Granulosaurus</Species>'));
+ await assert.rejects(compileStations(dir,layout),/labels cannot be empty/);
  for(const mdx of ['<ColdStorage />','<ColdStorage><canister><Species>Empty</Species></canister></ColdStorage>']){await writeFile(cold,mdx);await assert.rejects(compileStations(dir,layout),/02-cold.mdx:.*ColdStorage/);}
  await rm(cold);
  for(const mdx of ['<Raptors />','<Raptors><Raptor><Label>Empty</Label><Problems /></Raptor></Raptors>','<Raptors><Raptor workers={20}><Label>X</Label><Problems><Problem>X</Problem></Problems></Raptor></Raptors>']){await writeFile(raptors,mdx);await assert.rejects(compileStations(dir,layout),/02-raptors.mdx:.*Raptor/);}

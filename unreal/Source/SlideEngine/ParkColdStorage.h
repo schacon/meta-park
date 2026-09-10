@@ -6,7 +6,7 @@ class UWorld;
 class USceneComponent;
 class UStaticMeshComponent;
 class FJsonObject;
-struct FColdSpecimen {FString Species,Description;};
+struct FColdSpecimen {FString Species,Description,Label;};
 class FParkColdStorage {
  TWeakObjectPtr<AActor> Actor;
  USceneComponent* Rack=nullptr;

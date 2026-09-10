@@ -19,7 +19,7 @@
 #include "Materials/MaterialInterface.h"
 
 FParkColdStorage::FParkColdStorage(UWorld* World,TSharedPtr<FJsonObject> Component) {
- for(const auto& Value:Component->GetArrayField(TEXT("canisters"))){auto S=Value->AsObject();Specimens.Add({S->GetStringField(TEXT("species")),S->GetStringField(TEXT("description"))});}
+ for(const auto& Value:Component->GetArrayField(TEXT("canisters"))){auto S=Value->AsObject();FString Label;S->TryGetStringField(TEXT("label"),Label);Specimens.Add({S->GetStringField(TEXT("species")),S->GetStringField(TEXT("description")),Label});}
  auto* A=World->SpawnActor<AActor>();Actor=A;
  auto* Root=NewObject<USceneComponent>(A);A->AddInstanceComponent(Root);A->SetRootComponent(Root);Root->SetMobility(EComponentMobility::Movable);Root->RegisterComponent();
  auto Mesh=[&](const TCHAR* Name,USceneComponent* Parent,FVector At){
@@ -45,7 +45,7 @@ FParkColdStorage::FParkColdStorage(UWorld* World,TSharedPtr<FJsonObject> Compone
  Display->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.009,.027,.047)).Padding(32)
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,34)[SNew(STextBlock).Text(FText::FromString(TEXT("COLD STORAGE / 04"))).Font(Font(22)).ColorAndOpacity(FLinearColor(.24,.69,.91))]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,26)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Species());}).Font(Font(46)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.85,.95,1))]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,26)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Ready()&&!Specimens[Selected].Label.IsEmpty()?Specimens[Selected].Label:Species());}).Font(Font(46)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.85,.95,1))]
    +SVerticalBox::Slot().FillHeight(1)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(Description());}).Font(Font(26)).AutoWrapText(true).ColorAndOpacity(FLinearColor(.54,.76,.86))]
   ]);
  for(FVector P:{FVector(-180,-370,500),FVector(80,70,410)}) {
