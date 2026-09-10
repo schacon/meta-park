@@ -444,3 +444,22 @@ Forward navigation continues from station 07 through the hidden beach bar at sta
 ColdStorage canisters optionally accept `<Label>` for the description heading; `<Species>` remains the name printed on the vial.
 
 Station 01 opens at the Research Center with a physical employee badge using the first MDX page’s title and body. ColdStorage rises in front of the badge on the next step, dimming the scene behind the hardware and description until the demonstration closes. Station 04 presents the git-meta introduction at the Main Gate; station 06 presents exchange at the T. rex paddock.
+
+
+`<Serializer>` minimizes the park into a desktop with a SQLite browser, Git object explorer, commit sidebar, and pointer-following xeyes:
+
+```mdx
+<Serializer title="Git Object Explorer">
+  <Value target="commit:5aa110f" key="review:status" type="string" value="approved, later merged" />
+  <Value target="project" key="reviewers" type="set" value="alice, bob" />
+  <Value target="path:main.rs" key="ci:runs" type="list" value="build:passed, test:passed" hidden />
+</Serializer>
+```
+
+Click **SERIALIZE** to write the first metadata commit, containing only values without `hidden`. **Add metadata** reveals the hidden rows in the SQLite table; serialize again to write a second commit containing both the original and added values. Click either commit to show its table and tree. Newly added values have green backgrounds in the second commit. Click a table value to locate its blob and fold unrelated branches. **Expand** and **Fold** beside Help open or close every path. Click a folder's +/- control to expand or collapse it, or a tree entry to inspect its SHA/type, full path, value, target, and key. Scroll over the table or tree to browse it. Long values scroll inside the separate value pane. Blue target fields and green key fields match their corresponding path segments.
+
+The tree root is `refs/meta/local/main^{tree}`. The compiler produces real Git blob, tree, and parent-linked commit SHA-1 IDs, `__value`, `__set`, timestamped `__list` entries, branch hash prefixes, and escaped `path/.../__target__` directories. Keys beginning with `local:` stay out of the exchange tree. Strings preserve their raw text; the demonstration's set/list `value` accepts comma-separated members. Sets deduplicate members; lists preserve their order.
+
+The example snapshot in `examples/git-meta/serializer-reference.json` records reference data from `/tmp/meta-demo`; it resolves the example's short target commit IDs and preserves list timestamps while keeping the packaged demo independent of that repository. The commit sidebar shows the demonstration's metadata snapshots. The interactive demonstration stays in memory and does not modify the source repository or SQLite database.
+
+Arrow keys continue the presentation. Returning to the component preserves its current tree; leaving the station or logging out clears it. Run `node scripts/check-serializer.mjs --packaged` to exercise the native desktop interactions after packaging.
