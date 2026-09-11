@@ -1,3 +1,7 @@
+import {loadSlideImage} from './slide-image.mjs';
+import {speedGraph} from './speed-graph.mjs';
+import {exchangeDemo} from './exchange.mjs';
+import {scalarDemo} from './scalar.mjs';
 import {serializeValues} from './serializer.mjs';
 import {build} from 'esbuild';
 import {loadCast} from './asciicast.mjs';
@@ -114,7 +118,7 @@ export async function compileDeck(input, layoutFile) {
 }
 
 // MDX pages use this native component registry without needing import statements.
-const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV','Serializer','Value','ColdStorage','Species','Description','RaptorWarning','Raptors','Raptor','Label','Problems','Problem'].map(name =>
+const components = Object.fromEntries(['Model','Animate','Computer','CommandLine','FSV','Exchange','SpeedGraph','Scalar','Image','Serializer','Value','ColdStorage','Species','Description','RaptorWarning','Raptors','Raptor','Label','Problems','Problem'].map(name =>
   [name, props => createElement(name.toLowerCase(), props)]));
 async function readPage(input) {
   const temp = await mkdtemp(resolve('.slide-build-'));
@@ -142,8 +146,23 @@ export async function compileStations(directory, layoutFile, options = {}) {
         const nodes = meaningful(await readPage(source));
         const visible = nodes;
         if (!visible.length) fail('Page needs content');
-        const standalone = visible.length===1 && ['computer','commandline','fsv','serializer','coldstorage','raptorwarning','raptors','model','animate'].includes(visible[0].type);
+        const imagePage=visible.length===1&&visible[0].type==='image';
+        if(imagePage&&meaningful(visible[0].children).length)fail('Image does not accept children');
+        const image=imagePage?await loadSlideImage(visible[0].props,source):null;
+        const standalone = visible.length===1 && ['computer','commandline','fsv','exchange','speedgraph','scalar','serializer','coldstorage','raptorwarning','raptors','model','animate'].includes(visible[0].type);
         let component = null;
+        if (standalone && visible[0].type==='speedgraph') {
+          if(meaningful(visible[0].children).length)fail('SpeedGraph does not accept children');
+          component=speedGraph(visible[0].props);
+        }
+        if (standalone && visible[0].type==='exchange') {
+          if(meaningful(visible[0].children).length)fail('Exchange does not accept children');
+          component=exchangeDemo(visible[0].props);
+        }
+        if (standalone && visible[0].type==='scalar') {
+          if(meaningful(visible[0].children).length)fail('Scalar does not accept children');
+          component=scalarDemo(visible[0].props);
+        }
         if (standalone && visible[0].type==='serializer') {
           const values=meaningful(visible[0].children).map(n=>{
             if(n.type!=='value'||meaningful(n.children).length)fail('Serializer only accepts self-closing Value entries');
@@ -217,10 +236,10 @@ export async function compileStations(directory, layoutFile, options = {}) {
           if (!component.prompt.trim()) fail('Computer prompt cannot be empty');
         }
         const heading = visible.find(n=>['h1','h2','h3'].includes(n.type));
-        const title = heading ? plain(heading) : component ? component.type : name.replace(/\.mdx$/i,'');
-        const body = nodes.filter(n=>n!==heading && !(component && n===visible[0]));
+        const title = heading ? plain(heading) : image ? image.alt : component ? component.type : name.replace(/\.mdx$/i,'');
+        const body = nodes.filter(n=>n!==heading && !((component||image) && n===visible[0]));
         const page = makeManifest(createElement('deck',{},createElement('slide',{id:card.slide,title},...body.map(element)))).slides[0];
-        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,...(visible.length===1&&visible[0].type==='h1'?{titleOnly:true}:{}),blocks:page.blocks,models:page.models});
+        steps.push({id:name.replace(/\.mdx$/i,''),source,kind:standalone?'component':'slide',component:component??(standalone?{type:'Scene'}:null),title,...(image?{image}:{}),...(visible.length===1&&visible[0].type==='h1'?{titleOnly:true}:{}),blocks:page.blocks,models:page.models});
       } catch (error) { throw new Error(`${source}: ${error.message}`,{cause:error}); }
     }
     stations.push({card,steps});

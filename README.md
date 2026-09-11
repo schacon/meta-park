@@ -252,7 +252,7 @@ Build another deck with `npm run build -- path/to/deck.mdx path/to/layout.json`;
 
 MDX uses the official compiler and supports JavaScript expressions, imports and reusable JSX function components. See `examples/git-meta/components.jsx` for composition examples. Imported components must ultimately produce the supported scene primitives or Markdown elements. Authoring code runs with Node permissions: compile decks you trust.
 
-Supported Markdown: headings, paragraphs, lists, blockquotes and fenced code. Inline emphasis and links currently render as plain text; links are not interactive. HTML widgets, React hooks, browser APIs, images and tables are not supported. Unsupported block elements fail the build. This is a native scene component contract rather than a React DOM renderer.
+Supported Markdown: headings, paragraphs, lists, blockquotes and fenced code. Inline emphasis and links currently render as plain text; links are not interactive. HTML widgets, React hooks, browser APIs and tables are not supported. Standalone `<Image src="./chart.png" alt="Chart description" />` pages display a local PNG on the presentation board. Image paths resolve relative to the MDX file; the original image is embedded in the manifest and fitted to the full board without cropping. Unsupported block elements fail the build. This is a native scene component contract rather than a React DOM renderer.
 
 ## Models and animation
 
@@ -463,3 +463,96 @@ The tree root is `refs/meta/local/main^{tree}`. The compiler produces real Git b
 The example snapshot in `examples/git-meta/serializer-reference.json` records reference data from `/tmp/meta-demo`; it resolves the example's short target commit IDs and preserves list timestamps while keeping the packaged demo independent of that repository. The commit sidebar shows the demonstration's metadata snapshots. The interactive demonstration stays in memory and does not modify the source repository or SQLite database.
 
 Arrow keys continue the presentation. Returning to the component preserves its current tree; leaving the station or logging out clears it. Run `node scripts/check-serializer.mjs --packaged` to exercise the native desktop interactions after packaging.
+
+`<Scalar />` opens **gitviz**, an SGI-style desktop visualizer at station 07.
+It steps through two writes, a prune commit, a fourth commit adding E, a full push, User 2's metadata-only clone, a tip hydrate,
+a missing-object lookup, an on-demand fetch, and User 3's depth-1 clone and unavailable-history lookup. Purple commits point to teal trees; gold cubes are local
+blobs. Dashed boxes on User 2 indicate promised objects. The prune preserves
+historical trees and blobs; clone gets no blobs, hydrate gets C/D/E, and reading k1 fetches only A. User 3 receives only C4/T4/C/D/E; k1 is outside its shallow history and cannot trigger a blob fetch.
+
+Commands appear in large type and type out over one second each time a stage starts.
+Use Space/Right and Left to move through the eleven steps, or click the step list.
+R resets, B steps back, and P toggles playback. Tilt, Zoom, and Speed sliders
+control the view and playback; **bird's eye** and **front view** are presets.
+At either end, arrows continue to the adjacent presentation page. **Session**
+or the title-bar minimize button restores park control. Returning to the page
+preserves state; leaving the station or logging out clears it. Each visited
+Scalar step counts toward Power progress.
+
+An optional `title` prop changes the window title. The demo is an in-memory
+presentation: displayed `git meta` commands follow `../git-meta`'s CLI, but do
+not execute against a repository. A–E, C1–C4 and T1–T4 are readable aliases;
+nested Git path trees and metadata bookkeeping are omitted. All five keys use
+`path:demo`. The demo dates k1/k2 to August 31, 2026 and k3/k4 to September 11,
+so `prune --since 2026-09-01` retains exactly C/D. The displayed commands omit
+timestamp arguments.
+User 2 setup has no depth limit; User 3 uses `.git-meta` with `depth: 1`.
+
+Run `node scripts/check-scalar.mjs` for the native interaction test, or add
+`--packaged` after packaging. It captures add, prune, clone, hydrate, and read screenshots
+in `unreal/Saved/Screenshots/`.
+
+Scalar renders real native meshes into its desktop viewport. Commit, tree, and
+blob labels are inset onto their top planes, with consistent, top-aligned commit/tree text and equal tree dimensions. Commit
+labels omit authors and timestamps. Drag
+the viewport to orbit, swipe with two fingers on a Mac trackpad to pan, and
+pinch two fingers, use the mouse wheel, or use the Zoom slider to zoom. Panning follows the current camera
+orientation, with inverted vertical swipe motion. Reset or switch camera
+modes to recenter. **Camera: moving camera** follows
+each step's action; click it (or press C) for **full scene**, which keeps all
+four spaces framed. Mouse orbit and trackpad panning work in both modes.
+Hold Shift and drag to draw freehand highlights over the scene. Each new
+stroke uses the next color; outlines can overlap and fade independently over
+two seconds after release. Repeated clicks also work while Shift stays held.
+Normal dragging still orbits.
+
+Commit steps create their commit first, then the tree, then each new blob, with
+short growth animations and pointers appearing after their objects. Existing
+objects stay visible; prune creates only C3 and T3. Autoplay waits for creation
+to finish before advancing.
+
+Push animates thirteen object copies to the remote (four commits, four trees,
+five blobs). Setup first animates eight metadata copies to User 2 (four commits, four trees),
+then a separate hydrate step animates C, D and E. These are two phases of the same
+`git meta setup` command. The get step first shows the missing A lookup; the following step
+animates A's promisor fetch and returns its value. Source objects stay in place,
+and B stays remote. Autoplay lets each transfer finish before advancing.
+
+
+`<Exchange />` stages “Two keepers, one dinosaur” in the park: Keeper 1 on the
+left, the append-only **CRDT-Rex** record in the middle, and Keeper 2 on the right.
+The care cards use `dino:name` (string), `feeding:foods` (set), and
+`feeding:times` (list). Keeper 1 creates B with Rex, two foods, and one feeding
+time. Keeper 2 copies it; both keepers independently edit their own copies.
+Keeper 2 publishes R first. Keeper 1’s push is blocked, then merges locally:
+Chomper wins over Tiny, all four foods survive, and both feeding times join the
+ordered list. Retrying appends M after R. The center keeps all three complete
+snapshots; neither a rejected push nor a local merge appends an entry.
+Keeper 2 keeps their existing copy until they synchronize again.
+
+The keepers enter the scene, values travel between their clipboards and the
+record, and a refused push returns to its sender. Gold labels identify local
+name selection and clean collection merges. Space/Right advances, Left goes
+back, and R restarts. The park background stays dim while the story is visible.
+The example uses shared ancestry and additions/appends; deletions, tombstones,
+and unrelated histories are outside its scope. Publishing stages illustrate the
+automatic fetch/merge/retry inside `git meta push`, not a `--ff-only` CLI flag.
+Run `node scripts/check-exchange.mjs` (or `--packaged`) for native checks and
+screenshots of the full keeper workflow.
+
+`<SpeedGraph metric="total" />` follows Scalar with a physical pull-down
+screen. The top housing stays fixed while the bottom roller and handle descend
+over 1.6 seconds, revealing four vector brontosaurus silhouettes. Bodies stay
+the same size; a common short neck plus a time-scaled extension provides an
+illustrative comparison. The printed times carry the numeric comparison. Horizontal 100-second grid
+lines share one scale, colored neck bands and ticks mark the timing phases,
+and a dashed tick marks setup returning before background indexing finishes.
+Each dinosaur has a numeric fetch/hydrate/repack/materialize/index breakdown.
+Phase values retain the source graph rounding; widths normalize to its total.
+`setup` subtracts background indexing from the supplied benchmark totals and
+rounds labels to seconds (12 / 64 / 444 / 91). `metric="total"` instead shows
+12.8 / 79.5 / 553 / 93 seconds including indexing. The original benchmark PNG
+remains in `slides/07/images/` as the data reference.
+
+`<Image src="./image.png" alt="..." />` is also supported for ordinary board
+pages. Images are embedded in the manifest and scaled to fit the physical sign.

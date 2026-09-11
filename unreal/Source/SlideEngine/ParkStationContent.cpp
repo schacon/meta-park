@@ -1,4 +1,8 @@
 #include "SlideGameMode.h"
+#include "ParkScalar.h"
+#include "ParkSpeedGraph.h"
+#include "ParkExchange.h"
+#include "ParkSlideImage.h"
 #include "ParkTerminal.h"
 #include "ParkFSV.h"
 #include "ParkColdStorage.h"
@@ -30,7 +34,10 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
   auto Body=SNew(SVerticalBox);
   const FString Heading=bIsland?FString::Printf(TEXT("[%d] %s  /  %s     %02d / %02d"),StationIndex+1,*Station->GetObjectField(TEXT("card"))->GetStringField(TEXT("code")),*Label,Page+1,Steps.Num()):Step->GetStringField(TEXT("title"));
   bool TitleOnly=false;Step->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
-  if(!TitleOnly) {
+  const TSharedPtr<FJsonObject>* Image;const bool ImageOnly=Step->TryGetObjectField(TEXT("image"),Image);
+  if(ImageOnly) {
+   Body->AddSlot().FillHeight(1)[MakeParkSlideImage(*Image)];
+  } else if(!TitleOnly) {
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.13,.61,.24)).Padding(12)
    [SNew(STextBlock).Text(FText::FromString(Heading)).Font(FCoreStyle::GetDefaultFontStyle("Mono",24)).ColorAndOpacity(FLinearColor(.015,.025,.02))]];
   Body->AddSlot().AutoHeight().Padding(0,0,0,28)[SNew(STextBlock).Text(FText::FromString(Step->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",48*TypeScale)).ColorAndOpacity(FLinearColor(.001,.001,.001)).AutoWrapText(true)];
@@ -49,7 +56,7 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
    Body->AddSlot().FillHeight(1).HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
     [SNew(STextBlock).Text(FText::FromString(Step->GetStringField(TEXT("title")))).Font(FCoreStyle::GetDefaultFontStyle("Bold",160)).ColorAndOpacity(FLinearColor(.001,.001,.001)).WrapTextAt(1240).Justification(ETextJustify::Center)]];
   }
-  auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.66,.67,.63)).Padding(48)[Body];
+  auto Content=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(ImageOnly?FLinearColor::White:FLinearColor(.66,.67,.63)).Padding(ImageOnly?12:48)[Body];
   FString Kind;Step->TryGetStringField(TEXT("kind"),Kind);
   const bool Component=Kind==TEXT("component");
   auto Tile=SNew(SBox)
@@ -75,16 +82,20 @@ bool ASlideGameMode::IsComponentPage() const {
  FString Kind;
  if(!StationSteps.IsValidIndex(Index)||!StationSteps[Index].IsValidIndex(PageIndex))return false;
  const auto Step=StationSteps[Index][PageIndex];const TSharedPtr<FJsonObject>* Component;
- return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||((*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("FSV")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("Serializer")));
+ return Step->TryGetStringField(TEXT("kind"),Kind)&&Kind==TEXT("component")&&(!Step->TryGetObjectField(TEXT("component"),Component)||((*Component)->GetStringField(TEXT("type"))!=TEXT("CommandLine")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("FSV")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("Serializer")&&(*Component)->GetStringField(TEXT("type"))!=TEXT("Scalar")));
 }
 void ASlideGameMode::ResetStationPage() {
  PageIndex=0;RevealedPage=0;PreviousPage=INDEX_NONE;PageSwipe=1;ActiveComponentPage=INDEX_NONE;
  PageColdStorage.Empty();ColdStorage.Reset();EmployeeBadge.Reset();WoodSign.Reset();WoodSignKey=MAX_uint64;RaptorView.Reset();RaptorKey=MAX_uint64;
- PageSerializers.Empty();Serializer.Reset();
+ SpeedGraph.Reset();
+ PageExchanges.Empty();Exchange.Reset();
+ PageSerializers.Empty();Serializer.Reset();PageScalars.Empty();Scalar.Reset();
  PageCasts.Empty();CastPlayer.Reset();PageFSVs.Empty();FSV.Reset();
  ActiveTerminals.Empty();ComponentStartTimes.Empty();for(auto& Entry:PageTerminals)Entry.Value->Hide();
 }
 bool ASlideGameMode::AdvancePage(int32 Direction,bool SkipComponent) {
+ if(!SkipComponent&&Exchange.IsValid()&&Exchange->Advance(Direction)){ViewedExchangeSteps.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(Exchange->Selected));return true;}
+ if(!SkipComponent&&bCommandDesktop&&bDesktopScalar&&Scalar.IsValid()&&Scalar->Advance(Direction)){ViewedScalarSteps.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(Scalar->Selected));return true;}
  if(!SkipComponent&&bCommandDesktop&&bDesktopFSV&&FSV.IsValid()&&FSV->Advance(Direction)) {
   if(FSV->Selected>=0)ViewedFSVSystems.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(FSV->Selected));
   return true;
@@ -145,7 +156,7 @@ void ASlideGameMode::TickStationPage(float Delta) {
  TSharedPtr<FJsonObject> DesktopComponent;
  if(Showing&&StationSteps.IsValidIndex(Index)&&StationSteps[Index].IsValidIndex(PageIndex)) {
   const TSharedPtr<FJsonObject>* Component;
-  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine")||(*Component)->GetStringField(TEXT("type"))==TEXT("FSV")||(*Component)->GetStringField(TEXT("type"))==TEXT("Serializer")))DesktopComponent=*Component;
+  if(StationSteps[Index][PageIndex]->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("CommandLine")||(*Component)->GetStringField(TEXT("type"))==TEXT("FSV")||(*Component)->GetStringField(TEXT("type"))==TEXT("Serializer")||(*Component)->GetStringField(TEXT("type"))==TEXT("Scalar")))DesktopComponent=*Component;
  }
  TickCommandDesktop(Delta,DesktopComponent);
  TSharedPtr<FJsonObject> Prop;
@@ -156,6 +167,16 @@ void ASlideGameMode::TickStationPage(float Delta) {
  }
  const uint64 Key=(uint64(Index)<<32)|uint32(PageIndex);
  const FString Type=Prop.IsValid()?Prop->GetStringField(TEXT("type")):TEXT("");
+ Exchange.Reset();
+ if(Type==TEXT("Exchange")) {
+  if(!PageExchanges.Contains(Key))PageExchanges.Add(Key,MakeShared<FParkExchange>(GetWorld(),Prop));
+  Exchange=PageExchanges[Key];ViewedExchangeSteps.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(Exchange->Selected));
+ }
+ for(auto& Entry:PageExchanges)Entry.Value->Update(Delta,Panels[Index].RaisedPosition,CameraStops[Index],Showing&&DesktopMinimize==0&&Exchange==Entry.Value);
+ if(Type==TEXT("SpeedGraph")) {
+  if(!SpeedGraph.IsValid())SpeedGraph=MakeShared<FParkSpeedGraph>(GetWorld(),Prop);
+  SpeedGraph->Update(Delta,Camera,Panels[Index].RaisedPosition,CameraStops[Index],Showing&&DesktopMinimize==0);
+ } else SpeedGraph.Reset();
  ColdStorage.Reset();
  if(Type==TEXT("ColdStorage")) {
   if(!PageColdStorage.Contains(Key))PageColdStorage.Add(Key,MakeShared<FParkColdStorage>(GetWorld(),Prop));
@@ -189,18 +210,19 @@ bool ASlideGameMode::UsesPhysicalProp() const {
  const auto Step=StationSteps[Index][PageIndex];bool TitleOnly=false;
  const int32 SignPage=StationSignPage(Index,PageIndex);if(SignPage>=0)StationSteps[Index][SignPage]->TryGetBoolField(TEXT("titleOnly"),TitleOnly);
  const TSharedPtr<FJsonObject>* C;
- return (Index==0&&SignPage==0)||TitleOnly||(Step->TryGetObjectField(TEXT("component"),C)&&((*C)->GetStringField(TEXT("type"))==TEXT("RaptorWarning")||(*C)->GetStringField(TEXT("type"))==TEXT("Raptors")));
+ return (Index==0&&SignPage==0)||TitleOnly||(Step->TryGetObjectField(TEXT("component"),C)&&((*C)->GetStringField(TEXT("type"))==TEXT("RaptorWarning")||(*C)->GetStringField(TEXT("type"))==TEXT("Raptors")||(*C)->GetStringField(TEXT("type"))==TEXT("SpeedGraph")||(*C)->GetStringField(TEXT("type"))==TEXT("Exchange")));
 
 }
 
 int32 ASlideGameMode::PowerPercent() const {
  int32 Total=0;for(const auto& Steps:StationSteps)for(const auto& Step:Steps) {
   Total++;const TSharedPtr<FJsonObject>* Component;
+  if(Step->TryGetObjectField(TEXT("component"),Component)&&((*Component)->GetStringField(TEXT("type"))==TEXT("Scalar")||(*Component)->GetStringField(TEXT("type"))==TEXT("Exchange")))Total+=(*Component)->GetArrayField(TEXT("steps")).Num();
   if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("FSV"))Total+=(*Component)->GetArrayField(TEXT("systems")).Num();
   if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("ColdStorage"))Total+=4;
   if(Step->TryGetObjectField(TEXT("component"),Component)&&(*Component)->GetStringField(TEXT("type"))==TEXT("Raptors"))Total+=4;
  }
- return Total>0?FMath::Clamp(FMath::CeilToInt(100.f*(Total-ViewedPages.Num()-ViewedFSVSystems.Num()-ViewedColdSpecimens.Num()-ViewedRaptors.Num())/Total),0,100):100;
+ return Total>0?FMath::Clamp(FMath::CeilToInt(100.f*(Total-ViewedPages.Num()-ViewedExchangeSteps.Num()-ViewedScalarSteps.Num()-ViewedFSVSystems.Num()-ViewedColdSpecimens.Num()-ViewedRaptors.Num())/Total),0,100):100;
 }
 int32 ASlideGameMode::SecurityPercent() const {
  return TimerDuration>0?FMath::Clamp(FMath::CeilToInt(100.f*(TimerDuration-TimerElapsed)/TimerDuration),0,100):100;

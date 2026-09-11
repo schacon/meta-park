@@ -1,4 +1,6 @@
 #include "SlideGameMode.h"
+#include "ParkScalar.h"
+#include "ParkExchange.h"
 #include "IslandScene.h"
 #include "ParkViewportClient.h"
 #include "ParkCamera.h"
@@ -61,7 +63,9 @@ void ASlideGameMode::HandleParkKey(const FKey& Key) {
  if(bConfirmFinish){if(Key==EKeys::Enter||Key==EKeys::Y)ShowQuestions();else if(Key==EKeys::Escape||Key==EKeys::N)bConfirmFinish=false;return;}
  if(bQuestions){if(Key==EKeys::Escape)LogoutToLogin();return;}
  if(DesktopMinimize>0&&DesktopMinimize<1)return;
- if(bCommandDesktop&&!bDesktopFSV&&!bDesktopSerializer&&Key==EKeys::SpaceBar){if(CastPlayer.IsValid())CastPlayer->TogglePlayback();return;}
+ if(bCommandDesktop&&bDesktopScalar&&Scalar.IsValid()){if(Key==EKeys::C){Scalar->ToggleCamera();return;}if(Key==EKeys::R){Scalar->Reset();return;}if(Key==EKeys::B){Scalar->Advance(-1);return;}if(Key==EKeys::P){Scalar->TogglePlayback();return;}}
+ if(Exchange.IsValid()&&Key==EKeys::R){Exchange->Select(0);return;}
+ if(bCommandDesktop&&!bDesktopScalar&&!bDesktopFSV&&!bDesktopSerializer&&Key==EKeys::SpaceBar){if(CastPlayer.IsValid())CastPlayer->TogglePlayback();return;}
  if(Key==EKeys::F){ToggleFreeFlight();return;}
  static const FKey Numbers[]={EKeys::One,EKeys::Two,EKeys::Three,EKeys::Four,EKeys::Five,EKeys::Six,EKeys::Seven,EKeys::Eight};
  static const FKey Numpad[]={EKeys::NumPadOne,EKeys::NumPadTwo,EKeys::NumPadThree,EKeys::NumPadFour,EKeys::NumPadFive,EKeys::NumPadSix,EKeys::NumPadSeven,EKeys::NumPadEight};
@@ -176,6 +180,8 @@ void ASlideGameMode::TickParkNavigation(float Delta) {
  if(FParse::Param(FCommandLine::Get(),TEXT("StationContentTest"))){TestStationContent();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("EndingTest"))){TestEnding();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("NativePropsTest"))){TestNativeProps();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("ExchangeTest"))){TestExchange();return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("ScalarTest"))){TestScalar();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("SerializerTest"))){TestSerializer();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("FSVTest"))){TestFSV();return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("CastTest"))){TestCast();return;}

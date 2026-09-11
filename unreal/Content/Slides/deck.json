@@ -58,7 +58,11 @@
       "blocks": [
         {
           "kind": "p",
-          "text": "New metadata format for Git projects"
+          "text": "A new metadata approach for Git."
+        },
+        {
+          "kind": "p",
+          "text": "What are the goals?"
         }
       ],
       "models": [],
@@ -126,7 +130,11 @@
           "blocks": [
             {
               "kind": "p",
-              "text": "New metadata format for Git projects"
+              "text": "A new metadata approach for Git."
+            },
+            {
+              "kind": "p",
+              "text": "What are the goals?"
             }
           ],
           "models": []
@@ -139,20 +147,24 @@
             "type": "ColdStorage",
             "canisters": [
               {
-                "species": "granularity",
-                "description": "more fine grained metadata targets (branches, paths, etc)"
+                "species": "Granulosaurus",
+                "description": "more fine grained metadata targets (branches, paths, etc)",
+                "label": "granularity"
               },
               {
-                "species": "performance",
-                "description": "fast query and mutation for local metadata, scaling to millions of keys"
+                "species": "Velocirapidus",
+                "description": "fast query and mutation for local metadata, scaling to millions of keys",
+                "label": "performance"
               },
               {
-                "species": "exchange",
-                "description": "exchange metadata using existing Git protocols"
+                "species": "Exchangodon",
+                "description": "exchange metadata using existing Git protocols",
+                "label": "exchange"
               },
               {
-                "species": "merging",
-                "description": "CRDT-like merge behavior"
+                "species": "Merginodon",
+                "description": "CRDT-like merge behavior",
+                "label": "merging"
               }
             ]
           },
@@ -6572,15 +6584,2052 @@
           "models": []
         },
         {
-          "id": "02-example",
-          "source": "slides/05/02-example.mdx",
+          "id": "02-example-storage",
+          "source": "slides/05/02-example-storage.mdx",
           "kind": "component",
           "component": {
-            "type": "Computer",
-            "prompt": "git meta set",
-            "output": "OK"
+            "type": "Serializer",
+            "title": "Git Object Explorer",
+            "ref": "refs/meta/local/main",
+            "tree": "d5675a6a5dab2f06390e3d7d0399d8c71b31890c",
+            "rows": [
+              {
+                "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                "shortTarget": "commit:5aa110f",
+                "key": "review:status",
+                "type": "string",
+                "value": "approved, later merged",
+                "hidden": false,
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status",
+                "author": "schacon@gmail.com",
+                "created": 1789042128953,
+                "modified": 1789042141516,
+                "history": [
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128953,
+                    "value": "\"approved\""
+                  },
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042141516,
+                    "value": "\"merged\""
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status/__value",
+                    "object": "f6d8e917a76ed44ffef3b141ac6406d5458e89ee",
+                    "value": "approved, later merged",
+                    "bytes": 22
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                "shortTarget": "commit:5aa110f",
+                "key": "review:pr",
+                "type": "string",
+                "value": "42",
+                "hidden": false,
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr",
+                "author": "schacon@gmail.com",
+                "created": 1789042128959,
+                "modified": 1789042128959,
+                "history": [
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128959,
+                    "value": "\"42\""
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr/__value",
+                    "object": "f70d7bba4ae1f07682e0358bd7a2068094fc023b",
+                    "value": "42",
+                    "bytes": 2
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "commit:bf96ae4e740924b255146910221f46b284ac2fac",
+                "shortTarget": "commit:bf96ae4",
+                "key": "agent:model",
+                "type": "string",
+                "value": "claude-opus-5",
+                "hidden": false,
+                "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model",
+                "author": "schacon@gmail.com",
+                "created": 1789042128964,
+                "modified": 1789042128964,
+                "history": [
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128964,
+                    "value": "\"claude-opus-5\""
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model/__value",
+                    "object": "b22a9d0ee2abcf1462cb1e48e121e21a450acd7f",
+                    "value": "claude-opus-5",
+                    "bytes": 13
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "branch:main",
+                "shortTarget": "branch:main",
+                "key": "deploy:env",
+                "type": "string",
+                "value": "production",
+                "hidden": false,
+                "path": "branch/b2/main/deploy/env",
+                "author": "schacon@gmail.com",
+                "created": 1789042128970,
+                "modified": 1789042128970,
+                "history": [
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128970,
+                    "value": "\"production\""
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "branch/b2/main/deploy/env/__value",
+                    "object": "7ca67535d6075dea3e902c761c7f2b8a25ff690b",
+                    "value": "production",
+                    "bytes": 10
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "path:main.rs",
+                "shortTarget": "path:main.rs",
+                "key": "owner",
+                "type": "string",
+                "value": "schacon@gmail.com",
+                "hidden": false,
+                "path": "path/main.rs/__target__/owner",
+                "author": "schacon@gmail.com",
+                "created": 1789042128974,
+                "modified": 1789042128974,
+                "history": [
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128974,
+                    "value": "\"schacon@gmail.com\""
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "path/main.rs/__target__/owner/__value",
+                    "object": "dcdbdcc8594cdb3f09f3af37eeff27f73781da85",
+                    "value": "schacon@gmail.com",
+                    "bytes": 17
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "project",
+                "shortTarget": "project",
+                "key": "ci:provider",
+                "type": "string",
+                "value": "github-actions",
+                "hidden": false,
+                "path": "project/ci/provider",
+                "author": "schacon@gmail.com",
+                "created": 1789042128981,
+                "modified": 1789042128981,
+                "history": [
+                  {
+                    "operation": "set",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128981,
+                    "value": "\"github-actions\""
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "project/ci/provider/__value",
+                    "object": "c3970bf15e0470c70297b2da2d04bf1e4d47faff",
+                    "value": "github-actions",
+                    "bytes": 14
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                "shortTarget": "commit:5aa110f",
+                "key": "review:reviewers",
+                "type": "set",
+                "value": "alice, bob",
+                "hidden": false,
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers",
+                "author": "schacon@gmail.com",
+                "created": 1789042128987,
+                "modified": 1789042128993,
+                "history": [
+                  {
+                    "operation": "set_add",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128987,
+                    "value": "[]"
+                  },
+                  {
+                    "operation": "set_add",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128993,
+                    "value": "[]"
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "object": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "value": "alice",
+                    "bytes": 5
+                  },
+                  {
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "object": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "value": "bob",
+                    "bytes": 3
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "path:main.rs",
+                "shortTarget": "path:main.rs",
+                "key": "tags",
+                "type": "set",
+                "value": "rust",
+                "hidden": true,
+                "path": "path/main.rs/__target__/tags",
+                "author": "schacon@gmail.com",
+                "created": 1789042128999,
+                "modified": 1789042128999,
+                "history": [
+                  {
+                    "operation": "set_add",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042128999,
+                    "value": "[]"
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "path/main.rs/__target__/tags/__set/6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                    "object": "6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                    "value": "rust",
+                    "bytes": 4
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "commit:5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                "shortTarget": "commit:5aa110f",
+                "key": "ci:runs",
+                "type": "list",
+                "value": "build:passed, test:passed",
+                "hidden": true,
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs",
+                "author": "schacon@gmail.com",
+                "created": 1789042129005,
+                "modified": 1789042129013,
+                "history": [
+                  {
+                    "operation": "push",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042129005,
+                    "value": "[]"
+                  },
+                  {
+                    "operation": "push",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042129013,
+                    "value": "[]"
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list/1789042129005-9ea14",
+                    "object": "27ccdf20db32d653de38afa4b013c474c36c8322",
+                    "value": "build:passed",
+                    "bytes": 12
+                  },
+                  {
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list/1789042129013-de9f0",
+                    "object": "3da17af6cf178f9de954b30d8aefb11fb513922d",
+                    "value": "test:passed",
+                    "bytes": 11
+                  }
+                ],
+                "excluded": false
+              },
+              {
+                "target": "project",
+                "shortTarget": "project",
+                "key": "changelog",
+                "type": "list",
+                "value": "0.1.0 initial release",
+                "hidden": true,
+                "path": "project/changelog",
+                "author": "schacon@gmail.com",
+                "created": 1789042129018,
+                "modified": 1789042129018,
+                "history": [
+                  {
+                    "operation": "push",
+                    "email": "schacon@gmail.com",
+                    "timestamp": 1789042129018,
+                    "value": "[]"
+                  }
+                ],
+                "blobs": [
+                  {
+                    "path": "project/changelog/__list/1789042129018-535d6",
+                    "object": "d07f7576ba4b9615aef1d14dc46c8e3506f209dd",
+                    "value": "0.1.0 initial release",
+                    "bytes": 21
+                  }
+                ],
+                "excluded": false
+              }
+            ],
+            "nodes": [
+              {
+                "name": "refs/meta/local/main^{tree}",
+                "path": "",
+                "type": "tree",
+                "object": "d5675a6a5dab2f06390e3d7d0399d8c71b31890c",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9
+                ],
+                "parent": -1,
+                "depth": 0
+              },
+              {
+                "name": "branch",
+                "path": "branch",
+                "type": "tree",
+                "object": "4242cea6a0e6f17d0128b01363563465b66bb7ea",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  3
+                ],
+                "parent": 0,
+                "depth": 1
+              },
+              {
+                "name": "b2",
+                "path": "branch/b2",
+                "type": "tree",
+                "object": "2f390453ec2c59762ad6186904e6b43369e425a4",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  3
+                ],
+                "parent": 1,
+                "depth": 2
+              },
+              {
+                "name": "main",
+                "path": "branch/b2/main",
+                "type": "tree",
+                "object": "1c04796e6d40f67e9d22b64fab2205c1fbf895ff",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  3
+                ],
+                "parent": 2,
+                "depth": 3
+              },
+              {
+                "name": "deploy",
+                "path": "branch/b2/main/deploy",
+                "type": "tree",
+                "object": "7d331e82e4fa0991a359f6abe75731040db31794",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  3
+                ],
+                "parent": 3,
+                "depth": 4
+              },
+              {
+                "name": "env",
+                "path": "branch/b2/main/deploy/env",
+                "type": "tree",
+                "object": "f87864bbab38d3ef93043d757a08539341d1fb63",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  3
+                ],
+                "parent": 4,
+                "depth": 5
+              },
+              {
+                "name": "__value",
+                "path": "branch/b2/main/deploy/env/__value",
+                "type": "blob",
+                "object": "7ca67535d6075dea3e902c761c7f2b8a25ff690b",
+                "value": "production",
+                "bytes": 10,
+                "rows": [
+                  3
+                ],
+                "parent": 5,
+                "depth": 6
+              },
+              {
+                "name": "commit",
+                "path": "commit",
+                "type": "tree",
+                "object": "0c966cd1c65c14d8ab4e10179c2d094401da5cf8",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  0,
+                  1,
+                  2,
+                  6,
+                  8
+                ],
+                "parent": 0,
+                "depth": 1
+              },
+              {
+                "name": "5a",
+                "path": "commit/5a",
+                "type": "tree",
+                "object": "5185679b4148f8c1636541f9f4d3e0c45b6cd31d",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  0,
+                  1,
+                  6,
+                  8
+                ],
+                "parent": 7,
+                "depth": 2
+              },
+              {
+                "name": "5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                "type": "tree",
+                "object": "ddc35d9dc1ac6d1e861bf4431d1e06a85ac7c374",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  0,
+                  1,
+                  6,
+                  8
+                ],
+                "parent": 8,
+                "depth": 3
+              },
+              {
+                "name": "ci",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci",
+                "type": "tree",
+                "object": "f55148f5e6edc323250dca9cce3940a5b5d2c5d0",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  8
+                ],
+                "parent": 9,
+                "depth": 4
+              },
+              {
+                "name": "runs",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs",
+                "type": "tree",
+                "object": "1442d5e415a77abf64537d2a418efc2962e9c42a",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  8
+                ],
+                "parent": 10,
+                "depth": 5
+              },
+              {
+                "name": "__list",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list",
+                "type": "tree",
+                "object": "6dfa4f08b4cb9ee0db69dc5e81f27259d6e93772",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  8
+                ],
+                "parent": 11,
+                "depth": 6
+              },
+              {
+                "name": "1789042129005-9ea14",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list/1789042129005-9ea14",
+                "type": "blob",
+                "object": "27ccdf20db32d653de38afa4b013c474c36c8322",
+                "value": "build:passed",
+                "bytes": 12,
+                "rows": [
+                  8
+                ],
+                "parent": 12,
+                "depth": 7
+              },
+              {
+                "name": "1789042129013-de9f0",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list/1789042129013-de9f0",
+                "type": "blob",
+                "object": "3da17af6cf178f9de954b30d8aefb11fb513922d",
+                "value": "test:passed",
+                "bytes": 11,
+                "rows": [
+                  8
+                ],
+                "parent": 12,
+                "depth": 7
+              },
+              {
+                "name": "review",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review",
+                "type": "tree",
+                "object": "2a5a8ff5dcb30d161d0f1a79966e615d232e5aa6",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  0,
+                  1,
+                  6
+                ],
+                "parent": 9,
+                "depth": 4
+              },
+              {
+                "name": "pr",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr",
+                "type": "tree",
+                "object": "f394b7bb8f5f889b0b01a96683a06e88cc7009e8",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  1
+                ],
+                "parent": 15,
+                "depth": 5
+              },
+              {
+                "name": "__value",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr/__value",
+                "type": "blob",
+                "object": "f70d7bba4ae1f07682e0358bd7a2068094fc023b",
+                "value": "42",
+                "bytes": 2,
+                "rows": [
+                  1
+                ],
+                "parent": 16,
+                "depth": 6
+              },
+              {
+                "name": "reviewers",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers",
+                "type": "tree",
+                "object": "8092a3c01485e97eaf98b842ddea1eda174edd64",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  6
+                ],
+                "parent": 15,
+                "depth": 5
+              },
+              {
+                "name": "__set",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set",
+                "type": "tree",
+                "object": "ab8e9b9238d85890e2cae87ea919567e5b0f25a1",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  6
+                ],
+                "parent": 18,
+                "depth": 6
+              },
+              {
+                "name": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/2529de8969e5ee206e572ed72a0389c3115ad95c",
+                "type": "blob",
+                "object": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                "value": "bob",
+                "bytes": 3,
+                "rows": [
+                  6
+                ],
+                "parent": 19,
+                "depth": 7
+              },
+              {
+                "name": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                "type": "blob",
+                "object": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                "value": "alice",
+                "bytes": 5,
+                "rows": [
+                  6
+                ],
+                "parent": 19,
+                "depth": 7
+              },
+              {
+                "name": "status",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status",
+                "type": "tree",
+                "object": "c79212bc0969267f2cead950e84bb7cab2cf27cd",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  0
+                ],
+                "parent": 15,
+                "depth": 5
+              },
+              {
+                "name": "__value",
+                "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status/__value",
+                "type": "blob",
+                "object": "f6d8e917a76ed44ffef3b141ac6406d5458e89ee",
+                "value": "approved, later merged",
+                "bytes": 22,
+                "rows": [
+                  0
+                ],
+                "parent": 22,
+                "depth": 6
+              },
+              {
+                "name": "bf",
+                "path": "commit/bf",
+                "type": "tree",
+                "object": "29eb3e4ed5932033c5e7bf645d867a0d062e480c",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  2
+                ],
+                "parent": 7,
+                "depth": 2
+              },
+              {
+                "name": "bf96ae4e740924b255146910221f46b284ac2fac",
+                "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac",
+                "type": "tree",
+                "object": "241276f70ee9a60b991dca60f9da7520a3ed1c22",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  2
+                ],
+                "parent": 24,
+                "depth": 3
+              },
+              {
+                "name": "agent",
+                "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent",
+                "type": "tree",
+                "object": "daffd99d1fd7678f333497e74f5f2714cad3363d",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  2
+                ],
+                "parent": 25,
+                "depth": 4
+              },
+              {
+                "name": "model",
+                "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model",
+                "type": "tree",
+                "object": "040a77da662d525ef63b242d6df9149ab8f15757",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  2
+                ],
+                "parent": 26,
+                "depth": 5
+              },
+              {
+                "name": "__value",
+                "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model/__value",
+                "type": "blob",
+                "object": "b22a9d0ee2abcf1462cb1e48e121e21a450acd7f",
+                "value": "claude-opus-5",
+                "bytes": 13,
+                "rows": [
+                  2
+                ],
+                "parent": 27,
+                "depth": 6
+              },
+              {
+                "name": "path",
+                "path": "path",
+                "type": "tree",
+                "object": "21a9b22a8cf110ac1c1e68a3eaea98a1245cf973",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  4,
+                  7
+                ],
+                "parent": 0,
+                "depth": 1
+              },
+              {
+                "name": "main.rs",
+                "path": "path/main.rs",
+                "type": "tree",
+                "object": "b8e6d716d482a56ec16ee01b21c1ee9fc7adcbf6",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  4,
+                  7
+                ],
+                "parent": 29,
+                "depth": 2
+              },
+              {
+                "name": "__target__",
+                "path": "path/main.rs/__target__",
+                "type": "tree",
+                "object": "299b3e2a827a9a2e56d5c7bc2dc3afdcf9733ff7",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  4,
+                  7
+                ],
+                "parent": 30,
+                "depth": 3
+              },
+              {
+                "name": "owner",
+                "path": "path/main.rs/__target__/owner",
+                "type": "tree",
+                "object": "26e8dd871bab3bf63531d70d84d1ec9dce940c56",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  4
+                ],
+                "parent": 31,
+                "depth": 4
+              },
+              {
+                "name": "__value",
+                "path": "path/main.rs/__target__/owner/__value",
+                "type": "blob",
+                "object": "dcdbdcc8594cdb3f09f3af37eeff27f73781da85",
+                "value": "schacon@gmail.com",
+                "bytes": 17,
+                "rows": [
+                  4
+                ],
+                "parent": 32,
+                "depth": 5
+              },
+              {
+                "name": "tags",
+                "path": "path/main.rs/__target__/tags",
+                "type": "tree",
+                "object": "22c2d28b8803ed8e2797c74993f261dd4c90a327",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  7
+                ],
+                "parent": 31,
+                "depth": 4
+              },
+              {
+                "name": "__set",
+                "path": "path/main.rs/__target__/tags/__set",
+                "type": "tree",
+                "object": "a18cdf1220c34e6d5710261272dabb4c4dfa78b5",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  7
+                ],
+                "parent": 34,
+                "depth": 5
+              },
+              {
+                "name": "6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                "path": "path/main.rs/__target__/tags/__set/6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                "type": "blob",
+                "object": "6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                "value": "rust",
+                "bytes": 4,
+                "rows": [
+                  7
+                ],
+                "parent": 35,
+                "depth": 6
+              },
+              {
+                "name": "project",
+                "path": "project",
+                "type": "tree",
+                "object": "12f1adfe8716e52d716497135bed5fd8299bddb9",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  5,
+                  9
+                ],
+                "parent": 0,
+                "depth": 1
+              },
+              {
+                "name": "changelog",
+                "path": "project/changelog",
+                "type": "tree",
+                "object": "c6da0ddbb7ec17eae4b0b0dc1b23a4e27739f149",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  9
+                ],
+                "parent": 37,
+                "depth": 2
+              },
+              {
+                "name": "__list",
+                "path": "project/changelog/__list",
+                "type": "tree",
+                "object": "478bf4c0fce07d8d2f66340b549c89222fb78911",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  9
+                ],
+                "parent": 38,
+                "depth": 3
+              },
+              {
+                "name": "1789042129018-535d6",
+                "path": "project/changelog/__list/1789042129018-535d6",
+                "type": "blob",
+                "object": "d07f7576ba4b9615aef1d14dc46c8e3506f209dd",
+                "value": "0.1.0 initial release",
+                "bytes": 21,
+                "rows": [
+                  9
+                ],
+                "parent": 39,
+                "depth": 4
+              },
+              {
+                "name": "ci",
+                "path": "project/ci",
+                "type": "tree",
+                "object": "658eabcdd5defbf46ee814d6d4c223022d48bcab",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  5
+                ],
+                "parent": 37,
+                "depth": 2
+              },
+              {
+                "name": "provider",
+                "path": "project/ci/provider",
+                "type": "tree",
+                "object": "64e2b9fd74fa3f80a5e6d8c82572d90e5e7697ed",
+                "value": "",
+                "bytes": 0,
+                "rows": [
+                  5
+                ],
+                "parent": 41,
+                "depth": 3
+              },
+              {
+                "name": "__value",
+                "path": "project/ci/provider/__value",
+                "type": "blob",
+                "object": "c3970bf15e0470c70297b2da2d04bf1e4d47faff",
+                "value": "github-actions",
+                "bytes": 14,
+                "rows": [
+                  5
+                ],
+                "parent": 42,
+                "depth": 4
+              },
+              {
+                "name": "README.md",
+                "path": "README.md",
+                "type": "blob",
+                "object": "6eecc881f5611e962f40ce29197727ccfa9b4adb",
+                "value": "# Git Metadata Repository\n\nThis ref stores structured metadata for the project at:\n\n    /tmp/meta-demo-remote.git\n\nIt is managed by [git meta](https://git-meta.com/), which associates\nkey-value metadata with Git objects (commits, branches, paths, change-ids,\nand project-wide settings) and synchronises them across repositories using\nordinary Git transports.\n\n## How it works\n\nMetadata lives locally in a SQLite database (`.git/git-meta.sqlite`) and is\nserialized into Git trees and commits under `refs/meta/` for transport.\nThis remote stores the canonical history under `refs/meta/main`; the\n`main` branch you may see at the repository root is unrelated and only exists\nfor browsing.\n\nOther contributors do **not** clone this repository directly. Instead they\nconfigure it as a metadata remote on top of their existing checkout:\n\n```\ngit meta remote add /tmp/meta-demo-remote.git --name meta --namespace meta\ngit meta pull\n```\n\nAfter that, reading and writing metadata works against the project's normal\ncheckout:\n\n```\ngit meta get commit:HEAD\ngit meta set commit:HEAD review:status approved\ngit meta push\n```\n\n## Important notes\n\n- Metadata is exchanged on `refs/meta/main`, never on `refs/heads/main`.\n- Never push directly to `refs/meta/main` -- always go through\n  `git meta push`, which serializes local changes and resolves conflicts.\n- This README only lives in the very first commit on `refs/meta/main`;\n  later metadata commits replace the tip tree with the metadata layout.\n",
+                "bytes": 1486,
+                "rows": [],
+                "parent": 0,
+                "depth": 1
+              }
+            ],
+            "snapshots": [
+              {
+                "tree": "e4b73d2bd252e66738759ee61ece42918c08d6ea",
+                "nodes": [
+                  {
+                    "name": "refs/meta/local/main^{tree}",
+                    "path": "",
+                    "type": "tree",
+                    "object": "e4b73d2bd252e66738759ee61ece42918c08d6ea",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                      6
+                    ],
+                    "parent": -1,
+                    "depth": 0
+                  },
+                  {
+                    "name": "branch",
+                    "path": "branch",
+                    "type": "tree",
+                    "object": "4242cea6a0e6f17d0128b01363563465b66bb7ea",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "b2",
+                    "path": "branch/b2",
+                    "type": "tree",
+                    "object": "2f390453ec2c59762ad6186904e6b43369e425a4",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 1,
+                    "depth": 2
+                  },
+                  {
+                    "name": "main",
+                    "path": "branch/b2/main",
+                    "type": "tree",
+                    "object": "1c04796e6d40f67e9d22b64fab2205c1fbf895ff",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 2,
+                    "depth": 3
+                  },
+                  {
+                    "name": "deploy",
+                    "path": "branch/b2/main/deploy",
+                    "type": "tree",
+                    "object": "7d331e82e4fa0991a359f6abe75731040db31794",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 3,
+                    "depth": 4
+                  },
+                  {
+                    "name": "env",
+                    "path": "branch/b2/main/deploy/env",
+                    "type": "tree",
+                    "object": "f87864bbab38d3ef93043d757a08539341d1fb63",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 4,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "branch/b2/main/deploy/env/__value",
+                    "type": "blob",
+                    "object": "7ca67535d6075dea3e902c761c7f2b8a25ff690b",
+                    "value": "production",
+                    "bytes": 10,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 5,
+                    "depth": 6
+                  },
+                  {
+                    "name": "commit",
+                    "path": "commit",
+                    "type": "tree",
+                    "object": "8110d6cd8a0e865d636c333a4ad8e12264561f00",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      2,
+                      6
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "5a",
+                    "path": "commit/5a",
+                    "type": "tree",
+                    "object": "e69a8086dc87a425192a9af1f65627ae64056d60",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      6
+                    ],
+                    "parent": 7,
+                    "depth": 2
+                  },
+                  {
+                    "name": "5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                    "type": "tree",
+                    "object": "950475d7d448f1886f08391f60b6d0ad40a59809",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      6
+                    ],
+                    "parent": 8,
+                    "depth": 3
+                  },
+                  {
+                    "name": "review",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review",
+                    "type": "tree",
+                    "object": "2a5a8ff5dcb30d161d0f1a79966e615d232e5aa6",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      6
+                    ],
+                    "parent": 9,
+                    "depth": 4
+                  },
+                  {
+                    "name": "pr",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr",
+                    "type": "tree",
+                    "object": "f394b7bb8f5f889b0b01a96683a06e88cc7009e8",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      1
+                    ],
+                    "parent": 10,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr/__value",
+                    "type": "blob",
+                    "object": "f70d7bba4ae1f07682e0358bd7a2068094fc023b",
+                    "value": "42",
+                    "bytes": 2,
+                    "rows": [
+                      1
+                    ],
+                    "parent": 11,
+                    "depth": 6
+                  },
+                  {
+                    "name": "reviewers",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers",
+                    "type": "tree",
+                    "object": "8092a3c01485e97eaf98b842ddea1eda174edd64",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 10,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__set",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set",
+                    "type": "tree",
+                    "object": "ab8e9b9238d85890e2cae87ea919567e5b0f25a1",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 13,
+                    "depth": 6
+                  },
+                  {
+                    "name": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "type": "blob",
+                    "object": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "value": "bob",
+                    "bytes": 3,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 14,
+                    "depth": 7
+                  },
+                  {
+                    "name": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "type": "blob",
+                    "object": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "value": "alice",
+                    "bytes": 5,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 14,
+                    "depth": 7
+                  },
+                  {
+                    "name": "status",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status",
+                    "type": "tree",
+                    "object": "c79212bc0969267f2cead950e84bb7cab2cf27cd",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0
+                    ],
+                    "parent": 10,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status/__value",
+                    "type": "blob",
+                    "object": "f6d8e917a76ed44ffef3b141ac6406d5458e89ee",
+                    "value": "approved, later merged",
+                    "bytes": 22,
+                    "rows": [
+                      0
+                    ],
+                    "parent": 17,
+                    "depth": 6
+                  },
+                  {
+                    "name": "bf",
+                    "path": "commit/bf",
+                    "type": "tree",
+                    "object": "29eb3e4ed5932033c5e7bf645d867a0d062e480c",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 7,
+                    "depth": 2
+                  },
+                  {
+                    "name": "bf96ae4e740924b255146910221f46b284ac2fac",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac",
+                    "type": "tree",
+                    "object": "241276f70ee9a60b991dca60f9da7520a3ed1c22",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 19,
+                    "depth": 3
+                  },
+                  {
+                    "name": "agent",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent",
+                    "type": "tree",
+                    "object": "daffd99d1fd7678f333497e74f5f2714cad3363d",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 20,
+                    "depth": 4
+                  },
+                  {
+                    "name": "model",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model",
+                    "type": "tree",
+                    "object": "040a77da662d525ef63b242d6df9149ab8f15757",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 21,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model/__value",
+                    "type": "blob",
+                    "object": "b22a9d0ee2abcf1462cb1e48e121e21a450acd7f",
+                    "value": "claude-opus-5",
+                    "bytes": 13,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 22,
+                    "depth": 6
+                  },
+                  {
+                    "name": "path",
+                    "path": "path",
+                    "type": "tree",
+                    "object": "74d1c35e241066e1acbd04d3b890cee1cad317f3",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "main.rs",
+                    "path": "path/main.rs",
+                    "type": "tree",
+                    "object": "53021d3dc6e1c3d3a085134787debbd55a3198bc",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 24,
+                    "depth": 2
+                  },
+                  {
+                    "name": "__target__",
+                    "path": "path/main.rs/__target__",
+                    "type": "tree",
+                    "object": "9554cd08542bbf7b2758743758ef815e09bfeee8",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 25,
+                    "depth": 3
+                  },
+                  {
+                    "name": "owner",
+                    "path": "path/main.rs/__target__/owner",
+                    "type": "tree",
+                    "object": "26e8dd871bab3bf63531d70d84d1ec9dce940c56",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 26,
+                    "depth": 4
+                  },
+                  {
+                    "name": "__value",
+                    "path": "path/main.rs/__target__/owner/__value",
+                    "type": "blob",
+                    "object": "dcdbdcc8594cdb3f09f3af37eeff27f73781da85",
+                    "value": "schacon@gmail.com",
+                    "bytes": 17,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 27,
+                    "depth": 5
+                  },
+                  {
+                    "name": "project",
+                    "path": "project",
+                    "type": "tree",
+                    "object": "acb8ec2f89ba38f34dff2f6f2556c7feae91d2bd",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "ci",
+                    "path": "project/ci",
+                    "type": "tree",
+                    "object": "658eabcdd5defbf46ee814d6d4c223022d48bcab",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 29,
+                    "depth": 2
+                  },
+                  {
+                    "name": "provider",
+                    "path": "project/ci/provider",
+                    "type": "tree",
+                    "object": "64e2b9fd74fa3f80a5e6d8c82572d90e5e7697ed",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 30,
+                    "depth": 3
+                  },
+                  {
+                    "name": "__value",
+                    "path": "project/ci/provider/__value",
+                    "type": "blob",
+                    "object": "c3970bf15e0470c70297b2da2d04bf1e4d47faff",
+                    "value": "github-actions",
+                    "bytes": 14,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 31,
+                    "depth": 4
+                  },
+                  {
+                    "name": "README.md",
+                    "path": "README.md",
+                    "type": "blob",
+                    "object": "6eecc881f5611e962f40ce29197727ccfa9b4adb",
+                    "value": "# Git Metadata Repository\n\nThis ref stores structured metadata for the project at:\n\n    /tmp/meta-demo-remote.git\n\nIt is managed by [git meta](https://git-meta.com/), which associates\nkey-value metadata with Git objects (commits, branches, paths, change-ids,\nand project-wide settings) and synchronises them across repositories using\nordinary Git transports.\n\n## How it works\n\nMetadata lives locally in a SQLite database (`.git/git-meta.sqlite`) and is\nserialized into Git trees and commits under `refs/meta/` for transport.\nThis remote stores the canonical history under `refs/meta/main`; the\n`main` branch you may see at the repository root is unrelated and only exists\nfor browsing.\n\nOther contributors do **not** clone this repository directly. Instead they\nconfigure it as a metadata remote on top of their existing checkout:\n\n```\ngit meta remote add /tmp/meta-demo-remote.git --name meta --namespace meta\ngit meta pull\n```\n\nAfter that, reading and writing metadata works against the project's normal\ncheckout:\n\n```\ngit meta get commit:HEAD\ngit meta set commit:HEAD review:status approved\ngit meta push\n```\n\n## Important notes\n\n- Metadata is exchanged on `refs/meta/main`, never on `refs/heads/main`.\n- Never push directly to `refs/meta/main` -- always go through\n  `git meta push`, which serializes local changes and resolves conflicts.\n- This README only lives in the very first commit on `refs/meta/main`;\n  later metadata commits replace the tip tree with the metadata layout.\n",
+                    "bytes": 1486,
+                    "rows": [],
+                    "parent": 0,
+                    "depth": 1
+                  }
+                ],
+                "rows": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "message": "Initial metadata",
+                "parent": null,
+                "commit": "faba09cb37ef5ef19264188062a63b2d36c3e064",
+                "commitBody": "tree e4b73d2bd252e66738759ee61ece42918c08d6ea\nauthor Git-meta Demo <schacon@gmail.com> 1789042129 +0000\ncommitter Git-meta Demo <schacon@gmail.com> 1789042129 +0000\n\nInitial metadata\n"
+              },
+              {
+                "tree": "d5675a6a5dab2f06390e3d7d0399d8c71b31890c",
+                "nodes": [
+                  {
+                    "name": "refs/meta/local/main^{tree}",
+                    "path": "",
+                    "type": "tree",
+                    "object": "d5675a6a5dab2f06390e3d7d0399d8c71b31890c",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                      6,
+                      7,
+                      8,
+                      9
+                    ],
+                    "parent": -1,
+                    "depth": 0
+                  },
+                  {
+                    "name": "branch",
+                    "path": "branch",
+                    "type": "tree",
+                    "object": "4242cea6a0e6f17d0128b01363563465b66bb7ea",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "b2",
+                    "path": "branch/b2",
+                    "type": "tree",
+                    "object": "2f390453ec2c59762ad6186904e6b43369e425a4",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 1,
+                    "depth": 2
+                  },
+                  {
+                    "name": "main",
+                    "path": "branch/b2/main",
+                    "type": "tree",
+                    "object": "1c04796e6d40f67e9d22b64fab2205c1fbf895ff",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 2,
+                    "depth": 3
+                  },
+                  {
+                    "name": "deploy",
+                    "path": "branch/b2/main/deploy",
+                    "type": "tree",
+                    "object": "7d331e82e4fa0991a359f6abe75731040db31794",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 3,
+                    "depth": 4
+                  },
+                  {
+                    "name": "env",
+                    "path": "branch/b2/main/deploy/env",
+                    "type": "tree",
+                    "object": "f87864bbab38d3ef93043d757a08539341d1fb63",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 4,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "branch/b2/main/deploy/env/__value",
+                    "type": "blob",
+                    "object": "7ca67535d6075dea3e902c761c7f2b8a25ff690b",
+                    "value": "production",
+                    "bytes": 10,
+                    "rows": [
+                      3
+                    ],
+                    "parent": 5,
+                    "depth": 6
+                  },
+                  {
+                    "name": "commit",
+                    "path": "commit",
+                    "type": "tree",
+                    "object": "0c966cd1c65c14d8ab4e10179c2d094401da5cf8",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      2,
+                      6,
+                      8
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "5a",
+                    "path": "commit/5a",
+                    "type": "tree",
+                    "object": "5185679b4148f8c1636541f9f4d3e0c45b6cd31d",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      6,
+                      8
+                    ],
+                    "parent": 7,
+                    "depth": 2
+                  },
+                  {
+                    "name": "5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b",
+                    "type": "tree",
+                    "object": "ddc35d9dc1ac6d1e861bf4431d1e06a85ac7c374",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      6,
+                      8
+                    ],
+                    "parent": 8,
+                    "depth": 3
+                  },
+                  {
+                    "name": "ci",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci",
+                    "type": "tree",
+                    "object": "f55148f5e6edc323250dca9cce3940a5b5d2c5d0",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      8
+                    ],
+                    "parent": 9,
+                    "depth": 4
+                  },
+                  {
+                    "name": "runs",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs",
+                    "type": "tree",
+                    "object": "1442d5e415a77abf64537d2a418efc2962e9c42a",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      8
+                    ],
+                    "parent": 10,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__list",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list",
+                    "type": "tree",
+                    "object": "6dfa4f08b4cb9ee0db69dc5e81f27259d6e93772",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      8
+                    ],
+                    "parent": 11,
+                    "depth": 6
+                  },
+                  {
+                    "name": "1789042129005-9ea14",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list/1789042129005-9ea14",
+                    "type": "blob",
+                    "object": "27ccdf20db32d653de38afa4b013c474c36c8322",
+                    "value": "build:passed",
+                    "bytes": 12,
+                    "rows": [
+                      8
+                    ],
+                    "parent": 12,
+                    "depth": 7
+                  },
+                  {
+                    "name": "1789042129013-de9f0",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/ci/runs/__list/1789042129013-de9f0",
+                    "type": "blob",
+                    "object": "3da17af6cf178f9de954b30d8aefb11fb513922d",
+                    "value": "test:passed",
+                    "bytes": 11,
+                    "rows": [
+                      8
+                    ],
+                    "parent": 12,
+                    "depth": 7
+                  },
+                  {
+                    "name": "review",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review",
+                    "type": "tree",
+                    "object": "2a5a8ff5dcb30d161d0f1a79966e615d232e5aa6",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0,
+                      1,
+                      6
+                    ],
+                    "parent": 9,
+                    "depth": 4
+                  },
+                  {
+                    "name": "pr",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr",
+                    "type": "tree",
+                    "object": "f394b7bb8f5f889b0b01a96683a06e88cc7009e8",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      1
+                    ],
+                    "parent": 15,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/pr/__value",
+                    "type": "blob",
+                    "object": "f70d7bba4ae1f07682e0358bd7a2068094fc023b",
+                    "value": "42",
+                    "bytes": 2,
+                    "rows": [
+                      1
+                    ],
+                    "parent": 16,
+                    "depth": 6
+                  },
+                  {
+                    "name": "reviewers",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers",
+                    "type": "tree",
+                    "object": "8092a3c01485e97eaf98b842ddea1eda174edd64",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 15,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__set",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set",
+                    "type": "tree",
+                    "object": "ab8e9b9238d85890e2cae87ea919567e5b0f25a1",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 18,
+                    "depth": 6
+                  },
+                  {
+                    "name": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "type": "blob",
+                    "object": "2529de8969e5ee206e572ed72a0389c3115ad95c",
+                    "value": "bob",
+                    "bytes": 3,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 19,
+                    "depth": 7
+                  },
+                  {
+                    "name": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/reviewers/__set/ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "type": "blob",
+                    "object": "ca56b59dbf8c0884b1b9ceb306873b24b73de969",
+                    "value": "alice",
+                    "bytes": 5,
+                    "rows": [
+                      6
+                    ],
+                    "parent": 19,
+                    "depth": 7
+                  },
+                  {
+                    "name": "status",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status",
+                    "type": "tree",
+                    "object": "c79212bc0969267f2cead950e84bb7cab2cf27cd",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      0
+                    ],
+                    "parent": 15,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "commit/5a/5aa110f2613d7f77a7c9b6be5bcff718ea2e241b/review/status/__value",
+                    "type": "blob",
+                    "object": "f6d8e917a76ed44ffef3b141ac6406d5458e89ee",
+                    "value": "approved, later merged",
+                    "bytes": 22,
+                    "rows": [
+                      0
+                    ],
+                    "parent": 22,
+                    "depth": 6
+                  },
+                  {
+                    "name": "bf",
+                    "path": "commit/bf",
+                    "type": "tree",
+                    "object": "29eb3e4ed5932033c5e7bf645d867a0d062e480c",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 7,
+                    "depth": 2
+                  },
+                  {
+                    "name": "bf96ae4e740924b255146910221f46b284ac2fac",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac",
+                    "type": "tree",
+                    "object": "241276f70ee9a60b991dca60f9da7520a3ed1c22",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 24,
+                    "depth": 3
+                  },
+                  {
+                    "name": "agent",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent",
+                    "type": "tree",
+                    "object": "daffd99d1fd7678f333497e74f5f2714cad3363d",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 25,
+                    "depth": 4
+                  },
+                  {
+                    "name": "model",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model",
+                    "type": "tree",
+                    "object": "040a77da662d525ef63b242d6df9149ab8f15757",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 26,
+                    "depth": 5
+                  },
+                  {
+                    "name": "__value",
+                    "path": "commit/bf/bf96ae4e740924b255146910221f46b284ac2fac/agent/model/__value",
+                    "type": "blob",
+                    "object": "b22a9d0ee2abcf1462cb1e48e121e21a450acd7f",
+                    "value": "claude-opus-5",
+                    "bytes": 13,
+                    "rows": [
+                      2
+                    ],
+                    "parent": 27,
+                    "depth": 6
+                  },
+                  {
+                    "name": "path",
+                    "path": "path",
+                    "type": "tree",
+                    "object": "21a9b22a8cf110ac1c1e68a3eaea98a1245cf973",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4,
+                      7
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "main.rs",
+                    "path": "path/main.rs",
+                    "type": "tree",
+                    "object": "b8e6d716d482a56ec16ee01b21c1ee9fc7adcbf6",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4,
+                      7
+                    ],
+                    "parent": 29,
+                    "depth": 2
+                  },
+                  {
+                    "name": "__target__",
+                    "path": "path/main.rs/__target__",
+                    "type": "tree",
+                    "object": "299b3e2a827a9a2e56d5c7bc2dc3afdcf9733ff7",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4,
+                      7
+                    ],
+                    "parent": 30,
+                    "depth": 3
+                  },
+                  {
+                    "name": "owner",
+                    "path": "path/main.rs/__target__/owner",
+                    "type": "tree",
+                    "object": "26e8dd871bab3bf63531d70d84d1ec9dce940c56",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 31,
+                    "depth": 4
+                  },
+                  {
+                    "name": "__value",
+                    "path": "path/main.rs/__target__/owner/__value",
+                    "type": "blob",
+                    "object": "dcdbdcc8594cdb3f09f3af37eeff27f73781da85",
+                    "value": "schacon@gmail.com",
+                    "bytes": 17,
+                    "rows": [
+                      4
+                    ],
+                    "parent": 32,
+                    "depth": 5
+                  },
+                  {
+                    "name": "tags",
+                    "path": "path/main.rs/__target__/tags",
+                    "type": "tree",
+                    "object": "22c2d28b8803ed8e2797c74993f261dd4c90a327",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      7
+                    ],
+                    "parent": 31,
+                    "depth": 4
+                  },
+                  {
+                    "name": "__set",
+                    "path": "path/main.rs/__target__/tags/__set",
+                    "type": "tree",
+                    "object": "a18cdf1220c34e6d5710261272dabb4c4dfa78b5",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      7
+                    ],
+                    "parent": 34,
+                    "depth": 5
+                  },
+                  {
+                    "name": "6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                    "path": "path/main.rs/__target__/tags/__set/6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                    "type": "blob",
+                    "object": "6ef8575b5fa418c41c0989ed2dcaadbb61226c13",
+                    "value": "rust",
+                    "bytes": 4,
+                    "rows": [
+                      7
+                    ],
+                    "parent": 35,
+                    "depth": 6
+                  },
+                  {
+                    "name": "project",
+                    "path": "project",
+                    "type": "tree",
+                    "object": "12f1adfe8716e52d716497135bed5fd8299bddb9",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      5,
+                      9
+                    ],
+                    "parent": 0,
+                    "depth": 1
+                  },
+                  {
+                    "name": "changelog",
+                    "path": "project/changelog",
+                    "type": "tree",
+                    "object": "c6da0ddbb7ec17eae4b0b0dc1b23a4e27739f149",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      9
+                    ],
+                    "parent": 37,
+                    "depth": 2
+                  },
+                  {
+                    "name": "__list",
+                    "path": "project/changelog/__list",
+                    "type": "tree",
+                    "object": "478bf4c0fce07d8d2f66340b549c89222fb78911",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      9
+                    ],
+                    "parent": 38,
+                    "depth": 3
+                  },
+                  {
+                    "name": "1789042129018-535d6",
+                    "path": "project/changelog/__list/1789042129018-535d6",
+                    "type": "blob",
+                    "object": "d07f7576ba4b9615aef1d14dc46c8e3506f209dd",
+                    "value": "0.1.0 initial release",
+                    "bytes": 21,
+                    "rows": [
+                      9
+                    ],
+                    "parent": 39,
+                    "depth": 4
+                  },
+                  {
+                    "name": "ci",
+                    "path": "project/ci",
+                    "type": "tree",
+                    "object": "658eabcdd5defbf46ee814d6d4c223022d48bcab",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 37,
+                    "depth": 2
+                  },
+                  {
+                    "name": "provider",
+                    "path": "project/ci/provider",
+                    "type": "tree",
+                    "object": "64e2b9fd74fa3f80a5e6d8c82572d90e5e7697ed",
+                    "value": "",
+                    "bytes": 0,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 41,
+                    "depth": 3
+                  },
+                  {
+                    "name": "__value",
+                    "path": "project/ci/provider/__value",
+                    "type": "blob",
+                    "object": "c3970bf15e0470c70297b2da2d04bf1e4d47faff",
+                    "value": "github-actions",
+                    "bytes": 14,
+                    "rows": [
+                      5
+                    ],
+                    "parent": 42,
+                    "depth": 4
+                  },
+                  {
+                    "name": "README.md",
+                    "path": "README.md",
+                    "type": "blob",
+                    "object": "6eecc881f5611e962f40ce29197727ccfa9b4adb",
+                    "value": "# Git Metadata Repository\n\nThis ref stores structured metadata for the project at:\n\n    /tmp/meta-demo-remote.git\n\nIt is managed by [git meta](https://git-meta.com/), which associates\nkey-value metadata with Git objects (commits, branches, paths, change-ids,\nand project-wide settings) and synchronises them across repositories using\nordinary Git transports.\n\n## How it works\n\nMetadata lives locally in a SQLite database (`.git/git-meta.sqlite`) and is\nserialized into Git trees and commits under `refs/meta/` for transport.\nThis remote stores the canonical history under `refs/meta/main`; the\n`main` branch you may see at the repository root is unrelated and only exists\nfor browsing.\n\nOther contributors do **not** clone this repository directly. Instead they\nconfigure it as a metadata remote on top of their existing checkout:\n\n```\ngit meta remote add /tmp/meta-demo-remote.git --name meta --namespace meta\ngit meta pull\n```\n\nAfter that, reading and writing metadata works against the project's normal\ncheckout:\n\n```\ngit meta get commit:HEAD\ngit meta set commit:HEAD review:status approved\ngit meta push\n```\n\n## Important notes\n\n- Metadata is exchanged on `refs/meta/main`, never on `refs/heads/main`.\n- Never push directly to `refs/meta/main` -- always go through\n  `git meta push`, which serializes local changes and resolves conflicts.\n- This README only lives in the very first commit on `refs/meta/main`;\n  later metadata commits replace the tip tree with the metadata layout.\n",
+                    "bytes": 1486,
+                    "rows": [],
+                    "parent": 0,
+                    "depth": 1
+                  }
+                ],
+                "rows": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9
+                ],
+                "message": "Add metadata",
+                "parent": "faba09cb37ef5ef19264188062a63b2d36c3e064",
+                "commit": "98491b327c51dbcd8ade34b5e01faae494adc6f5",
+                "commitBody": "tree d5675a6a5dab2f06390e3d7d0399d8c71b31890c\nparent faba09cb37ef5ef19264188062a63b2d36c3e064\nauthor Git-meta Demo <schacon@gmail.com> 1789042189 +0000\ncommitter Git-meta Demo <schacon@gmail.com> 1789042189 +0000\n\nAdd metadata\n"
+              }
+            ]
           },
-          "title": "Computer",
+          "title": "Serializer",
           "blocks": [],
           "models": []
         }
@@ -6593,7 +8642,7 @@
       "blocks": [
         {
           "kind": "li",
-          "text": "tree storage"
+          "text": "multiple writers / merge issues"
         },
         {
           "kind": "li",
@@ -6669,7 +8718,7 @@
           "blocks": [
             {
               "kind": "li",
-              "text": "tree storage"
+              "text": "multiple writers / merge issues"
             },
             {
               "kind": "li",
@@ -6680,6 +8729,217 @@
               "text": "filters / local"
             }
           ],
+          "models": []
+        },
+        {
+          "id": "02-example",
+          "source": "slides/06/02-example.mdx",
+          "kind": "component",
+          "component": {
+            "type": "Exchange",
+            "title": "Two writers, one tree",
+            "objects": [
+              {
+                "type": "string",
+                "key": "greeting",
+                "base": [
+                  {
+                    "text": "hey",
+                    "origin": "base"
+                  }
+                ],
+                "local": [
+                  {
+                    "text": "hello",
+                    "origin": "local"
+                  }
+                ],
+                "remote": [
+                  {
+                    "text": "hi",
+                    "origin": "remote"
+                  }
+                ],
+                "result": [
+                  {
+                    "text": "hello",
+                    "origin": "local"
+                  }
+                ]
+              },
+              {
+                "type": "set",
+                "key": "letters",
+                "base": [
+                  {
+                    "text": "A",
+                    "id": "A",
+                    "origin": "base"
+                  }
+                ],
+                "local": [
+                  {
+                    "text": "A",
+                    "id": "A",
+                    "origin": "base"
+                  },
+                  {
+                    "text": "B",
+                    "id": "B",
+                    "origin": "local"
+                  }
+                ],
+                "remote": [
+                  {
+                    "text": "A",
+                    "id": "A",
+                    "origin": "base"
+                  },
+                  {
+                    "text": "C",
+                    "id": "C",
+                    "origin": "remote"
+                  }
+                ],
+                "result": [
+                  {
+                    "text": "A",
+                    "id": "A",
+                    "origin": "base"
+                  },
+                  {
+                    "text": "B",
+                    "id": "B",
+                    "origin": "local"
+                  },
+                  {
+                    "text": "C",
+                    "id": "C",
+                    "origin": "remote"
+                  }
+                ]
+              },
+              {
+                "type": "list",
+                "key": "steps",
+                "base": [
+                  {
+                    "text": "first",
+                    "id": "1000-a",
+                    "origin": "base"
+                  }
+                ],
+                "local": [
+                  {
+                    "text": "first",
+                    "id": "1000-a",
+                    "origin": "base"
+                  },
+                  {
+                    "text": "third",
+                    "id": "3000-c",
+                    "origin": "local"
+                  }
+                ],
+                "remote": [
+                  {
+                    "text": "first",
+                    "id": "1000-a",
+                    "origin": "base"
+                  },
+                  {
+                    "text": "second",
+                    "id": "2000-b",
+                    "origin": "remote"
+                  }
+                ],
+                "result": [
+                  {
+                    "text": "first",
+                    "id": "1000-a",
+                    "origin": "base"
+                  },
+                  {
+                    "text": "second",
+                    "id": "2000-b",
+                    "origin": "remote"
+                  },
+                  {
+                    "text": "third",
+                    "id": "3000-c",
+                    "origin": "local"
+                  }
+                ]
+              }
+            ],
+            "steps": [
+              {
+                "label": "Shared start",
+                "headline": "One shared starting point.",
+                "note": "greeting = hey, set = {A}, list = [first]. Both users have this state.",
+                "command": "# Shared ancestor B",
+                "phase": 0
+              },
+              {
+                "label": "Both edit",
+                "headline": "Both users change their copies at the same time.",
+                "note": "Local: hello, +B, append third. Remote: hi, +C, append second.",
+                "command": "# Independent edits from a shared ancestor",
+                "phase": 1
+              },
+              {
+                "label": "Keep local string",
+                "headline": "String: keep the local value, hello.",
+                "note": "Both changed greeting. Local wins this shared-ancestor merge.",
+                "command": "local$ git meta pull",
+                "phase": 2
+              },
+              {
+                "label": "Combine set",
+                "headline": "Set: A, B, C. Shared A appears once.",
+                "note": "B comes from local; C comes from remote. No member is lost.",
+                "command": "local$ git meta pull",
+                "phase": 3
+              },
+              {
+                "label": "Combine list",
+                "headline": "List: first, second, third. Both appends survive.",
+                "note": "Entry IDs order the list. Here the remote append happened first.",
+                "command": "local$ git meta pull",
+                "phase": 4
+              },
+              {
+                "label": "FF-only: blocked",
+                "headline": "A direct push of L would lose remote commit R.",
+                "note": "FF-only refuses that move. The remote stays at R.",
+                "command": "local$ git meta push",
+                "phase": 5
+              },
+              {
+                "label": "FF-only: accepted",
+                "headline": "Write merged M after R. Now the push can advance.",
+                "note": "git meta push reconciles and retries: remote history becomes B → R → M.",
+                "command": "local$ git meta push",
+                "phase": 6
+              }
+            ],
+            "history": {
+              "B": {
+                "parent": null
+              },
+              "L": {
+                "parent": "B"
+              },
+              "R": {
+                "parent": "B"
+              },
+              "M": {
+                "parent": "R"
+              }
+            }
+          },
+          "title": "Exchange",
+          "blocks": [],
           "models": []
         }
       ]
@@ -6778,6 +9038,706 @@
               "text": "speed tests"
             }
           ],
+          "models": []
+        },
+        {
+          "id": "02-example",
+          "source": "slides/07/02-example.mdx",
+          "kind": "component",
+          "component": {
+            "type": "Scalar",
+            "title": "gitviz — 3D Object Store Visualizer",
+            "commits": [
+              {
+                "id": "C1",
+                "tree": "T1",
+                "parent": "",
+                "entries": [
+                  0,
+                  1
+                ],
+                "delta": "k1 k2"
+              },
+              {
+                "id": "C2",
+                "tree": "T2",
+                "parent": "C1",
+                "entries": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "delta": "k3 k4"
+              },
+              {
+                "id": "C3",
+                "tree": "T3",
+                "parent": "C2",
+                "entries": [
+                  2,
+                  3
+                ],
+                "delta": "prune to\n2 values"
+              },
+              {
+                "id": "C4",
+                "tree": "T4",
+                "parent": "C3",
+                "entries": [
+                  2,
+                  3,
+                  4
+                ],
+                "delta": "add k5"
+              }
+            ],
+            "steps": [
+              {
+                "label": "u1 commit A B",
+                "action": "write",
+                "room": 0,
+                "from": -1,
+                "commit": 0,
+                "actor": "user1",
+                "description": "User 1 writes C1. T1 lists k1 → A and k2 → B; both blobs enter storage.",
+                "command": "git meta set path:demo k1 A\ngit meta set path:demo k2 B\ngit meta serialize",
+                "detail": "C1  tree T1  |  Δ k1 k2",
+                "spaces": [
+                  {
+                    "commits": 1,
+                    "blobs": [
+                      0,
+                      1
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u1 commit +C +D",
+                "action": "write",
+                "room": 0,
+                "from": -1,
+                "commit": 1,
+                "actor": "user1",
+                "description": "C2 retains k1/k2 and adds k3 → C and k4 → D. Only C and D are new blobs.",
+                "command": "git meta set path:demo k3 C\ngit meta set path:demo k4 D\ngit meta serialize",
+                "detail": "C2  parent C1  tree T2  |  Δ k3 k4",
+                "spaces": [
+                  {
+                    "commits": 2,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u1 prune to C D",
+                "action": "write",
+                "room": 0,
+                "from": -1,
+                "commit": 2,
+                "actor": "user1",
+                "description": "Prune writes C3 and T3 with only C/D. Earlier commits, trees and blobs remain in history.",
+                "command": "git meta prune --since 2026-09-01",
+                "detail": "C3  parent C2  tree T3  |  0 new blobs",
+                "spaces": [
+                  {
+                    "commits": 3,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u1 commit +E",
+                "action": "write",
+                "room": 0,
+                "from": -1,
+                "commit": 3,
+                "actor": "user1",
+                "description": "C4 adds k5 → E. Its tip tree T4 now contains three values: C, D and E.",
+                "command": "git meta set path:demo k5 E\ngit meta serialize",
+                "detail": "C4  parent C3  tree T4  |  1 new blob: E",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u1 push",
+                "action": "push",
+                "room": 1,
+                "from": 0,
+                "commit": -1,
+                "actor": "user1",
+                "description": "Push copies all four commits, four trees and five blobs to the shared remote.",
+                "command": "git meta push",
+                "detail": "user1 to remote  |  4 commits + 4 trees + 5 blobs",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u2 clone",
+                "action": "clone",
+                "room": 2,
+                "from": 1,
+                "commit": -1,
+                "actor": "user2",
+                "description": "User 2 clones all commit and tree history, without blobs.",
+                "command": "git meta setup  # (git clone --filter=blob:none)",
+                "detail": "4 commits + 4 trees; 0 blobs",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u2 hydrate C D E",
+                "action": "hydrate",
+                "room": 2,
+                "from": 1,
+                "commit": -1,
+                "actor": "user2",
+                "description": "User 2 hydrates T4: only tip blobs C, D and E move over. A/B remain remote.",
+                "command": "git meta setup  # continuing: hydrate tip",
+                "detail": "hydrate T4  |  transfer 3 blobs: C + D + E",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u2 get: missing A",
+                "action": "missing",
+                "room": 2,
+                "from": -1,
+                "commit": -1,
+                "actor": "user2",
+                "description": "Get finds k1 in local history, but A is missing. Its promisor entry points to the shared remote.",
+                "command": "git meta get path:demo k1",
+                "detail": "k1 -> A  |  missing blob; promisor fetch pending",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u2 fetch A",
+                "action": "fetch",
+                "room": 2,
+                "from": 1,
+                "commit": -1,
+                "actor": "user2",
+                "description": "The pending get fetches A and returns its value. B stays remote.",
+                "command": "git meta get path:demo k1  # continuing the same read",
+                "detail": "automatic promisor fetch  |  transfer exactly A",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 0,
+                    "blobs": [],
+                    "firstCommit": 0
+                  }
+                ]
+              },
+              {
+                "label": "u3 shallow clone",
+                "action": "shallow",
+                "room": 3,
+                "from": 1,
+                "commit": -1,
+                "actor": "user3",
+                "description": "User 3 clones depth 1: only C4, T4 and blobs C/D/E. Earlier history is unavailable locally.",
+                "command": "git meta setup  # .git-meta depth: 1",
+                "detail": "shallow boundary at C4  |  1 commit + 1 tree + 3 blobs",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 1,
+                    "blobs": [
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 3
+                  }
+                ]
+              },
+              {
+                "label": "u3 get: no history",
+                "action": "unavailable",
+                "room": 3,
+                "from": -1,
+                "commit": -1,
+                "actor": "user3",
+                "description": "User 3 cannot find k1: T4 has only k3/k4/k5, and earlier commits are outside the shallow history. No blob is fetched.",
+                "command": "git meta get path:demo k1",
+                "detail": "k1: not found in local history  |  deepen history to discover older keys",
+                "spaces": [
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 4,
+                    "blobs": [
+                      0,
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 0
+                  },
+                  {
+                    "commits": 1,
+                    "blobs": [
+                      2,
+                      3,
+                      4
+                    ],
+                    "firstCommit": 3
+                  }
+                ]
+              }
+            ]
+          },
+          "title": "Scalar",
+          "blocks": [],
+          "models": []
+        },
+        {
+          "id": "03-setup-performance",
+          "source": "slides/07/03-setup-performance.mdx",
+          "kind": "component",
+          "component": {
+            "type": "SpeedGraph",
+            "metric": "total",
+            "title": "How long does setup take?",
+            "subtitle": "Dashed line: setup returns. Indexing continues above it.",
+            "rows": [
+              {
+                "label": "100k",
+                "seconds": 12.8,
+                "phases": [
+                  {
+                    "name": "fetch",
+                    "seconds": 2.8,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "hydrate",
+                    "seconds": 4.6,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "repack",
+                    "seconds": 0.8,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "materialize",
+                    "seconds": 3.8,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "index",
+                    "seconds": 0.8,
+                    "inNeck": true
+                  }
+                ],
+                "time": "12.8 s"
+              },
+              {
+                "label": "1M",
+                "seconds": 79.5,
+                "phases": [
+                  {
+                    "name": "fetch",
+                    "seconds": 38.5,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "hydrate",
+                    "seconds": 13.9,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "repack",
+                    "seconds": 7.6,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "materialize",
+                    "seconds": 3.7,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "index",
+                    "seconds": 15.7,
+                    "inNeck": true
+                  }
+                ],
+                "time": "79.5 s"
+              },
+              {
+                "label": "5M",
+                "seconds": 553,
+                "phases": [
+                  {
+                    "name": "fetch",
+                    "seconds": 306,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "hydrate",
+                    "seconds": 79,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "repack",
+                    "seconds": 51,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "materialize",
+                    "seconds": 7,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "index",
+                    "seconds": 109,
+                    "inNeck": true
+                  }
+                ],
+                "time": "553 s"
+              },
+              {
+                "label": "5M shallow",
+                "seconds": 93,
+                "phases": [
+                  {
+                    "name": "fetch",
+                    "seconds": 70,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "hydrate",
+                    "seconds": 17,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "repack",
+                    "seconds": 0,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "materialize",
+                    "seconds": 4.3,
+                    "inNeck": true
+                  },
+                  {
+                    "name": "index",
+                    "seconds": 2.5,
+                    "inNeck": true
+                  }
+                ],
+                "time": "93 s"
+              }
+            ]
+          },
+          "title": "SpeedGraph",
+          "blocks": [],
           "models": []
         }
       ]

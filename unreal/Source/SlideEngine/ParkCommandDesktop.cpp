@@ -1,4 +1,6 @@
 #include "SlideGameMode.h"
+#include "ParkScalar.h"
+#include "ParkExchange.h"
 #include "ParkCastPlayer.h"
 #include "ParkFSV.h"
 #include "ParkSerializer.h"
@@ -64,7 +66,11 @@ void ASlideGameMode::TickCommandDesktop(float Delta,TSharedPtr<FJsonObject> Comp
   DesktopCommandKey=(uint64(Index)<<32)|uint32(PageIndex);
   bDesktopFSV=Component->GetStringField(TEXT("type"))==TEXT("FSV");
   bDesktopSerializer=Component->GetStringField(TEXT("type"))==TEXT("Serializer");
-  if(bDesktopSerializer) {
+  bDesktopScalar=Component->GetStringField(TEXT("type"))==TEXT("Scalar");
+  if(bDesktopScalar) {
+   if(!PageScalars.Contains(DesktopCommandKey))PageScalars.Add(DesktopCommandKey,MakeShared<FParkScalar>(Component,GetWorld()));
+   Scalar=PageScalars[DesktopCommandKey];if(DesktopMinimize==1){Scalar->Tick(Delta);ViewedScalarSteps.Add((uint64(Index)<<48)|(uint64(PageIndex)<<24)|uint64(Scalar->Selected));}
+  } else if(bDesktopSerializer) {
    if(!PageSerializers.Contains(DesktopCommandKey))PageSerializers.Add(DesktopCommandKey,MakeShared<FParkSerializer>(Component));
    Serializer=PageSerializers[DesktopCommandKey];if(DesktopMinimize==1)Serializer->Tick(Delta);
   } else if(bDesktopFSV) {
@@ -143,7 +149,7 @@ TSharedRef<SWidget> ASlideGameMode::BuildMinimizeAnimation() {
 }
 
 void ASlideGameMode::ShowQuestions() {
- bConfirmFinish=false;bQuestions=true;bDesktopFSV=false;bDesktopSerializer=false;CastPlayer.Reset();
+ bConfirmFinish=false;bQuestions=true;bDesktopFSV=false;bDesktopSerializer=false;bDesktopScalar=false;CastPlayer.Reset();
  bTimerPausedBeforeQuestions=bTimerPaused;bTimerPaused=true;
 }
 TSharedRef<SWidget> ASlideGameMode::BuildFinishPrompt() {

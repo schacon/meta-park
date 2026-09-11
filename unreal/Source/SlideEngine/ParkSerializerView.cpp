@@ -10,6 +10,8 @@
 #include "Layout/Clipping.h"
 
 class SParkSerializerView : public SLeafWidget {
+ static constexpr int32 TableVisibleRows=8,TreeVisibleRows=14,DataFontSize=18;
+ static constexpr float TableRowHeight=40,TreeRowHeight=34;
  TFunction<TSharedPtr<FParkSerializer>()> State;TFunction<void()> Restore;
  struct FHit{FSlateRect Rect;int32 Kind,Index;};mutable TArray<FHit> Hits;mutable float ValueScrollMax=0;
 public:
@@ -26,8 +28,8 @@ public:
  virtual FReply OnMouseWheel(const FGeometry& G,const FPointerEvent& E)override {
   auto S=State();if(!S)return FReply::Unhandled();const auto P=G.AbsoluteToLocal(E.GetScreenSpacePosition());
   if(P.X>766&&P.X<1784&&P.Y>855&&P.Y<952){S->ValueScroll=FMath::Clamp(S->ValueScroll-E.GetWheelDelta()*37.f,0.f,ValueScrollMax);return FReply::Handled();}
-  if(P.X<730&&P.Y>210&&P.Y<574)S->TableScroll=FMath::Clamp(S->TableScroll-FMath::RoundToInt(E.GetWheelDelta()*3),0,FMath::Max(0,S->TableRows().Num()-10));
-  if(P.X>960&&P.Y<650)S->Scroll=FMath::Clamp(S->Scroll-FMath::RoundToInt(E.GetWheelDelta()*3),0,FMath::Max(0,S->VisibleNodes().Num()-19));return FReply::Handled();
+  if(P.X<730&&P.Y>210&&P.Y<574)S->TableScroll=FMath::Clamp(S->TableScroll-FMath::RoundToInt(E.GetWheelDelta()*3),0,FMath::Max(0,S->TableRows().Num()-TableVisibleRows));
+  if(P.X>960&&P.Y<650)S->Scroll=FMath::Clamp(S->Scroll-FMath::RoundToInt(E.GetWheelDelta()*3),0,FMath::Max(0,S->VisibleNodes().Num()-TreeVisibleRows));return FReply::Handled();
  }
  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 Layer,const FWidgetStyle&,bool)const override {
   auto S=State();if(!S)return Layer;Hits.Reset();
@@ -46,12 +48,13 @@ public:
   Text(18,55,TEXT("File   Edit   View   Query   Help"),21,Ink);
   Text(18,105,TEXT("Table:"),19,Ink);Bevel(108,96,275,40,Light);Text(121,104,TEXT("metadata"),19,Ink);Line({FVector2D(357,110),FVector2D(365,119),FVector2D(373,110)},Blue,3);
   Bevel(18,151,690,44,Light);Text(30,157,TEXT("select * from metadata;"),19,Ink,666);
-  const float Cols[]={18,210,414,504,708};
+  const float Cols[]={18,210,414,524,708};
   Rect(18,214,690,39,Color(TEXT("aab4c5")));const TCHAR* Headers[]={TEXT("target"),TEXT("key"),TEXT("type"),TEXT("value")};for(int32 C=0;C<4;C++)Text(Cols[C]+8,222,Headers[C],19,Ink);
   const auto Table=S->TableRows();int32 N=0;
-  for(int32 T=FMath::Clamp(S->TableScroll,0,FMath::Max(0,Table.Num()-10));T<Table.Num()&&N<10;T++){const int32 I=Table[T];const auto& R=S->Rows[I];float Y=253+N*32;Rect(18,Y,690,32,S->SelectedRow==I?Blue:(!S->ViewingDraft&&S->SelectedCommit==1&&R.Hidden)?Color(TEXT("b5e3b6")):N%2?Color(TEXT("e7e8df")):Light);const auto C=S->SelectedRow==I?White:Ink;
-   const FString Values[]={R.ShortTarget,R.Key,R.Type,R.Value};for(int32 J=0;J<4;J++)Text(Cols[J]+8,Y+5,Values[J],14,C,Cols[J+1]-Cols[J]-14);Hit(18,Y,690,32,2,I);N++;}
-  for(float X:Cols)Line({FVector2D(X,214),FVector2D(X,253+N*32)},Edge,.7);
+  for(int32 T=FMath::Clamp(S->TableScroll,0,FMath::Max(0,Table.Num()-TableVisibleRows));T<Table.Num()&&N<TableVisibleRows;T++){const int32 I=Table[T];const auto& R=S->Rows[I];float Y=253+N*TableRowHeight;Rect(18,Y,690,TableRowHeight,S->SelectedRow==I?Blue:(!S->ViewingDraft&&S->SelectedCommit==1&&R.Hidden)?Color(TEXT("b5e3b6")):N%2?Color(TEXT("e7e8df")):Light);const auto C=S->SelectedRow==I?White:Ink;
+   const FString Values[]={R.ShortTarget,R.Key,R.Type,R.Value};for(int32 J=0;J<4;J++)Text(Cols[J]+8,Y+7,Values[J],DataFontSize,C,Cols[J+1]-Cols[J]-14);Hit(18,Y,690,TableRowHeight,2,I);N++;}
+  for(float X:Cols)Line({FVector2D(X,214),FVector2D(X,253+N*TableRowHeight)},Edge,.7);
+  if(Table.Num()>TableVisibleRows){const float Track=TableVisibleRows*TableRowHeight,Thumb=Track*TableVisibleRows/Table.Num();Rect(714,253,8,Track,Gray);Rect(714,253+(Track-Thumb)*S->TableScroll/(Table.Num()-TableVisibleRows),8,Thumb,Edge);}
   Text(20,582,FString::Printf(TEXT("%d metadata values"),Table.Num()),18,Ink);
   if(S->CanAddMetadata())Button(448,574,260,37,TEXT("Add metadata"),1);
   else Text(454,582,S->AddedMetadata&&S->Committed<2?TEXT("Metadata added"):TEXT(""),17,Edge,250);
@@ -78,17 +81,17 @@ public:
   }
   Rect(980,100,804,35,Color(TEXT("aab4c5")));Text(996,106,TEXT("Name"),19,Ink);Text(1520,106,TEXT("Type"),19,Ink);Text(1630,106,TEXT("Object"),19,Ink);
   if(!S->Started){Text(1020,310,TEXT("No serialized objects"),26,Edge,730);Text(1020,359,TEXT("Click SERIALIZE to write the Git tree."),20,Edge,730);}
-  const auto Nodes=S->VisibleNodes();const int32 Scroll=FMath::Clamp(S->Scroll,0,FMath::Max(0,Nodes.Num()-19));
-  for(int32 K=Scroll;K<FMath::Min(Scroll+19,Nodes.Num());K++) {
-   const int32 I=Nodes[K];const auto& V=S->Nodes[I];const float Y=137+(K-Scroll)*25;const bool Selected=S->SelectedNode==I;Rect(982,Y,800,25,Selected?Blue:S->IsNewNode(I)?Color(TEXT("b5e3b6")):K%2?Color(TEXT("d2d9e4")):Color(TEXT("e1e5ec")));const auto C=Selected?White:Ink;
+  const auto Nodes=S->VisibleNodes();const int32 Scroll=FMath::Clamp(S->Scroll,0,FMath::Max(0,Nodes.Num()-TreeVisibleRows));
+  for(int32 K=Scroll;K<FMath::Min(Scroll+TreeVisibleRows,Nodes.Num());K++) {
+   const int32 I=Nodes[K];const auto& V=S->Nodes[I];const float Y=137+(K-Scroll)*TreeRowHeight;const bool Selected=S->SelectedNode==I;Rect(982,Y,800,TreeRowHeight,Selected?Blue:S->IsNewNode(I)?Color(TEXT("b5e3b6")):K%2?Color(TEXT("d2d9e4")):Color(TEXT("e1e5ec")));const auto C=Selected?White:Ink;
    const float X=991+V.Depth*17;
-   if(V.Type==TEXT("tree")){Text(X,Y+2,S->Expanded.Contains(I)?TEXT("-"):TEXT("+"),14,C);Hit(X,Y,19,25,4,I);Rect(X+20,Y+8,15,12,Color(TEXT("dcae37")));Rect(X+20,Y+5,8,4,Color(TEXT("dcae37")));}else {Rect(X+20,Y+5,12,16,White);}
-   Text(X+40,Y+2,V.Name,14,C,1500-X-42);Text(1518,Y+2,V.Type,14,C,95);Text(1625,Y+2,V.Object.Left(10)+TEXT("…"),14,C,153);Hit(X+20,Y,1780-X-20,25,3,I);
+   if(V.Type==TEXT("tree")){Text(X,Y+4,S->Expanded.Contains(I)?TEXT("-"):TEXT("+"),DataFontSize,C);Hit(X,Y,19,TreeRowHeight,4,I);Rect(X+20,Y+11,17,14,Color(TEXT("dcae37")));Rect(X+20,Y+7,9,5,Color(TEXT("dcae37")));}else {Rect(X+20,Y+7,14,19,White);}
+   Text(X+42,Y+5,V.Name,DataFontSize,C,1500-X-42);Text(1518,Y+5,V.Type,DataFontSize,C,95);Text(1625,Y+5,V.Object.Left(10)+TEXT("…"),DataFontSize,C,153);Hit(X+20,Y,1780-X-20,TreeRowHeight,3,I);
   }
-  if(Nodes.Num()>19){Rect(1785,138,8,474,Gray);const float Height=474.f*19/Nodes.Num();Rect(1785,138+(474-Height)*Scroll/FMath::Max(1,Nodes.Num()-19),8,Height,Edge);}
+  if(Nodes.Num()>TreeVisibleRows){Rect(1785,138,8,474,Gray);const float Height=474.f*TreeVisibleRows/Nodes.Num();Rect(1785,138+(474-Height)*Scroll/FMath::Max(1,Nodes.Num()-TreeVisibleRows),8,Height,Edge);}
   Rect(980,614,804,30,Color(TEXT("d2d9e4")));
   Out.PushClip(FSlateClippingZone(G.ToPaintGeometry(FVector2D(804,30),FSlateLayoutTransform(FVector2D(980,614)))));
-  Text(988,617,S->Started?FString::Printf(TEXT("%d/%d values written    %d tree entries"),S->Written,S->Snapshots[S->SelectedCommit].Rows.Num(),Nodes.Num()):TEXT("Awaiting serialization"),14,Ink,788);
+  Text(988,617,S->Started?FString::Printf(TEXT("%d/%d values written    %d tree entries"),S->Written,S->Snapshots[S->SelectedCommit].Rows.Num(),Nodes.Num()):TEXT("Awaiting serialization"),17,Ink,788);
   Out.PopClip();
   Bevel(766,650,1018,197,Color(TEXT("e2e6ee")));
   Bevel(766,855,1018,97,Light);

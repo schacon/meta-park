@@ -34,7 +34,7 @@ void ASlideGameMode::TestSerializer() {
   ClickMenu(TEXT("Expand"));if(!Check(Serializer->VisibleNodes().Num()==Serializer->Nodes.Num(),TEXT("Expand opens every path")))return;
   Travel=0;SmokeStep=61;
  } else if(SmokeStep==61&&Travel>.2f){
-  Click(520,331);
+  Click(520,347);
   bool Focused=Serializer->SelectedRow==2&&Serializer->VisibleNodes().Contains(Serializer->SelectedNode);
   for(const TCHAR* Path:{TEXT("branch"),TEXT("path"),TEXT("project"),TEXT("commit/5a")}){const int32 N=Serializer->Nodes.IndexOfByPredicate([Path](const FSerializerNode& Node){return Node.Path==Path;});Focused&=N>=0&&!Serializer->Expanded.Contains(N);}
   if(!Check(Focused,TEXT("SQLite selection opens its path and folds unrelated branches")))return;
@@ -45,7 +45,7 @@ void ASlideGameMode::TestSerializer() {
  } else if(SmokeStep==7&&Travel>.2f){Click(360,650);if(!Check(Serializer->Serializing&&Serializer->SelectedCommit==1,TEXT("Serialize creates a second snapshot")))return;SmokeStep=8;}
  else if(SmokeStep==8&&Serializer->Ready()){
   if(!Check(Serializer->Committed==2&&HasHidden()&&!Serializer->CanSerialize(),TEXT("second commit retains original values and adds hidden metadata")))return;
-  Click(520,493);
+  Click(520,547);
   if(!Check(Serializer->SelectedRow==7&&Serializer->IsNewNode(Serializer->SelectedNode)&&Serializer->Nodes[Serializer->SelectedNode].Value==TEXT("rust"),TEXT("new values are green and can be inspected")))return;
   Capture(TEXT("serializer-all-values.png"));Travel=0;SmokeStep=9;
  } else if(SmokeStep==9&&Travel>.7f){

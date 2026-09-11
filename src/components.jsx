@@ -5,3 +5,7 @@ export const Model = props => createElement('model', props);
 export const Animate = props => createElement('animate', props);
 export const Computer = props => createElement('computer', props);
 export const CommandLine = props => createElement('commandline', props);
+export const Scalar = props => createElement('scalar', props);
+export const Image = props => createElement('image', props);
+export const Exchange = props => createElement('exchange', props);
+export const SpeedGraph = props => createElement('speedgraph', props);

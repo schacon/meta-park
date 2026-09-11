@@ -34,6 +34,8 @@ private:
  void TestCast();
  void TestFSV();
  void TestSerializer();
+ void TestScalar();
+ void TestExchange();
  void TestNativeProps();
  void TestEnding();
  TSharedPtr<class FParkColdStorage> ColdStorage;
@@ -72,7 +74,13 @@ private:
  UPROPERTY() TObjectPtr<class UTexture2D> ParkSnapshot;
  FSlateBrush ParkSnapshotBrush;
  TSharedPtr<class SButton> MapDockButton,CastPauseButton,CastReplayButton;
- bool bCommandDesktop=false,bDesktopFSV=false,bDesktopSerializer=false;
+ bool bCommandDesktop=false,bDesktopFSV=false,bDesktopSerializer=false,bDesktopScalar=false;
+ TSharedPtr<class FParkExchange> Exchange;
+ TMap<uint64,TSharedPtr<class FParkExchange>> PageExchanges;
+ TSharedPtr<class FParkSpeedGraph> SpeedGraph;
+ TSharedPtr<class FParkScalar> Scalar;
+ TMap<uint64,TSharedPtr<class FParkScalar>> PageScalars;
+ TSharedPtr<SWidget> ScalarView;
  TSharedPtr<class FParkSerializer> Serializer;
  TMap<uint64,TSharedPtr<class FParkSerializer>> PageSerializers;
  TSharedPtr<SWidget> SerializerView;
@@ -81,7 +89,7 @@ private:
  TSharedRef<SWidget> BuildFinishPrompt();
  TSharedPtr<class FParkFSV> FSV;
  TMap<uint64,TSharedPtr<class FParkFSV>> PageFSVs;
- TSet<uint64> ViewedFSVSystems;
+ TSet<uint64> ViewedFSVSystems,ViewedScalarSteps,ViewedExchangeSteps;
  TSharedRef<SWidget> BuildFSVWindow();
  float DesktopMinimize=0;
  uint64 DesktopCommandKey=MAX_uint64;
