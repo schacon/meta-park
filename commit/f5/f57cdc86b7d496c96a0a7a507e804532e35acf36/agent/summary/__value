@@ -1,0 +1,6 @@
+Broaden Nedry and enlarge the beach-bar presentation sign
+
+Changed paths: assets/blender/park.blend, assets/exports/SM_BeachBar.fbx, docs/screenshots/beach-bar-free-flight.png, docs/screenshots/beach-bar-slide.png, docs/verification.md, examples/git-meta/layout.json, scripts/model_beach_bar.py, unreal/Content/Models/Park/SM_BeachBar.uasset, unreal/Content/Slides/deck.json, unreal/Source/SlideEngine/SlideGameMode.cpp
+
+Context: The slide layout becomes a themed park
+Provenance: recorded operations and transcript references are attached.

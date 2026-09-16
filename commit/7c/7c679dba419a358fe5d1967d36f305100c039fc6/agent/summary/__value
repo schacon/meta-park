@@ -1,0 +1,6 @@
+Replay local asciicast recordings with ANSI terminal controls and fresh-content launch
+
+Changed paths: package-lock.json, package.json, scripts/build.mjs, scripts/check-terminal.mjs, scripts/unreal.mjs, src/asciicast.mjs, src/compiler.mjs, test/asciicast.test.mjs, test/fixtures/git-meta.cast, test/stations.test.mjs, unreal/Source/SlideEngine/ParkCastInteraction.cpp, unreal/Source/SlideEngine/ParkCastPlayer.cpp (and 8 others; see history:record).
+
+Context: Offline recorded commands and fresh content
+Provenance: recorded operations and transcript references are attached.

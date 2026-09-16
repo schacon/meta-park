@@ -1,0 +1,6 @@
+Animate articulated dinosaurs with wandering routes and rest periods
+
+Changed paths: unreal/Source/SlideEngine/DinosaurGait.cpp, unreal/Source/SlideEngine/DinosaurGait.h, unreal/Source/SlideEngine/IslandScene.cpp, unreal/Source/SlideEngine/IslandScene.h
+
+Context: The slide layout becomes a themed park; Themed native components and the final route
+Provenance: membership observed in a session; authorship is not established.

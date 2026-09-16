@@ -1,0 +1,6 @@
+Add CommandLine MDX steps and remove speaker notes
+
+Changed paths: examples/git-meta/deck.mdx, slides/01/03-command-line.mdx, src/compiler.mjs, src/components.jsx, test/compiler.test.mjs, test/stations.test.mjs
+
+Context: Offline recorded commands and fresh content
+Provenance: recorded operations and transcript references are attached.

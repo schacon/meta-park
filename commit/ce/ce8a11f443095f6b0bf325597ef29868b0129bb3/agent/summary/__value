@@ -1,0 +1,6 @@
+WIP: park visualizers and CRDT-Rex keeper exchange
+
+Changed paths: README.md, scripts/check-exchange.mjs, scripts/check-scalar.mjs, slides/01/01-overview.mdx, slides/01/02-cold-storage.mdx, slides/05/02-example-storage.mdx, slides/05/02-example.mdx, slides/06/01-exchange.mdx, slides/06/02-example.mdx, slides/07/02-example.mdx, slides/07/03-setup-performance.mdx, slides/07/images/setup-performance.png (and 31 others; see history:record).
+
+Context: Explain lazy history and collaborative exchange
+Provenance: recorded operations and transcript references are attached.

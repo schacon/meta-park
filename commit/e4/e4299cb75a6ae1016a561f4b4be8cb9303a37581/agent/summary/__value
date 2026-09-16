@@ -1,0 +1,6 @@
+Add interactive cold-storage and raptor stations with physical park signs
+
+Changed paths: examples/git-meta/cold-storage.mdx, examples/git-meta/layout.json, examples/git-meta/raptors.mdx, scripts/check-native-props.mjs, src/compiler.mjs, test/stations.test.mjs, unreal/Source/SlideEngine/DinosaurGait.cpp, unreal/Source/SlideEngine/IslandScene.cpp, unreal/Source/SlideEngine/IslandScene.h, unreal/Source/SlideEngine/ParkColdStorage.cpp, unreal/Source/SlideEngine/ParkColdStorage.h, unreal/Source/SlideEngine/ParkDesktop.cpp (and 10 others; see history:record).
+
+Context: Numbered MDX sequences replace single pages; Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

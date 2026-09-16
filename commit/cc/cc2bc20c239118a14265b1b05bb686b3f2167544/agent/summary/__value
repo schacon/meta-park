@@ -1,0 +1,6 @@
+Add an SGI filesystem viewer with animated spotlight selections and gate-first stations
+
+Changed paths: examples/git-meta/fsv.mdx, examples/git-meta/layout.json, scripts/check-fsv.mjs, src/compiler.mjs, test/stations.test.mjs, unreal/Source/SlideEngine/ParkCommandDesktop.cpp, unreal/Source/SlideEngine/ParkDesktop.cpp, unreal/Source/SlideEngine/ParkFSV.cpp, unreal/Source/SlideEngine/ParkFSV.h, unreal/Source/SlideEngine/ParkFSVInteraction.cpp, unreal/Source/SlideEngine/ParkFSVWindow.cpp, unreal/Source/SlideEngine/ParkGateInteraction.cpp (and 5 others; see history:record).
+
+Context: Numbered MDX sequences replace single pages; Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

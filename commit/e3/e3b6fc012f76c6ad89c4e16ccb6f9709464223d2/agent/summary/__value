@@ -1,0 +1,6 @@
+Split the main gate into hinged Blender door meshes
+
+Changed paths: assets/README.md, assets/blender/park.blend, assets/exports/SM_Gate.fbx, assets/exports/SM_GateLeafLeft.fbx, assets/exports/SM_GateLeafRight.fbx, assets/exports/park-assets.json, scripts/build_park_assets.py, unreal/Content/Models/Park/SM_Gate.uasset, unreal/Content/Models/Park/SM_GateLeafLeft.uasset, unreal/Content/Models/Park/SM_GateLeafRight.uasset, unreal/Content/Slides/park-assets.json
+
+Context: The slide layout becomes a themed park; Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

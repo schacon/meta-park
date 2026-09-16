@@ -1,0 +1,6 @@
+Compile station content without speaker notes
+
+Changed paths: unreal/Content/Slides/deck.json
+
+Context: Numbered MDX sequences replace single pages
+Provenance: recorded operations and transcript references are attached.

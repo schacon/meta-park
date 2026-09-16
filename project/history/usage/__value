@@ -1,0 +1,143 @@
+# Development history in git-meta
+
+The local git-meta archive explains how slide-engine was built and links that
+account to the development conversations, changes, branches, images, and recorded
+checks. It lives in `.git/git-meta.sqlite` and serializes to
+`refs/meta/local/main`. Image payloads and their indexes use `local:` keys and
+are excluded from serialization. Transcripts contain local image references,
+not image bytes. Neither is checked into the source tree. No metadata remote
+is automatically configured or published.
+
+Start here:
+
+```sh
+git-meta get project history:overview
+git-meta get project history:coverage
+git-meta get project history:branch-index
+git-meta get branch:scalar-visualizer
+git-meta get branch:metadata-popup
+git-meta get commit:df82c3504 agent:summary
+git-meta get commit:df82c3504 history:evidence
+git-meta get path:src/compiler.mjs description
+git-meta tui
+```
+
+## What is stored
+
+| Target/key | Contents |
+| --- | --- |
+| `project history:overview` | Retrospective narrative, milestones and source references |
+| `project history:milestone:<name>` | Goals, decisions, evidence and related commits |
+| `project history:coverage` | Counts, unresolved provenance and known omissions |
+| `project history:verification-evidence` | Historical tool output, including failures; not current test attestations |
+| `project codex:session:<id>:info` | Source-prefix hash, cutoff, counts, known models and normalization accounting |
+| `project codex:session:<id>:summary` | Human-readable account of the session |
+| `project codex:session:<id>:transcript:index` | Ordered chunk keys, encoding and checksums |
+| `project codex:session:<id>:transcript:part:<number>` | Bounded UTF-8 chunks that reconstruct normalized JSONL |
+| `project local:codex:asset:<sha256>:index` | Local-only chunk index for one content-addressed image |
+| `project local:codex:asset:<sha256>:part:<number>` | Local-only image payload chunks |
+| `project local:history:asset-index` | Local-only image inventory |
+| `branch:<name>` | Purpose, lifecycle evidence, parents, session links and commit membership |
+| `commit:<full SHA>` | Change record, summary, provenance, request candidates and session references |
+| `change-id:<id>` | Mapping from stable GitButler change IDs to observed commit SHAs |
+| `path:<path>` | Responsibility, relevant commits, sessions, and selected documentation snapshots |
+
+Project session archives use custom `codex:` keys because a session can span many
+branches and commits. Each transcript is stored once, then referenced from those
+targets. The standard `agent:summary`, `description`, `status`, and `branch-id`
+keys are used where their meanings fit. `branch-id` records a confirmed original
+branch name; it does not claim to be a recovered GitButler branch UUID.
+
+Chunks are strings written with `git-meta set --file`, not command-line-sized
+JSONL arguments. The index orders the chunks; concatenation reconstructs the
+JSONL byte-for-byte. Chunk boundaries may fall inside a JSONL record. Image
+chunks use base64. Checksums cover encoded chunks, the combined encoded value,
+and the original decoded image. Lists/sets of links do not duplicate transcripts.
+Image chunks, indexes, and image details all remain under `local:`; git-meta
+never serializes that namespace. A recipient can read the transcript's image
+references but cannot retrieve the images. Local image exports remain available.
+
+## Evidence and limitations
+
+Every source reference includes session ID, source line, event ID and timestamp.
+Recorded commit creation and amendments are stronger evidence than merely seeing
+a commit in a status output. `history:origin-commit-ids` on a branch includes
+recorded creations; `history:commit-ids` also includes observed stack ancestry.
+Request candidates are explicitly labeled text-similarity inferences. They are
+navigation aids, not proof of authorship. A finishing session can commit edits
+made in earlier sessions.
+
+The import retains ordinary user/assistant messages and tool calls/results.
+It excludes internal reasoning, system/developer messages, runtime bookkeeping,
+and duplicated compaction/event mirrors. Embedded images are extracted and
+deduplicated. Home-directory prefixes become `$HOME`; recognized credential
+patterns are redacted and counted. Original logs remain unchanged. The import
+is a snapshot through an explicit cutoff, including for the session doing the
+import. Missing image placeholders in imported conversations cannot be recovered.
+
+The Scalar conversation imported from an external agent is preserved separately
+from the CLI session. Its commit trailer self-reports an external model; that
+is recorded as reported provenance rather than assigning an unverified runtime
+model. The early checkpoint commits have weak operation attribution. See the
+coverage record for the exact gaps.
+
+## Refresh and verify
+
+Requires Python 3.9+, the installed `git-meta` CLI, and GitButler `but`. Run from
+the primary repository workspace (a `.git` directory is expected):
+
+```sh
+python3 scripts/metadata/history.py prepare
+python3 scripts/metadata/history.py build
+python3 scripts/metadata/history.py apply
+python3 scripts/metadata/history.py verify
+git-meta serialize
+python3 scripts/metadata/roundtrip.py
+```
+
+`prepare` discovers project sessions in the local Codex index and archive folders,
+captures complete JSONL records up to each file's initial size, and inventories
+GitButler history. `build` produces a reviewable plan with retrospective narrative
+and evidence links. `apply` compares each value before writing and only adds
+missing set members. Reapplying an unchanged plan performs zero writes. `verify`
+reads every planned value back through git-meta. These commands never push or
+rewrite source commits. Existing unrelated metadata is preserved.
+
+`roundtrip.py` initializes a temporary repository with GitButler, fetches the
+local `refs/meta/local/main` archive using git-meta, materializes it into an
+independent database, verifies all shared values, and asserts that both `local:`
+keys and the former public image namespace are absent. Its remote points only
+to this filesystem; the source repository's remote configuration is unchanged.
+
+The default staging directory is `.git/codex-metadata`. `--directory` can select
+another location; `--codex-home` selects a different local Codex archive, and
+`--ref` selects the history tip for preparation. The narrative module contains
+project-specific descriptions and source references; maintain those as the
+project evolves. Link sets are append-only historical observations. Updated
+transcript indexes supersede old trailing chunks without deleting prior data.
+
+Export a reconstructed transcript or image:
+
+```sh
+python3 scripts/metadata/history.py export \
+  --key codex:session:01a0a97e-9e6f-7410-ac4d-4cf241343851:transcript \
+  --output /tmp/slide-engine-session.jsonl
+```
+
+Use `local:codex:asset:<sha256>` as the export key for an image. Export verifies chunk
+and complete-value hashes before writing. Archive behavior and evidence parsing
+have focused tests:
+
+```sh
+python3 -m unittest discover -s scripts/metadata -p 'test_*.py' -v
+```
+
+Publishing the archive is a separate operation. Inspect its actual contents and
+size, choose the metadata destination, and only then configure that remote.
+
+The initial import's public image keys were migrated to `local:`. The old keys
+were removed and the unpublished local metadata ref was rebuilt without its
+image-bearing parent history. Merely renaming keys and serializing again would
+leave the old images reachable through that history. Original Codex logs and
+local image files were retained. Future imports use private image keys directly;
+`build` also upgrades references in snapshots prepared by the original importer.

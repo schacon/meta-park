@@ -1,0 +1,6 @@
+Refine keeper clipboards and the shared record printer
+
+Changed paths: unreal/Source/SlideEngine/ParkExchange.cpp, unreal/Source/SlideEngine/ParkExchange.h
+
+Context: Explain lazy history and collaborative exchange
+Provenance: recorded operations and transcript references are attached.

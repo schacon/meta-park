@@ -1,0 +1,6 @@
+Support separate ColdStorage labels and species names
+
+Changed paths: src/compiler.mjs, test/stations.test.mjs, unreal/Source/SlideEngine/ParkColdStorage.cpp, unreal/Source/SlideEngine/ParkColdStorage.h
+
+Context: Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

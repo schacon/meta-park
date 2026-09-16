@@ -1,0 +1,6 @@
+Bundle the current local cast for offline presentation playback
+
+Changed paths: unreal/Content/Slides/deck.json
+
+Context: Offline recorded commands and fresh content
+Provenance: recorded operations and transcript references are attached.

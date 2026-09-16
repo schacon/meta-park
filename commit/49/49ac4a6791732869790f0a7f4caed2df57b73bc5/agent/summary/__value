@@ -1,0 +1,6 @@
+Open at the Research Center with an employee badge
+
+Changed paths: examples/git-meta/layout.json, scripts/check-native-props.mjs, test/compiler.test.mjs, test/stations.test.mjs, unreal/Source/SlideEngine/ParkEmployeeBadge.cpp, unreal/Source/SlideEngine/ParkEmployeeBadge.h, unreal/Source/SlideEngine/ParkEndingInteraction.cpp, unreal/Source/SlideEngine/ParkFSVInteraction.cpp, unreal/Source/SlideEngine/ParkNativePropsInteraction.cpp, unreal/Source/SlideEngine/ParkStationContent.cpp, unreal/Source/SlideEngine/ParkStatus.cpp, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

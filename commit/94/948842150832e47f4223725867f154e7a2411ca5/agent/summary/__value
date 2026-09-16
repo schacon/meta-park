@@ -1,0 +1,6 @@
+Fly the slide through the open gate and return it before closing
+
+Changed paths: unreal/Source/SlideEngine/ParkGateInteraction.cpp, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

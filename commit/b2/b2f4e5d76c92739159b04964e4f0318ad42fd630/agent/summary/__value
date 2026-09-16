@@ -1,0 +1,6 @@
+Add the first-area computer demo with screen-focused framing
+
+Changed paths: unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/ParkTerminal.cpp, unreal/Source/SlideEngine/ParkTerminal.h, unreal/Source/SlideEngine/ParkTerminalInteraction.cpp, unreal/Source/SlideEngine/SlideGameMode.cpp, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Physical hardware and the SGI desktop
+Provenance: recorded operations and transcript references are attached.

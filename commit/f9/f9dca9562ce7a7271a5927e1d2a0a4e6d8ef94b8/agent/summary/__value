@@ -1,0 +1,6 @@
+Author interactive station slides and relocate terminal examples
+
+Changed paths: slides/01/01-overview.mdx, slides/01/01-problem.mdx, slides/01/02-cold-storage.mdx, slides/02/01-new-use-cases.mdx, slides/02/01-properties.mdx, slides/02/02-granularity.mdx, slides/02/02-use-case-list.mdx, slides/02/03-mutability.mdx, slides/02/04-exchange.mdx, slides/03/01-problems.mdx, slides/03/02-existing.mdx, slides/04/03-command-line.mdx (and 1 others; see history:record).
+
+Context: Numbered MDX sequences replace single pages
+Provenance: recorded operations and transcript references are attached.

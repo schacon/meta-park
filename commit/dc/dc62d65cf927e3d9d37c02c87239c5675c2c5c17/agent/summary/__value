@@ -1,0 +1,6 @@
+Restore foreground computers and minimize park control for desktop commands
+
+Changed paths: unreal/Source/SlideEngine/ParkCommandDesktop.cpp, unreal/Source/SlideEngine/ParkDesktop.cpp, unreal/Source/SlideEngine/ParkLogin.cpp, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/ParkStationContent.cpp, unreal/Source/SlideEngine/ParkStationInteraction.cpp, unreal/Source/SlideEngine/ParkTerminal.cpp, unreal/Source/SlideEngine/ParkTerminalInteraction.cpp, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Physical hardware and the SGI desktop
+Provenance: recorded operations and transcript references are attached.

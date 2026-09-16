@@ -1,0 +1,7 @@
+checkpoint 2
+
+
+Changed paths: README.md, docs/design.md, examples/git-meta/layout.json, test/compiler.test.mjs, unreal/Content/Models/M_IslandLit.uasset, unreal/Content/Models/M_Retro.uasset, unreal/Content/Slides/deck.json, unreal/Source/SlideEngine/DnaMascot.cpp, unreal/Source/SlideEngine/DnaMascot.h, unreal/Source/SlideEngine/IslandScene.cpp, unreal/Source/SlideEngine/ParkCamera.cpp, unreal/Source/SlideEngine/ParkCamera.h (and 3 others; see history:record).
+
+Context: MDX becomes a native Unreal presentation
+Provenance: no exact session operation located; do not infer authorship from timestamp alone.

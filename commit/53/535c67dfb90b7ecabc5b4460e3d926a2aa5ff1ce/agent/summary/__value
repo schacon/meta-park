@@ -1,0 +1,6 @@
+Add free flight, presenter counters and the hidden beach camera stop
+
+Changed paths: examples/git-meta/deck.mdx, examples/git-meta/layout.json, package-lock.json, package.json, scripts/unreal.mjs, src/compiler.mjs, test/compiler.test.mjs, unreal/Config/DefaultEngine.ini, unreal/Config/DefaultGame.ini, unreal/Content/Fonts/RobotoMono-Regular.ttf, unreal/Content/Slides/deck.json, unreal/Source/SlideEngine/ParkCallouts.h (and 11 others; see history:record).
+
+Context: The slide layout becomes a themed park
+Provenance: recorded operations and transcript references are attached.

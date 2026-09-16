@@ -1,0 +1,6 @@
+Add interactive desktop metadata serializer and Git object explorer
+
+Changed paths: examples/git-meta/serializer-reference.json, examples/git-meta/serializer.mdx, scripts/check-serializer.mjs, src/compiler.mjs, src/serializer.mjs, test/serializer.test.mjs, unreal/Source/SlideEngine/ParkCommandDesktop.cpp, unreal/Source/SlideEngine/ParkLogin.cpp, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/ParkSerializer.cpp, unreal/Source/SlideEngine/ParkSerializer.h, unreal/Source/SlideEngine/ParkSerializerInteraction.cpp (and 3 others; see history:record).
+
+Context: Explain metadata storage through a desktop visualizer
+Provenance: recorded operations and transcript references are attached.

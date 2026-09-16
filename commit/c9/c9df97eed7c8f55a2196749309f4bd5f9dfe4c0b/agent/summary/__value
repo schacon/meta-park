@@ -1,0 +1,6 @@
+Reorder stations and finish the tour on a Questions desktop
+
+Changed paths: examples/git-meta/layout.json, scripts/check-ending.mjs, unreal/Source/SlideEngine/ParkCommandDesktop.cpp, unreal/Source/SlideEngine/ParkDesktop.cpp, unreal/Source/SlideEngine/ParkEndingInteraction.cpp, unreal/Source/SlideEngine/ParkLogin.cpp, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/ParkStatus.cpp, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Numbered MDX sequences replace single pages; Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

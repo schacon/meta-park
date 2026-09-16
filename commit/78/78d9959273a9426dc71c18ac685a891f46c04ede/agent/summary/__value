@@ -1,0 +1,6 @@
+Replace station slides at full width and update page headers
+
+Changed paths: unreal/Source/SlideEngine/ParkStationContent.cpp, unreal/Source/SlideEngine/ParkStationInteraction.cpp, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Numbered MDX sequences replace single pages
+Provenance: recorded operations and transcript references are attached.

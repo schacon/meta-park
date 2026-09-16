@@ -1,0 +1,63 @@
+# How slide-engine was built
+
+Retrospective synthesis of the recorded requests, repository changes, and verification evidence. Source coordinates refer to the imported session JSONL.
+
+## MDX becomes a native Unreal presentation
+
+The original request was to author slides in MDX, embed custom models and animations, build a game, and fly between slides with an editable layout. The implemented separation is build-time MDX compilation in Node and native rendering in Unreal. The git-meta README supplied the original example content. The first three checkpoints have terse messages, so the opening conversation is essential context.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:11
+
+## The slide layout becomes a themed park
+
+The user replaced a generic arrangement with a Jurassic Park island, then repeatedly simplified and reshaped its coastline, paths, facilities, fences, and paddocks using screenshots. Blender sources and import scripts make the art reproducible. Cards became numbered destinations with authored subject-facing camera paths, hidden content during travel, and an arrival reveal. Dinosaurs, a hidden beach stop, and monitoring jokes established the presentation setting.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:519; 01a07b6d-991e-7c80-a5ae-46e3d782481b:779; 01a07b6d-991e-7c80-a5ae-46e3d782481b:1874; 01a07b6d-991e-7c80-a5ae-46e3d782481b:2311; 01a07b6d-991e-7c80-a5ae-46e3d782481b:2462
+
+## Physical hardware and the SGI desktop
+
+A modeled CRT, keyboard, tower, and mouse became the Computer component. The login/logout desktop and park controls became a persistent presentation shell. Computer demonstrations use foreground hardware; CommandLine demonstrations minimize park control and use a desktop terminal. These are distinct presentation modes requested by the user, rather than one generic slide renderer.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:6142; 01a07b6d-991e-7c80-a5ae-46e3d782481b:6962; 01a07b6d-991e-7c80-a5ae-46e3d782481b:6984
+
+## Numbered MDX sequences replace single pages
+
+Station directories became ordered sequences of Markdown and native component steps. The user first asked to retain all group content; later requested full-width replacement of Markdown instead of horizontal stacking. Native demonstrations retain appropriate background context. Arrow navigation, reverse navigation, reset, progress meters, and time controls are covered by the associated runtime checks.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:6282; 01a07b6d-991e-7c80-a5ae-46e3d782481b:6743; 01a07b6d-991e-7c80-a5ae-46e3d782481b:6764; 01a07b6d-991e-7c80-a5ae-46e3d782481b:7213
+
+## Offline recorded commands and fresh content
+
+CommandLine changed from authored prompt/output strings to local asciicast playback with ANSI handling. The user required casts from ./casts and reported that npm start kept showing an old recording. The launch pipeline was changed to compile and stage fresh content; space controls playback. No shell command is executed as part of the recorded demonstration.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:7382; 01a07b6d-991e-7c80-a5ae-46e3d782481b:7485; 01a07b6d-991e-7c80-a5ae-46e3d782481b:7547; 01a07b6d-991e-7c80-a5ae-46e3d782481b:7633; 01a07b6d-991e-7c80-a5ae-46e3d782481b:7825
+
+## Themed native components and the final route
+
+FSV provides the filesystem metaphor, ColdStorage reveals authored specimens, and Raptors uses warning signs and incident clipboards. Title-only pages become physical signs. The user reordered the route to open at the Research Center with an employee badge, moved the gate introduction to station four, retained the hidden eighth stop, and ended at a Questions desktop. These revisions are preserved as decisions rather than presenting the final route as the original design.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:7982; 01a07b6d-991e-7c80-a5ae-46e3d782481b:8248; 01a07b6d-991e-7c80-a5ae-46e3d782481b:8311; 01a07b6d-991e-7c80-a5ae-46e3d782481b:8324; 01a07b6d-991e-7c80-a5ae-46e3d782481b:8365; 01a07b6d-991e-7c80-a5ae-46e3d782481b:8875; 01a07b6d-991e-7c80-a5ae-46e3d782481b:9131; 01a07b6d-991e-7c80-a5ae-46e3d782481b:9209
+
+## Explain metadata storage through a desktop visualizer
+
+Serializer connects metadata values in a SQLite view to Git blobs, trees, and commits in an object explorer. Follow-up requests refined the two-commit sequence, selection detail, labels, and layout. This demonstrates the metadata representation with explicit state transitions; the compiler and tests define the supported authored input.
+
+Evidence: 01a07b6d-991e-7c80-a5ae-46e3d782481b:9317; 01a07b6d-991e-7c80-a5ae-46e3d782481b:9591; 01a07b6d-991e-7c80-a5ae-46e3d782481b:9703; 01a07b6d-991e-7c80-a5ae-46e3d782481b:10181
+
+## Explain lazy history and collaborative exchange
+
+Scalar depicts commit/tree/blob history, pruning, publishing, full-history setup, shallow setup, and on-demand retrieval. A later request added a fourth commit and a third user. Exchange moved from object graphs to a clearer keeper story: both keepers edit a shared ancestor, the first publisher advances the record, the second is rejected, merges locally, then republishes. Local string choice, set union, and list appends are scoped examples; the record is append-only and rejected updates never enter it. The performance view uses dinosaur neck lengths with numeric reference lines.
+
+Evidence: 01a08fab-6619-7640-b60b-6c08aa561526:9; 01a08fab-6619-7640-b60b-6c08aa561526:507; 01a08fab-6619-7640-b60b-6c08aa561526:1794; 01a08fab-6619-7640-b60b-6c08aa561526:1850; 01a08fab-6619-7640-b60b-6c08aa561526:2130; 01a08fab-6619-7640-b60b-6c08aa561526:2509; 01a08fab-6619-7640-b60b-6c08aa561526:3097; 01a08fab-6619-7640-b60b-6c08aa561526:3134; 01a08fab-6619-7640-b60b-6c08aa561526:3857; 01a08fab-6619-7640-b60b-6c08aa561526:4076
+
+## Metadata introduction and browser-screen finishing
+
+The metadata explanation was inserted between the badge and ColdStorage. Its nested bullets required compiler and Slate indentation support. The station-four text introduction was replaced with the user-supplied website screenshot, embedded for offline use and framed as a browser on the existing Computer model. The last landing included earlier exchange refinements and authored slide edits, not only work produced during this finishing session.
+
+Evidence: 01a0a97e-9e6f-7410-ac4d-4cf241343851:9; 01a0a97e-9e6f-7410-ac4d-4cf241343851:128; 01a0a97e-9e6f-7410-ac4d-4cf241343851:152; 01a0a97e-9e6f-7410-ac4d-4cf241343851:261; 01a0a97e-9e6f-7410-ac4d-4cf241343851:302
+
+## How to interpret this archive
+
+Session links describe evidence, not blanket authorship. Multiple sessions can contribute to one commit, and a finishing session may commit work from an earlier session. Branch names are historical labels; GitButler change IDs are retained when available. Early checkpoint commits and imported conversations have weaker provenance and are listed in the coverage report.
+
+The archive preserves ordinary messages, tool calls and outputs, and embedded images. Internal reasoning, system/developer instructions, runtime bookkeeping, and repeated compaction mirrors are excluded. Recorded failures remain visible. Source hashes identify the captured prefixes of the original logs; they are not hashes of the normalized exports.

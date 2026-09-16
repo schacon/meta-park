@@ -1,0 +1,6 @@
+Show metadata slide after the badge with nested bullets
+
+Changed paths: scripts/check-native-props.mjs, slides/01/01-overview.mdx, slides/01/02-what-is.mdx, slides/01/03-cold-storage.mdx, src/compiler.mjs, test/stations.test.mjs, unreal/Source/SlideEngine/ParkNativePropsInteraction.cpp, unreal/Source/SlideEngine/ParkStationContent.cpp
+
+Context: Metadata introduction and browser-screen finishing
+Provenance: recorded operations and transcript references are attached.

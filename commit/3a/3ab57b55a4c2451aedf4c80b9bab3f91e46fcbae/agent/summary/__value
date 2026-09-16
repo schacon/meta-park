@@ -1,0 +1,7 @@
+checkpoint charlie
+
+
+Changed paths: .gitignore, README.md, docs/design.md, docs/screenshots/overview.png, docs/screenshots/slide-01.png, docs/verification.md, examples/git-meta/components.jsx, examples/git-meta/deck.mdx, examples/git-meta/layout.json, package-lock.json, package.json, scripts/build.mjs (and 27 others; see history:record).
+
+Context: MDX becomes a native Unreal presentation
+Provenance: no exact session operation located; do not infer authorship from timestamp alone.

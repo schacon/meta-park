@@ -1,0 +1,6 @@
+Open the gate to reveal its slide and close it on departure
+
+Changed paths: README.md, docs/screenshots/gate-open.png, docs/screenshots/gate-opening.png, docs/verification.md, examples/git-meta/layout.json, unreal/Content/Slides/deck.json, unreal/Source/SlideEngine/IslandScene.cpp, unreal/Source/SlideEngine/IslandScene.h, unreal/Source/SlideEngine/ParkGate.cpp, unreal/Source/SlideEngine/ParkGateInteraction.cpp, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/SlideGameMode.cpp (and 1 others; see history:record).
+
+Context: Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

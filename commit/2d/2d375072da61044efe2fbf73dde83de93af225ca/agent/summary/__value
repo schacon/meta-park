@@ -1,0 +1,6 @@
+Pull back the gate camera to include the park lettering
+
+Changed paths: docs/screenshots/gate-open.png, docs/screenshots/gate-opening.png, docs/verification.md, examples/git-meta/layout.json, unreal/Content/Slides/deck.json, unreal/Source/SlideEngine/ParkGateInteraction.cpp
+
+Context: Themed native components and the final route
+Provenance: recorded operations and transcript references are attached.

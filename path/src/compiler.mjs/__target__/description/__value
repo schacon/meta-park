@@ -1,0 +1,1 @@
+Build-time MDX evaluation, component validation, ordered station compilation, and deck manifest construction. This is the boundary between authored slides and native runtime state.

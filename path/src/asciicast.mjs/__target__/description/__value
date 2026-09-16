@@ -1,0 +1,1 @@
+Loads local terminal recordings and translates terminal output into offline playback state; paired with xterm-based ANSI handling.

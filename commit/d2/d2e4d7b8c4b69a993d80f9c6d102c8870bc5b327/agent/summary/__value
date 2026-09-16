@@ -1,0 +1,6 @@
+Keep group content visible with live park progress and elapsed-time controls
+
+Changed paths: unreal/Source/SlideEngine/ParkCallouts.h, unreal/Source/SlideEngine/ParkDesktop.cpp, unreal/Source/SlideEngine/ParkLogin.cpp, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/ParkProgressInteraction.cpp, unreal/Source/SlideEngine/ParkStationContent.cpp, unreal/Source/SlideEngine/ParkStationInteraction.cpp, unreal/Source/SlideEngine/ParkStatus.cpp, unreal/Source/SlideEngine/ParkTerminal.cpp, unreal/Source/SlideEngine/ParkTerminal.h, unreal/Source/SlideEngine/ParkTerminalInteraction.cpp, unreal/Source/SlideEngine/SlideGameMode.cpp (and 1 others; see history:record).
+
+Context: Numbered MDX sequences replace single pages
+Provenance: recorded operations and transcript references are attached.

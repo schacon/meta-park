@@ -1,0 +1,6 @@
+Model a four-vial cryogenic canister with reusable prop materials
+
+Changed paths: assets/blender/cold-storage-review.png, assets/blender/cold-storage.blend, assets/exports/SM_ColdBody.fbx, assets/exports/SM_ColdLid.fbx, assets/exports/SM_ColdRack.fbx, assets/exports/SM_ColdVial.fbx, scripts/import_cold_storage.py, scripts/import_prop_materials.py, scripts/model_cold_storage.py, unreal/Content/Models/M_PropLettering.uasset, unreal/Content/Models/M_PropPaper.uasset, unreal/Content/Models/Park/M_ColdMetal.uasset (and 4 others; see history:record).
+
+Context: See the development overview and source transcript evidence.
+Provenance: recorded operations and transcript references are attached.

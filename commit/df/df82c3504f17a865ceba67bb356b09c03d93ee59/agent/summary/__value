@@ -1,0 +1,6 @@
+Display the git-meta website in the computer browser
+
+Changed paths: slides/04/01-intro.mdx, slides/04/images/git-meta-home.png, src/compiler.mjs, test/slide-image.test.mjs, unreal/Source/SlideEngine/ParkNavigation.cpp, unreal/Source/SlideEngine/ParkStationContent.cpp, unreal/Source/SlideEngine/ParkStationInteraction.cpp, unreal/Source/SlideEngine/ParkTerminal.cpp, unreal/Source/SlideEngine/ParkTerminal.h, unreal/Source/SlideEngine/SlideGameMode.h
+
+Context: Physical hardware and the SGI desktop; Metadata introduction and browser-screen finishing
+Provenance: recorded operations and transcript references are attached.

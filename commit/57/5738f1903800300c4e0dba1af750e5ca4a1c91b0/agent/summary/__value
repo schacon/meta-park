@@ -1,0 +1,6 @@
+Make rear beach water bands follow the shoreline
+
+Changed paths: assets/blender/north-shore-review.png, assets/blender/park.blend, assets/exports/SM_Island.fbx, assets/exports/SM_Water.fbx, assets/exports/park-assets.json, assets/exports/park-ground.json, docs/verification.md, scripts/build_park_assets.py, unreal/Content/Models/Park/SM_Island.uasset, unreal/Content/Models/Park/SM_Water.uasset, unreal/Content/Slides/park-assets.json, unreal/Content/Slides/park-ground.json
+
+Context: The slide layout becomes a themed park
+Provenance: recorded operations and transcript references are attached.

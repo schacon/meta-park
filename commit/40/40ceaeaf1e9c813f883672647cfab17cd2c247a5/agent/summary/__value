@@ -1,0 +1,6 @@
+Add an SGI login desktop with configurable sessions and logout reset
+
+Changed paths: README.md, assets/ui/git-meta-park-logo.png, docs/screenshots/login-screen.png, docs/screenshots/login-typing.png, docs/screenshots/logout-menu.png, docs/verification.md, scripts/import_park_logo.py, scripts/prepare.py, unreal/Content/Models/UI/T_ParkLogo.uasset, unreal/Source/SlideEngine/ParkDesktop.cpp, unreal/Source/SlideEngine/ParkLogin.cpp, unreal/Source/SlideEngine/ParkLoginInteraction.cpp (and 3 others; see history:record).
+
+Context: Physical hardware and the SGI desktop
+Provenance: recorded operations and transcript references are attached.
