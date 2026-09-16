@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
-class UWorld;class AActor;class USceneComponent;
+class UWorld;class AActor;class USceneComponent;class UMaterialInstanceDynamic;
 struct FExchangeValue {FString Text,Origin,Id;};
 struct FExchangeObject {FString Type,Key;TArray<FExchangeValue> Base,Local,Remote,Result;};
 struct FExchangeStep {int32 Phase=0;FString Action,Record,Label,Command,Headline,Note;TArray<FString> States;TArray<int32> Log;};
@@ -9,17 +9,17 @@ struct FExchangeRecord {FString Id,Parent,Author,State;};
 // Three physical care clipboards in the park: Keeper 1, record, Keeper 2.
 class FParkExchange {
  TWeakObjectPtr<AActor> Actor;
+ TMap<uint32,TWeakObjectPtr<UMaterialInstanceDynamic>> Materials;
  TArray<TWeakObjectPtr<USceneComponent>> Parts;
  struct FTravel {TWeakObjectPtr<USceneComponent> Part;FVector From,To;float Delay=0,Duration=1.5f;bool Bounce=false;};
  TArray<FTravel> Transfers;
  struct FReveal {TWeakObjectPtr<USceneComponent> Part;float At;bool Before=false;};
  TArray<FReveal> Reveals;
- struct FKeeperPart {TWeakObjectPtr<USceneComponent> Part;FVector Rest;int32 Side;};
- TArray<FKeeperPart> Keepers;
  int32 BuiltStep=-1;float BackdropFade=0;
  USceneComponent* Box(FVector At,FVector Size,FColor Tint);
- USceneComponent* Label(FVector At,FVector2D Size,const FString&,int32 Font=30,FColor Tint=FColor::White);
+ USceneComponent* Label(FVector At,FVector2D Size,const FString&,int32 Font=30,FColor Tint=FColor::White,bool Left=false);
  void Link(FVector From,FVector To,FColor Tint,float Width=5);
+ FColor ValueColor(int32 Type,const FExchangeValue&) const;
  void Keeper(int32 Side);
  void Rebuild();
 public:
