@@ -172,7 +172,19 @@ are available without imports. For example, `slides/04/02-example.mdx`:
 </Computer>
 ```
 
-`Computer` requires one prompt and one output; both come from the file. `Model`
+For a browser screen, give `Computer` a URL and one `Image` child:
+
+```mdx
+<Computer url="https://git-meta.com">
+  <Image src="./images/git-meta-home.png" alt="git-meta — Open, Structured Metadata for Git" />
+</Computer>
+```
+
+The original PNG is embedded for offline playback inside the physical monitor,
+with a browser tab, navigation controls, and address bar. Station 04 uses this
+for its introduction. Arrows switch to the recording and back to the browser.
+
+Without a URL, `Computer` requires one prompt and one output; both come from the file. `Model`
 and `Animate` also work as standalone scene steps, or alongside Markdown on a
 sign page. `CommandLine` replays a local asciicast file in the workstation terminal:
 
@@ -443,7 +455,7 @@ Forward navigation continues from station 07 through the hidden beach bar at sta
 
 ColdStorage canisters optionally accept `<Label>` for the description heading; `<Species>` remains the name printed on the vial.
 
-Station 01 opens at the Research Center with a physical employee badge using the first MDX page’s title and body. ColdStorage rises in front of the badge on the next step, dimming the scene behind the hardware and description until the demonstration closes. Station 04 presents the git-meta introduction at the Main Gate; station 06 presents exchange at the T. rex paddock.
+Station 01 opens at the Research Center with a physical employee badge using the first MDX page’s title and body. The next step displays `01/02-what-is.mdx` on the slide panel with indented nested bullets. ColdStorage then rises in front of that slide, dimming the scene behind the hardware and description until the demonstration closes. Station 04 presents the git-meta introduction at the Main Gate; station 06 presents exchange at the T. rex paddock.
 
 
 `<Serializer>` minimizes the park into a desktop with a SQLite browser, Git object explorer, commit sidebar, and pointer-following xeyes:
@@ -530,10 +542,16 @@ ordered list. Retrying appends M after R. The center keeps all three complete
 snapshots; neither a rejected push nor a local merge appends an entry.
 Keeper 2 keeps their existing copy until they synchronize again.
 
-The keepers enter the scene, values travel between their clipboards and the
-record, and a refused push returns to its sender. Gold labels identify local
-name selection and clean collection merges. Space/Right advances, Left goes
-back, and R restarts. The park background stays dim while the story is visible.
+Hands and forearms are present from the start, holding angled wooden clipboards against an 88% opaque black backdrop, with blue and amber
+clipboard paper. A teal printer houses the continuous paper record, with a status display,
+feed slot, rollers and metal controls. Wider columns and inset pages leave room around the text.
+The three props fill the scene; there is no bottom helper or command panel.
+Each name, food and feeding time keeps a distinct ink color across the clipboards and printed entries.
+The center is a paper printout with keeper headers, key/value columns, and padded dotted
+separators between accepted entries. A
+proposed third entry reaches its slot, is stamped blocked, and returns without
+entering the log. Gold labels identify local name selection and clean collection
+merges. Space/Right advances, Left goes back, and R restarts.
 The example uses shared ancestry and additions/appends; deletions, tombstones,
 and unrelated histories are outside its scope. Publishing stages illustrate the
 automatic fetch/merge/retry inside `git meta push`, not a `--ff-only` CLI flag.
