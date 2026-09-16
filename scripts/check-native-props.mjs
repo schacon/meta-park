@@ -9,7 +9,8 @@ try {
   const folder=join(dir,String(i).padStart(2,'0'));await mkdir(folder);
   await writeFile(join(folder,'01-intro.mdx'),i===1?'# Git Meta\n\nNew metadata approach for Git':i===2?'# New Metadata Use Cases':i===3?'<RaptorWarning>Problems with existing solutions</RaptorWarning>':`# Station ${i}`);
  }
- await copyFile('examples/git-meta/cold-storage.mdx',join(dir,'01/02-cold-storage.mdx'));
+ await copyFile('slides/01/02-what-is.mdx',join(dir,'01/02-what-is.mdx'));
+ await copyFile('examples/git-meta/cold-storage.mdx',join(dir,'01/03-cold-storage.mdx'));
  await copyFile('examples/git-meta/raptors.mdx',join(dir,'03/02-raptors.mdx'));
  const manifest=join(dir,'deck.json');await writeFile(manifest,JSON.stringify(await compileStations(dir,'examples/git-meta/layout.json')));
  const flags=process.argv.slice(2).filter(a=>a!=='--packaged');

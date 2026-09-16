@@ -15,6 +15,21 @@ async function fixture(t) {
  return dir;
 }
 const layout='examples/git-meta/layout.json';
+test('Markdown list items preserve nested bullets without duplicating their text',async t=>{
+ const dir=await fixture(t);
+ await writeFile(join(dir,'01/02-metadata.mdx'),'# Metadata\n\nInformation about code.\n\n- Commits\n  - Author\n  - Signatures\n    - SSH\n- Files\n  - CODEOWNERS\n');
+ const page=(await compileStations(dir,layout)).slides[0].steps[1];
+ assert.equal(page.kind,'slide');
+ assert.deepEqual(page.blocks,[
+  {kind:'p',text:'Information about code.'},
+  {kind:'li',text:'Commits'},
+  {kind:'li',text:'Author',depth:1},
+  {kind:'li',text:'Signatures',depth:1},
+  {kind:'li',text:'SSH',depth:2},
+  {kind:'li',text:'Files'},
+  {kind:'li',text:'CODEOWNERS',depth:1},
+ ]);
+});
 test('station pages preserve camera layout, extract titles and sort filenames numerically',async t=>{
  const dir=await fixture(t);
  await writeFile(join(dir,'01/10-later.mdx'),'## Later\n\nLast page');

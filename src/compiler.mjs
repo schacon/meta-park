@@ -70,7 +70,7 @@ export function makeManifest(tree, layout = {}) {
     if (!/^#[\da-f]{6}$/i.test(accent)) fail(`Invalid accent on ${id}`);
     ids.add(id);
     const blocks = [], models = [];
-    function visit(n, animation = null) {
+    function visit(n, animation = null, listDepth = 0) {
       if (typeof n === 'string') { if (n.trim()) blocks.push({kind:'p', text:n.trim()}); return; }
       if (n.type === 'animate') {
         if (animation) fail('Nested Animate components are unsupported');
@@ -83,8 +83,15 @@ export function makeManifest(tree, layout = {}) {
         if (typeof mesh !== 'string' || !mesh.startsWith('/') || (actor && (typeof actor !== 'string' || !actor.startsWith('/Game/')))) fail('Model needs an Unreal asset path');
         models.push({mesh, actor:actor ?? '', position:vector(position,[0,720,0],'Model position'), rotation:vector(rotation,[0,0,0],'Model rotation'), scale:vector(scale,[2,2,2],'Model scale'), animation}); return;
       }
-      if (['h1','h2','h3','p','pre','li','blockquote'].includes(n.type)) { blocks.push({kind:n.type,text:plain(n)}); return; }
-      if (['ul','ol'].includes(n.type)) { n.children.forEach(c => visit(c,animation)); return; }
+      if (n.type === 'li') {
+        const nested = n.children.filter(c => typeof c !== 'string' && ['ul','ol'].includes(c.type));
+        const text = n.children.filter(c => !nested.includes(c)).map(plain).join('').trim();
+        if (text) blocks.push({kind:'li',text,...(listDepth>1?{depth:listDepth-1}:{})});
+        nested.forEach(c => visit(c,animation,listDepth));
+        return;
+      }
+      if (['h1','h2','h3','p','pre','blockquote'].includes(n.type)) { blocks.push({kind:n.type,text:plain(n)}); return; }
+      if (['ul','ol'].includes(n.type)) { n.children.filter(c=>typeof c!=='string'||c.trim()).forEach(c => visit(c,animation,listDepth+1)); return; }
       fail(`Unsupported MDX element: ${n.type}. Use Markdown or native scene components.`);
     }
     s.children.forEach(n => visit(n));

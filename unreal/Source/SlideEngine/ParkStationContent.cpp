@@ -46,9 +46,11 @@ TSharedRef<SWidget> ASlideGameMode::BuildStationContent(TSharedPtr<FJsonObject> 
    const auto Block=Value->AsObject();const FString Kind=Block->GetStringField(TEXT("kind"));
    FString Text=Block->GetStringField(TEXT("text"));if(Kind==TEXT("li"))Text=TEXT("•  ")+Text;
    const bool IsHeading=Kind.StartsWith(TEXT("h")),Code=Kind==TEXT("pre");
-   TextBody->AddSlot().AutoHeight().Padding(0,0,0,18)[SNew(STextBlock).Text(FText::FromString(Text))
+   double Depth=0;if(Kind==TEXT("li"))Block->TryGetNumberField(TEXT("depth"),Depth);
+   const float Indent=FMath::Clamp(float(Depth),0.f,10.f)*40;
+   TextBody->AddSlot().AutoHeight().Padding(Indent,0,0,18)[SNew(STextBlock).Text(FText::FromString(Text))
     .Font(FCoreStyle::GetDefaultFontStyle(Code?"Mono":IsHeading?"Bold":"Regular",(Code?26:IsHeading?30:32)*TypeScale))
-    .ColorAndOpacity(IsHeading?Accent:FLinearColor(.004,.004,.004)).WrapTextAt(1344)];
+    .ColorAndOpacity(IsHeading?Accent:FLinearColor(.004,.004,.004)).WrapTextAt(1344-Indent)];
   }
   // Dense authored pages shrink inside the sign instead of running off its edge.
   Body->AddSlot().FillHeight(1)[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly).HAlign(HAlign_Left).VAlign(VAlign_Top)[SNew(SBox).WidthOverride(1344)[TextBody]]];

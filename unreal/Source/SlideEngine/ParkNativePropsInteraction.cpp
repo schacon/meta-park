@@ -4,6 +4,7 @@
 #include "IslandScene.h"
 #include "Dom/JsonObject.h"
 #include "Camera/CameraActor.h"
+#include "Components/SceneComponent.h"
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
@@ -18,9 +19,17 @@ void ASlideGameMode::TestNativeProps() {
  } else if(SmokeStep==1&&MapPhase==EMapPhase::Slide) {
   if(!Check(EmployeeBadge.IsValid()&&!WoodSign.IsValid()&&UsesPhysicalProp(),TEXT("opening slide is an employee badge")))return;
   Capture(TEXT("props-employee-badge.png"));Travel=0;SmokeStep=2;
- } else if(SmokeStep==2&&Travel>.5f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=3;}
+ } else if(SmokeStep==2&&Travel>.5f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=25;}
+ else if(SmokeStep==25&&Travel>.6f&&PageSwipe==1) {
+  if(!Check(PageIndex==1&&StationSteps[0][1]->GetStringField(TEXT("title"))==TEXT("What is Metadata")&&!EmployeeBadge.IsValid()&&!UsesPhysicalProp()&&Panels[0].Root->GetRootComponent()->IsVisible(),TEXT("metadata slide appears after the employee badge")))return;
+  Capture(TEXT("props-metadata-slide.png"));Travel=0;SmokeStep=26;
+ } else if(SmokeStep==26&&Travel>.6f){HandleParkKey(EKeys::Left);Travel=0;SmokeStep=27;}
+ else if(SmokeStep==27&&Travel>.6f&&PageSwipe==1) {
+  if(!Check(PageIndex==0&&EmployeeBadge.IsValid()&&!Panels[0].Root->GetRootComponent()->IsVisible(),TEXT("Left restores the employee badge")))return;
+  HandleParkKey(EKeys::Right);Travel=0;SmokeStep=28;
+ } else if(SmokeStep==28&&Travel>.6f&&PageSwipe==1){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=3;}
  else if(SmokeStep==3&&Travel>1&&ColdStorage.IsValid()) {
-  if(!Check(ColdStorage->Specimens.Num()==4&&ColdStorage->Selected==-1&&EmployeeBadge.IsValid(),TEXT("cryogenic rack has four authored vials")))return;
+  if(!Check(ColdStorage->Specimens.Num()==4&&ColdStorage->Selected==-1&&StationSignPage(0,PageIndex)==1&&Panels[0].Root->GetRootComponent()->IsVisible(),TEXT("cryogenic rack has four authored vials with metadata slide behind it")))return;
   Capture(TEXT("props-cold-overview.png"));Travel=0;SmokeStep=4;
  } else if(SmokeStep==4&&Travel>.5f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=5;}
  else if(SmokeStep==5&&ColdStorage->Ready()) {
