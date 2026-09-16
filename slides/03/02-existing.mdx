@@ -2,24 +2,20 @@
   <Raptor>
     <Label>commit message / trailers</Label>
     <Problems>
-      <Problem>
-        limited control over metadata granularity and mutability
-      </Problem>
+      <Problem>full visibility (no large data)</Problem>
       <Problem>
         poor support for many independently addressable fields on the same
         object
       </Problem>
+      <Problem>difficult to mutate (change, append, delete)</Problem>
     </Problems>
   </Raptor>
   <Raptor>
     <Label>commit headers</Label>
     <Problems>
-      <Problem>
-        limited control over metadata granularity and mutability
-      </Problem>
-      <Problem>
-        poor scaling characteristics for very large metadata sets
-      </Problem>
+      <Problem>different visibility issues (never shown)</Problem>
+      <Problem>also difficult to mutate</Problem>
+      <Problem>not copied by rebase, only replay</Problem>
     </Problems>
   </Raptor>
   <Raptor>
@@ -28,15 +24,12 @@
       <Problem>
         file pollution when metadata has to live in the working tree
       </Problem>
-      <Problem>
-        poor support for many independently addressable fields on the same
-        object
-      </Problem>
     </Problems>
   </Raptor>
   <Raptor>
     <Label>git notes</Label>
     <Problems>
+      <Problem>different mutation difficulty shape</Problem>
       <Problem>awkward merge behavior for structured data</Problem>
       <Problem>
         poor scaling characteristics for very large metadata sets
