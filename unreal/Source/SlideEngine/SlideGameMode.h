@@ -49,6 +49,7 @@ private:
  TSet<uint64> ViewedRaptors;
  bool UsesPhysicalProp() const;
  void TestStationContent();
+ void TestBrowser();
  void TestProgress();
  TSet<uint64> ViewedPages;
  TSet<int32> VisitedStations;

@@ -5,6 +5,9 @@ class ACameraActor;
 class UWorld;
 class FParkTerminal {
  TWeakObjectPtr<AStaticMeshActor> Actor;
+ TWeakObjectPtr<class UWidgetComponent> ScreenWidget;
+ TSharedPtr<class SWidget> TerminalContent;
+ FString BrowserUrl;
  FBox Bounds;
  bool Raised=false;
  FString Prompt, Output;
@@ -12,6 +15,9 @@ class FParkTerminal {
 public:
  explicit FParkTerminal(UWorld* World);
  void Show(const FString& InPrompt,const FString& InOutput);
+ void ShowBrowser(const FString& Url,TSharedPtr<class FJsonObject> Image);
+ bool IsBrowser() const{return !BrowserUrl.IsEmpty();}
+ FString Url() const{return BrowserUrl;}
  void Hide(){Raised=false;}
  void Update(float Delta,ACameraActor* Camera,bool InFirstArea,FVector4 Region=FVector4(0,0,1,1),bool WholeModel=false);
  FString Command() const;

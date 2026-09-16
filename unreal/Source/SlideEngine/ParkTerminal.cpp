@@ -1,4 +1,6 @@
 #include "ParkTerminal.h"
+#include "ParkSlideImage.h"
+#include "Dom/JsonObject.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -32,21 +34,49 @@ FParkTerminal::FParkTerminal(UWorld* World) {
  auto* Body=Model->GetStaticMeshComponent();Body->SetMobility(EComponentMobility::Movable);
  Body->SetStaticMesh(Mesh);Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);Body->SetCastShadow(false);
  auto* Screen=NewObject<UWidgetComponent>(Model);Model->AddInstanceComponent(Screen);Screen->SetupAttachment(Body);
+ ScreenWidget=Screen;
  Screen->SetWidgetSpace(EWidgetSpace::World);Screen->SetDrawSize(FVector2D(1024,720));Screen->SetTwoSided(true);
  Screen->SetBlendMode(EWidgetBlendMode::Opaque);Screen->SetCollisionEnabled(ECollisionEnabled::NoCollision);Screen->SetCastShadow(false);
  Screen->SetRelativeLocation(DisplayCenter);Screen->SetRelativeRotation(FRotator(0,-90,0));
  Screen->SetRelativeScale3D(FVector(1,195.5f/1024,133.4f/720));Screen->RegisterComponent();
  auto Font=[](int32 Size){return FSlateFontInfo(FPaths::ProjectContentDir()/TEXT("Fonts/RobotoMono-Regular.ttf"),Size);};
- Screen->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
+ TerminalContent=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
   .BorderBackgroundColor(FLinearColor(.007,.015,.32)).Padding(52)
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,76)[SNew(STextBlock).Text(FText::FromString(TEXT("git-meta / system terminal\nREADY"))).Font(Font(24)).ColorAndOpacity(FLinearColor(.66,.78,1))]
    +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,38)[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(TEXT("$ ")+Command()+(FMath::Fmod(Clock,.7f)<.35f?TEXT("_"):TEXT(" ")));}).Font_Lambda([this]{return FontForText(TEXT("$ ")+Prompt,64);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.91,.94,1))]
    +SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text_Lambda([this]{return FText::FromString(OutputReady()?Output:TEXT(""));}).Font_Lambda([this]{return FontForText(Output,72);}).AutoWrapText(true).ColorAndOpacity(FLinearColor(.72,1,.74))]
-  ]);
+  ];
+ Screen->SetSlateWidget(TerminalContent);
  Model->SetActorHiddenInGame(true);
 }
-void FParkTerminal::Show(const FString& InPrompt,const FString& InOutput){Prompt=InPrompt;Output=InOutput;Raised=true;Clock=0;}
+void FParkTerminal::Show(const FString& InPrompt,const FString& InOutput){
+ BrowserUrl.Empty();Prompt=InPrompt;Output=InOutput;Raised=true;Clock=0;
+ if(ScreenWidget.IsValid()) {
+  ScreenWidget->SetDrawSize(FVector2D(1024,720));ScreenWidget->SetRelativeScale3D(FVector(1,195.5f/1024,133.4f/720));
+  ScreenWidget->SetSlateWidget(TerminalContent);
+ }
+}
+void FParkTerminal::ShowBrowser(const FString& Url,TSharedPtr<FJsonObject> Image) {
+ BrowserUrl=Url;Raised=true;Clock=0;
+ if(!ScreenWidget.IsValid())return;
+ ScreenWidget->SetDrawSize(FVector2D(2048,1440));
+ ScreenWidget->SetRelativeScale3D(FVector(1,195.5f/2048,133.4f/1440));
+ const FLinearColor Ink(.025,.025,.025),Chrome(.72,.74,.75),Paper(.91,.88,.83);
+ auto Text=[Ink](const FString& Value,int32 Size){return SNew(STextBlock).Text(FText::FromString(Value)).Font(FCoreStyle::GetDefaultFontStyle("Regular",Size)).ColorAndOpacity(Ink);};
+ ScreenWidget->SetSlateWidget(SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Paper).Padding(0)
+  [SNew(SVerticalBox)
+   +SVerticalBox::Slot().AutoHeight()[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Chrome).Padding(FMargin(28,16))
+    [SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,32,0)[Text(TEXT("●  ●  ●"),28)]
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Paper).Padding(FMargin(28,12))[Text(Image->GetStringField(TEXT("alt"))+TEXT("     ×"),30)]]]]
+   +SVerticalBox::Slot().AutoHeight()[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Chrome).Padding(FMargin(28,12,28,20))
+    [SNew(SHorizontalBox)
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,30,0)[Text(TEXT("‹   ›   ↻"),42)]
+     +SHorizontalBox::Slot().FillWidth(1)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.97,.97,.97)).Padding(FMargin(24,12))[Text(Url,36)]]]]
+   +SVerticalBox::Slot().FillHeight(1)[MakeParkSlideImage(Image)]
+  ]);
+}
 FString FParkTerminal::Command() const {
  return Prompt.Left(FMath::Clamp(FMath::FloorToInt((Clock-.15f)/.09f),0,Prompt.Len()));
 }

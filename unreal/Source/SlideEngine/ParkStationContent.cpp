@@ -142,16 +142,21 @@ void ASlideGameMode::TickStationPage(float Delta) {
   if(!ComponentStartTimes.Contains(PageKey))ComponentStartTimes.Add(PageKey,Elapsed);
   if(!Step->TryGetObjectField(TEXT("component"),Component)||(*Component)->GetStringField(TEXT("type"))!=TEXT("Computer"))continue;
   const uint64 Key=(uint64(Index)<<32)|uint32(Page);
+  const TSharedPtr<FJsonObject>* BrowserImage;
+  const bool Browser=(*Component)->TryGetObjectField(TEXT("image"),BrowserImage);
+  if(Browser&&Page!=PageIndex){ActiveTerminals.Remove(Key);continue;}
   if(!PageTerminals.Contains(Key))PageTerminals.Add(Key,MakeShared<FParkTerminal>(GetWorld()));
   Terminal=PageTerminals[Key];
   if(!ActiveTerminals.Contains(Key)) {
-   Terminal->Show((*Component)->GetStringField(TEXT("prompt")),(*Component)->GetStringField(TEXT("output")));ActiveTerminals.Add(Key);
+   if(Browser)Terminal->ShowBrowser((*Component)->GetStringField(TEXT("url")),*BrowserImage);
+   else Terminal->Show((*Component)->GetStringField(TEXT("prompt")),(*Component)->GetStringField(TEXT("output")));
+   ActiveTerminals.Add(Key);
   }
  }
  // Native hardware stays large in the foreground; ordinary pages remain on the sign behind it.
  for(auto& Entry:PageTerminals) {
   const int32 Station=int32(Entry.Key>>32),Page=int32(uint32(Entry.Key));
-  const bool Visible=!bFreeFlight&&Station==Index&&Page<=RevealedPage&&(Showing||MapPhase==EMapPhase::Retract);
+  const bool Visible=!bFreeFlight&&Station==Index&&Page<=RevealedPage&&(!Entry.Value->IsBrowser()||Page==PageIndex)&&(Showing||MapPhase==EMapPhase::Retract);
   if(!Showing)Entry.Value->Hide();
   Entry.Value->Update(Delta,Camera,Visible);
  }

@@ -7,6 +7,26 @@
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 
+void ASlideGameMode::TestBrowser() {
+ auto Check=[](bool OK,const TCHAR* What){UE_LOG(LogTemp,Display,TEXT("BrowserTest: %s=%s"),What,OK?TEXT("PASS"):TEXT("FAIL"));if(!OK)FPlatformMisc::RequestExitWithStatus(false,1);return OK;};
+ if(SmokeStep==0&&Elapsed>1){GoTo(3);SmokeStep=1;}
+ else if(SmokeStep==1&&MapPhase==EMapPhase::Slide&&Travel>1&&Terminal.IsValid()&&Terminal->IsRaised()) {
+  if(!Check(PageIndex==0&&Terminal->IsBrowser()&&Terminal->Url()==TEXT("https://git-meta.com")&&Terminal->ScreenFillsViewport()&&!Panels[Index].Root->GetRootComponent()->IsVisible(),TEXT("intro shows browser screenshot on the physical computer")))return;
+  FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/computer-browser.png"),true,false);
+  Travel=0;SmokeStep=2;
+ } else if(SmokeStep==2&&Travel>.6f){HandleParkKey(EKeys::Right);Travel=0;SmokeStep=3;}
+ else if(SmokeStep==3&&Travel>.6f) {
+  if(!Check(PageIndex==1&&bCommandDesktop&&Terminal->IsHidden(),TEXT("next page opens recording and hides browser model")))return;
+  HandleParkKey(EKeys::Left);Travel=0;SmokeStep=4;
+ } else if(SmokeStep==4&&Travel>1&&Terminal->IsRaised()) {
+  if(!Check(PageIndex==0&&!bCommandDesktop&&Terminal->IsBrowser(),TEXT("Left restores browser screenshot")))return;
+  GoTo(0);Travel=0;SmokeStep=5;
+ } else if(SmokeStep==5&&Index==0&&MapPhase==EMapPhase::Slide) {
+  if(!Check(Terminal->IsHidden(),TEXT("leaving the station hides the computer")))return;
+  FPlatformMisc::RequestExit(false);
+ }
+}
+
 void ASlideGameMode::TestStationContent() {
  auto Check=[](bool OK,const TCHAR* What){
   UE_LOG(LogTemp,Display,TEXT("StationContentTest: %s=%s"),What,OK?TEXT("PASS"):TEXT("FAIL"));

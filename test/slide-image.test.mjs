@@ -6,6 +6,23 @@ import {join,resolve} from 'node:path';
 import {compileStations} from '../src/compiler.mjs';
 import {loadSlideImage} from '../src/slide-image.mjs';
 const chart=resolve('slides/07/images/setup-performance.png');
+test('Computer embeds a browser screenshot and requires an address and one image',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'computer-browser-'));t.after(()=>rm(dir,{recursive:true,force:true}));
+ for(let i=1;i<=8;i++){const folder=join(dir,String(i).padStart(2,'0'));await mkdir(folder);await writeFile(join(folder,'01-intro.mdx'),'## Intro');}
+ const source=join(dir,'04/01-intro.mdx');
+ await copyFile('slides/04/images/git-meta-home.png',join(dir,'04/site.png'));
+ await writeFile(source,'<Computer url="https://git-meta.com"><Image src="./site.png" alt="git-meta" /></Computer>');
+ const page=(await compileStations(dir,'examples/git-meta/layout.json')).slides[3].steps[0];
+ assert.equal(page.kind,'component');assert.deepEqual(page.blocks,[]);
+ assert.equal(page.component.type,'Computer');assert.equal(page.component.url,'https://git-meta.com');
+ assert.deepEqual(Buffer.from(page.component.image.data,'base64'),await readFile('slides/04/images/git-meta-home.png'));
+ for(const [mdx,error] of [
+  ['<Computer url="git-meta.com"><Image src="./site.png" alt="Site" /></Computer>',/http or https URL/],
+  ['<Computer url="https://git-meta.com"><prompt>hello</prompt><output>OK</output></Computer>',/exactly one self-closing Image/],
+  ['<Computer url="https://git-meta.com"><Image src="./site.png" /></Computer>',/alt text/],
+  ['<Computer><Image src="./site.png" alt="Site" /></Computer>',/prompt and one output/],
+ ]){await writeFile(source,mdx);await assert.rejects(compileStations(dir,'examples/git-meta/layout.json'),error);}
+});
 test('image page follows Scalar on the board and embeds the original PNG',async t=>{
  const dir=await mkdtemp(join(tmpdir(),'slide-image-'));t.after(()=>rm(dir,{recursive:true,force:true}));
  for(let i=1;i<=8;i++){const folder=join(dir,String(i).padStart(2,'0'));await mkdir(folder);await writeFile(join(folder,'01-intro.mdx'),'## Intro');}

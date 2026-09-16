@@ -237,10 +237,17 @@ export async function compileStations(directory, layoutFile, options = {}) {
         }
         if (standalone && visible[0].type==='computer') {
           const children = meaningful(visible[0].children);
-          if (children.length!==2 || children.filter(n=>n.type==='prompt').length!==1 || children.filter(n=>n.type==='output').length!==1)
-            fail('Computer needs exactly one prompt and one output');
-          component = {type:visible[0].type==='computer'?'Computer':'CommandLine',prompt:plain(children.find(n=>n.type==='prompt')),output:plain(children.find(n=>n.type==='output'))};
-          if (!component.prompt.trim()) fail('Computer prompt cannot be empty');
+          const {url}=visible[0].props;
+          if (url!==undefined) {
+            if(typeof url!=='string'||!/^https?:\/\/[^\s]+$/.test(url))fail('Computer browser needs an http or https URL');
+            if(children.length!==1||children[0].type!=='image'||meaningful(children[0].children).length)fail('Computer browser needs exactly one self-closing Image');
+            component={type:'Computer',url,image:await loadSlideImage(children[0].props,source)};
+          } else {
+            if (children.length!==2 || children.filter(n=>n.type==='prompt').length!==1 || children.filter(n=>n.type==='output').length!==1)
+              fail('Computer needs exactly one prompt and one output');
+            component = {type:'Computer',prompt:plain(children.find(n=>n.type==='prompt')),output:plain(children.find(n=>n.type==='output'))};
+            if (!component.prompt.trim()) fail('Computer prompt cannot be empty');
+          }
         }
         const heading = visible.find(n=>['h1','h2','h3'].includes(n.type));
         const title = heading ? plain(heading) : image ? image.alt : component ? component.type : name.replace(/\.mdx$/i,'');
